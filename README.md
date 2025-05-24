@@ -96,15 +96,30 @@ The project implements four sampling strategies with a unified interface:
 
 ## Installation
 
+### Quick Start
+
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd dcbs_project1
+cd dcbs_project-NEW
 
+# Set up virtual environment and install
+make venv
+
+# Authenticate with HuggingFace
+huggingface-cli login
+
+# Run 20-question smoke test
+make sanity
+```
+
+### Manual Installation
+
+```bash
 # Install dependencies
 pip install -r requirements.txt
 
-# Optional: Install in development mode
+# Install in development mode
 pip install -e .
 ```
 
@@ -113,21 +128,25 @@ pip install -e .
 ### Quick Start
 
 ```bash
-# Run comparative evaluation on default dataset
+# Run comparative evaluation on ARC Easy (default)
 python compare_methods.py
 
 # Specify custom model and dataset
 python compare_methods.py \
-    --model "meta-llama/Llama-2-7b-chat-hf" \
-    --benchmark "data/bench_wino.json" \
-    --output-dir "results"
-
-# Run with custom parameters
-python compare_methods.py \
-    --top-p 0.8 \
-    --k 5 \
-    --top-n 30 \
+    --model "meta-llama/Llama-3.2-1B" \
+    --benchmark "data/arc_easy_full.json" \
     --limit 100
+
+# Run with 4-bit quantization for faster inference
+python compare_methods.py \
+    --model "meta-llama/Llama-3.2-1B" \
+    --load-in-4bit \
+    --limit 50
+
+# Run specific samplers only
+python compare_methods.py \
+    --samplers dcbs greedy \
+    --limit 20
 ```
 
 ### Command Line Options
@@ -137,11 +156,12 @@ usage: compare_methods.py [-h] [--model MODEL] [--benchmark BENCHMARK]
                          [--output-dir OUTPUT_DIR] [--limit LIMIT]
                          [--top-p TOP_P] [--k K] [--top-n TOP_N]
                          [--no-cot] [--log-level {DEBUG,INFO,WARNING,ERROR}]
-                         [--save-details]
+                         [--save-details] [--load-in-4bit] 
+                         [--samplers {greedy,top-p,dcbs,random} ...]
 
 Options:
-  --model MODEL         HuggingFace model name or path
-  --benchmark BENCHMARK Path to benchmark JSON file
+  --model MODEL         HuggingFace model name or path (default: meta-llama/Llama-3.2-1B)
+  --benchmark BENCHMARK Path to benchmark JSON file (default: data/arc_easy_full.json)
   --output-dir OUTPUT_DIR Output directory for results
   --limit LIMIT         Limit number of examples for testing
   --top-p TOP_P         Top-p value for nucleus sampling (default: 0.9)
@@ -149,6 +169,8 @@ Options:
   --top-n TOP_N         Top-n tokens for DCBS clustering (default: 50)
   --no-cot             Disable chain-of-thought reasoning
   --save-details       Save detailed per-example results
+  --load-in-4bit       Load model with 4-bit quantization
+  --samplers           Specify which samplers to evaluate (default: all)
 ```
 
 ### Using the Sampler Classes

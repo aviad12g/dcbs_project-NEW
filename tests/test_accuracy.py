@@ -5,24 +5,24 @@ Tests to ensure that the accuracy computation is correctly computing per-example
 accuracy and that the random baseline is around 50% for two-choice examples.
 """
 
-import unittest
-import torch
-import random
-import numpy as np
-import sys
-import os
-from transformers import AutoTokenizer
-import tempfile
-import json
 import csv
+import json
+import os
+import random
+import sys
+import tempfile
+import unittest
 from pathlib import Path
+
+import numpy as np
+import torch
+from transformers import AutoTokenizer
 
 # Add the parent directory to the path to enable imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Fix imports to use proper paths
 from src.run_dcbs_eval import is_correct
-from src.dcbs import category_sample
 
 
 class TestAccuracy(unittest.TestCase):

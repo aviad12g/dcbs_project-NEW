@@ -1,0 +1,34 @@
+[flake8]
+max-line-length = 88
+extend-ignore = 
+    # Black compatibility
+    E203,  # Whitespace before ':'
+    E501,  # Line too long (handled by Black)
+    W503,  # Line break before binary operator
+    # Allow more complex functions and classes
+    C901,  # Function too complex
+    # Documentation
+    D100,  # Missing docstring in public module
+    D101,  # Missing docstring in public class  
+    D102,  # Missing docstring in public method
+    D103,  # Missing docstring in public function
+    D104,  # Missing docstring in public package
+    D105,  # Missing docstring in magic method
+exclude = 
+    .git,
+    __pycache__,
+    .venv,
+    .eggs,
+    *.egg,
+    build,
+    dist,
+    .tox
+per-file-ignores =
+    # Tests can have longer lines and different patterns
+    tests/*:E501,F401,F811
+    # Init files can have unused imports
+    __init__.py:F401
+    # Scripts can be more flexible
+    *.py:E402
+max-complexity = 12
+import-order-style = google 

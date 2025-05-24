@@ -4,21 +4,23 @@ Unit tests for the --limit parameter in the DCBS evaluation framework.
 Tests to ensure that the --limit parameter correctly limits the number of examples processed.
 """
 
-import unittest
+import csv
+import json
 import os
+import subprocess
 import sys
 import tempfile
-import json
-import csv
-import subprocess
+import unittest
 from pathlib import Path
 
 # Add the parent directory to the path to enable imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.run_dcbs_eval import main
-import pandas as pd
 import shutil
+
+import pandas as pd
+
+from src.run_dcbs_eval import main
 
 
 class TestLimit(unittest.TestCase):

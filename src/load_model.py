@@ -3,19 +3,18 @@ Utility functions for loading language models and tokenizers.
 """
 
 import os
-from transformers import AutoModelForCausalLM, AutoTokenizer
+
 import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-def load_model_and_tokenizer(model_name=None, device="auto"):
+def load_model_and_tokenizer(model_name=None, device="auto", load_in_4bit=False):
     """Load a model and tokenizer from Hugging Face."""
     try:
-        default_model = "meta-llama/Llama-3.2-1B-Instruct"
-        model_name = model_name or default_model
-
-        if model_name != default_model:
-            print(f"Warning: Overriding model selection to use {default_model}")
-            model_name = default_model
+        # Default fallback only if model_name is None
+        if model_name is None:
+            model_name = "meta-llama/Llama-3.2-1B-Instruct"
+            print(f"No model specified, using default: {model_name}")
 
         print(f"Loading model: {model_name}")
 
@@ -24,14 +23,25 @@ def load_model_and_tokenizer(model_name=None, device="auto"):
         if device == "auto":
             device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        model = AutoModelForCausalLM.from_pretrained(
-            model_name, token=hf_token, device_map=device
-        )
+        # Set dtype based on CUDA support
+        if torch.cuda.is_available() and torch.cuda.is_bf16_supported():
+            dtype = torch.bfloat16
+        else:
+            dtype = torch.float16
+
+        model_kwargs = {"token": hf_token, "device_map": device, "torch_dtype": dtype}
+
+        # Add 4-bit quantization if requested
+        if load_in_4bit:
+            model_kwargs["load_in_4bit"] = True
+
+        model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
 
         tokenizer = AutoTokenizer.from_pretrained(model_name, token=hf_token)
 
         print(f"Model loaded successfully: {model_name}")
         print(f"Model device: {next(model.parameters()).device}")
+        print(f"Model dtype: {next(model.parameters()).dtype}")
 
         return model, tokenizer
 

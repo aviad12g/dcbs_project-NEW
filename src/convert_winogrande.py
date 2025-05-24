@@ -4,10 +4,10 @@ Convert Winogrande 1.1 JSONL format to the JSON format expected by the DCBS eval
 Usage: python -m src.convert_winogrande input.jsonl output.json
 """
 
-import json
 import argparse
+import json
 import os
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 
 def convert_winogrande_format(input_jsonl: str, output_json: str) -> None:

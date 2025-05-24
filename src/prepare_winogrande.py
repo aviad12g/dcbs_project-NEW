@@ -4,9 +4,10 @@ Prepare the Winogrande benchmark for DCBS evaluation.
 Loads examples from the Winogrande validation set.
 """
 
-import os
-import json
 import argparse
+import json
+import os
+
 from datasets import load_dataset
 
 

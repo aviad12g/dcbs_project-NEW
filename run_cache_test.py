@@ -10,32 +10,41 @@ import subprocess
 import sys
 from pathlib import Path
 
+
 def main():
     """Run cache performance tests."""
     print("Running cache performance verification...")
     print("=" * 50)
-    
+
     # Run the cache performance tests
     test_file = Path(__file__).parent / "tests" / "test_cache_performance.py"
-    
+
     try:
-        result = subprocess.run([
-            sys.executable, "-m", "pytest", 
-            str(test_file), 
-            "-v", "-s",  # -s to show print statements
-            "--tb=short"
-        ], check=True, capture_output=True, text=True)
-        
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "pytest",
+                str(test_file),
+                "-v",
+                "-s",  # -s to show print statements
+                "--tb=short",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
         print("STDOUT:")
         print(result.stdout)
-        
+
         if result.stderr:
             print("STDERR:")
             print(result.stderr)
-            
+
         print("\nCache performance verification completed successfully!")
         print("Caching provides measurable performance improvements.")
-        
+
     except subprocess.CalledProcessError as e:
         print("Cache performance test failed:")
         print("STDOUT:")
@@ -50,5 +59,6 @@ def main():
         print("pip install pytest")
         sys.exit(1)
 
+
 if __name__ == "__main__":
-    main() 
+    main()

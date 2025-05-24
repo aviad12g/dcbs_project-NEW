@@ -2,12 +2,13 @@
 Tests for configuration loading
 """
 
-import unittest
 import os
 import sys
 import tempfile
-import yaml
+import unittest
 from pathlib import Path
+
+import yaml
 
 # Add the parent directory to the path to enable imports
 sys.path.insert(0, str(Path(__file__).parent.parent))

@@ -9,16 +9,17 @@ This module generates visualization plots from evaluation results:
 4. DCBS latency scaling with top_n parameter
 """
 
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
 import argparse
 import os
-import yaml
-import matplotlib as mpl
-from matplotlib.gridspec import GridSpec
 from typing import Dict, List, Optional
+
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import yaml
+from matplotlib.gridspec import GridSpec
 
 # Set a better visual style
 plt.style.use("seaborn-v0_8-whitegrid")
@@ -28,18 +29,19 @@ sns.set_context("talk")
 
 class VisualizationError(Exception):
     """Exception raised for errors during visualization."""
+
     pass
 
 
 def load_config(config_path: str = "configs/study_config.yaml") -> Dict:
     """Load configuration from YAML file.
-    
+
     Args:
         config_path: Path to configuration file
-        
+
     Returns:
         Configuration dictionary
-        
+
     Raises:
         VisualizationError: If configuration file cannot be loaded
     """
@@ -48,22 +50,26 @@ def load_config(config_path: str = "configs/study_config.yaml") -> Dict:
             return yaml.safe_load(f)
     except FileNotFoundError:
         # Use default colors if config not found
-        return {"visualization": {"method_colors": {
-            "greedy": "#1f77b4",  # Blue
-            "top-p": "#ff7f0e",   # Orange
-            "dcbs": "#2ca02c",    # Green
-            "random": "#d62728",  # Red
-        }}}
+        return {
+            "visualization": {
+                "method_colors": {
+                    "greedy": "#1f77b4",  # Blue
+                    "top-p": "#ff7f0e",  # Orange
+                    "dcbs": "#2ca02c",  # Green
+                    "random": "#d62728",  # Red
+                }
+            }
+        }
     except Exception as e:
         raise VisualizationError(f"Error loading config: {e}")
 
 
 def get_method_colors(config: Dict) -> Dict[str, str]:
     """Extract method colors from configuration.
-    
+
     Args:
         config: Configuration dictionary
-        
+
     Returns:
         Dictionary mapping method names to color codes
     """
@@ -73,8 +79,8 @@ def get_method_colors(config: Dict) -> Dict[str, str]:
         # Return default colors if not found in config
         return {
             "greedy": "#1f77b4",  # Blue
-            "top-p": "#ff7f0e",   # Orange
-            "dcbs": "#2ca02c",    # Green
+            "top-p": "#ff7f0e",  # Orange
+            "dcbs": "#2ca02c",  # Green
             "random": "#d62728",  # Red
         }
 
@@ -420,10 +426,10 @@ def main():
         help="Output directory for plots",
     )
     parser.add_argument(
-        "--config", 
-        type=str, 
+        "--config",
+        type=str,
         default="configs/study_config.yaml",
-        help="Path to configuration file"
+        help="Path to configuration file",
     )
 
     args = parser.parse_args()
@@ -468,6 +474,7 @@ def main():
     except Exception as e:
         print(f"Unexpected error: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

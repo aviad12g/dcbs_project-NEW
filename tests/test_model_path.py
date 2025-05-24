@@ -2,10 +2,11 @@
 Test to ensure that the model path is correctly set to meta-llama/Llama-3.2-1B-Instruct.
 """
 
-import unittest
 import sys
-import torch
+import unittest
 from pathlib import Path
+
+import torch
 
 # Add the parent directory to the path to enable imports
 sys.path.insert(0, str(Path(__file__).parent.parent))

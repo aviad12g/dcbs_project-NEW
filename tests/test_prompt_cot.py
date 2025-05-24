@@ -2,10 +2,11 @@
 Test to ensure that "Let's think step by step" is included in the prompt.
 """
 
-import unittest
 import sys
-import torch
+import unittest
 from pathlib import Path
+
+import torch
 
 # Add the parent directory to the path to enable imports
 sys.path.insert(0, str(Path(__file__).parent.parent))

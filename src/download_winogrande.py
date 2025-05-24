@@ -3,10 +3,11 @@
 Download Winogrande 1.1 dataset from Hugging Face datasets and save as JSONL files.
 """
 
-import os
-import json
-from datasets import load_dataset
 import argparse
+import json
+import os
+
+from datasets import load_dataset
 
 
 def download_and_save_winogrande(output_dir: str, splits: list = None) -> None:

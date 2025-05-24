@@ -4,11 +4,12 @@ Generate a final summary of DCBS evaluation results in Markdown format.
 """
 
 import argparse
-import pandas as pd
-import os
-import json
 import datetime
-from typing import Dict, Any, Optional
+import json
+import os
+from typing import Any, Dict, Optional
+
+import pandas as pd
 
 
 def generate_summary(input_csv: str, out_file: str) -> None:
