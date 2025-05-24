@@ -1,0 +1,443 @@
+{
+  "config": {
+    "model": "meta-llama/Llama-3.2-1B",
+    "data_file": "data/arc_easy_processed.json",
+    "num_questions": 15,
+    "use_cot": true,
+    "dcbs_k": 8,
+    "dcbs_top_n": 50
+  },
+  "statistics": {
+    "greedy": {
+      "accuracy": 0.6666666666666666,
+      "correct": 10,
+      "total": 15,
+      "avg_time_ms": 1.9351641337076824
+    },
+    "top_p": {
+      "accuracy": 0.4,
+      "correct": 6,
+      "total": 15,
+      "avg_time_ms": 7.5527191162109375
+    },
+    "dcbs": {
+      "accuracy": 0.5333333333333333,
+      "correct": 8,
+      "total": 15,
+      "avg_time_ms": 91.19947751363118
+    },
+    "random": {
+      "accuracy": 0.26666666666666666,
+      "correct": 4,
+      "total": 15,
+      "avg_time_ms": 0.006008148193359375
+    }
+  },
+  "individual_results": [
+    {
+      "question_id": "arc_easy_1",
+      "question": "A student wants to know how much space a cube takes up. Which unit should the student use?",
+      "correct_answer": "B",
+      "results": {
+        "greedy": {
+          "predicted": "C",
+          "correct": false,
+          "time_ms": 1.3222694396972656
+        },
+        "top_p": {
+          "predicted": "C",
+          "correct": false,
+          "time_ms": 5.657672882080078
+        },
+        "dcbs": {
+          "predicted": "C",
+          "correct": false,
+          "time_ms": 1362.4694347381592
+        },
+        "random": {
+          "predicted": "D",
+          "correct": false,
+          "time_ms": 0.011444091796875
+        }
+      }
+    },
+    {
+      "question_id": "arc_easy_2",
+      "question": "Which characteristic do all living organisms share?",
+      "correct_answer": "A",
+      "results": {
+        "greedy": {
+          "predicted": "A",
+          "correct": true,
+          "time_ms": 1.241922378540039
+        },
+        "top_p": {
+          "predicted": "A",
+          "correct": true,
+          "time_ms": 5.570888519287109
+        },
+        "dcbs": {
+          "predicted": "A",
+          "correct": true,
+          "time_ms": 0.34618377685546875
+        },
+        "random": {
+          "predicted": "D",
+          "correct": false,
+          "time_ms": 0.0064373016357421875
+        }
+      }
+    },
+    {
+      "question_id": "arc_easy_3",
+      "question": "What happens when a solid is heated?",
+      "correct_answer": "B",
+      "results": {
+        "greedy": {
+          "predicted": "C",
+          "correct": false,
+          "time_ms": 1.3189315795898438
+        },
+        "top_p": {
+          "predicted": "C",
+          "correct": false,
+          "time_ms": 6.224632263183594
+        },
+        "dcbs": {
+          "predicted": "C",
+          "correct": false,
+          "time_ms": 0.36144256591796875
+        },
+        "random": {
+          "predicted": "D",
+          "correct": false,
+          "time_ms": 0.00476837158203125
+        }
+      }
+    },
+    {
+      "question_id": "arc_easy_4",
+      "question": "Which of these is a renewable energy source?",
+      "correct_answer": "C",
+      "results": {
+        "greedy": {
+          "predicted": "C",
+          "correct": true,
+          "time_ms": 1.3933181762695312
+        },
+        "top_p": {
+          "predicted": "A",
+          "correct": false,
+          "time_ms": 5.699396133422852
+        },
+        "dcbs": {
+          "predicted": "C",
+          "correct": true,
+          "time_ms": 0.5199909210205078
+        },
+        "random": {
+          "predicted": "A",
+          "correct": false,
+          "time_ms": 0.005245208740234375
+        }
+      }
+    },
+    {
+      "question_id": "arc_easy_5",
+      "question": "What is the main function of roots in plants?",
+      "correct_answer": "B",
+      "results": {
+        "greedy": {
+          "predicted": "A",
+          "correct": false,
+          "time_ms": 1.2769699096679688
+        },
+        "top_p": {
+          "predicted": "A",
+          "correct": false,
+          "time_ms": 6.055593490600586
+        },
+        "dcbs": {
+          "predicted": "A",
+          "correct": false,
+          "time_ms": 0.4100799560546875
+        },
+        "random": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 0.0057220458984375
+        }
+      }
+    },
+    {
+      "question_id": "arc_easy_6",
+      "question": "What is the primary source of energy for most ecosystems?",
+      "correct_answer": "A",
+      "results": {
+        "greedy": {
+          "predicted": "A",
+          "correct": true,
+          "time_ms": 1.3413429260253906
+        },
+        "top_p": {
+          "predicted": "A",
+          "correct": true,
+          "time_ms": 6.282806396484375
+        },
+        "dcbs": {
+          "predicted": "A",
+          "correct": true,
+          "time_ms": 0.44655799865722656
+        },
+        "random": {
+          "predicted": "A",
+          "correct": true,
+          "time_ms": 0.0057220458984375
+        }
+      }
+    },
+    {
+      "question_id": "arc_easy_7",
+      "question": "Which of these is an example of a chemical change?",
+      "correct_answer": "B",
+      "results": {
+        "greedy": {
+          "predicted": "C",
+          "correct": false,
+          "time_ms": 1.2714862823486328
+        },
+        "top_p": {
+          "predicted": "C",
+          "correct": false,
+          "time_ms": 6.132602691650391
+        },
+        "dcbs": {
+          "predicted": "C",
+          "correct": false,
+          "time_ms": 0.41985511779785156
+        },
+        "random": {
+          "predicted": "D",
+          "correct": false,
+          "time_ms": 0.0050067901611328125
+        }
+      }
+    },
+    {
+      "question_id": "arc_easy_8",
+      "question": "What force pulls objects toward Earth?",
+      "correct_answer": "B",
+      "results": {
+        "greedy": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 8.142471313476562
+        },
+        "top_p": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 17.485618591308594
+        },
+        "dcbs": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 0.3986358642578125
+        },
+        "random": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 0.0057220458984375
+        }
+      }
+    },
+    {
+      "question_id": "arc_easy_9",
+      "question": "Which layer of Earth is the thickest?",
+      "correct_answer": "B",
+      "results": {
+        "greedy": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 1.7960071563720703
+        },
+        "top_p": {
+          "predicted": "A",
+          "correct": false,
+          "time_ms": 9.071826934814453
+        },
+        "dcbs": {
+          "predicted": "A",
+          "correct": false,
+          "time_ms": 0.3647804260253906
+        },
+        "random": {
+          "predicted": "C",
+          "correct": false,
+          "time_ms": 0.0057220458984375
+        }
+      }
+    },
+    {
+      "question_id": "arc_easy_10",
+      "question": "What do plants need to make their own food?",
+      "correct_answer": "B",
+      "results": {
+        "greedy": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 1.556396484375
+        },
+        "top_p": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 7.15327262878418
+        },
+        "dcbs": {
+          "predicted": "C",
+          "correct": false,
+          "time_ms": 0.3743171691894531
+        },
+        "random": {
+          "predicted": "C",
+          "correct": false,
+          "time_ms": 0.0057220458984375
+        }
+      }
+    },
+    {
+      "question_id": "arc_easy_11",
+      "question": "Which gas do plants absorb from the air?",
+      "correct_answer": "B",
+      "results": {
+        "greedy": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 1.7163753509521484
+        },
+        "top_p": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 7.808685302734375
+        },
+        "dcbs": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 0.4010200500488281
+        },
+        "random": {
+          "predicted": "C",
+          "correct": false,
+          "time_ms": 0.0054836273193359375
+        }
+      }
+    },
+    {
+      "question_id": "arc_easy_12",
+      "question": "What happens to water when it freezes?",
+      "correct_answer": "B",
+      "results": {
+        "greedy": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 1.6562938690185547
+        },
+        "top_p": {
+          "predicted": "A",
+          "correct": false,
+          "time_ms": 7.817983627319336
+        },
+        "dcbs": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 0.4131793975830078
+        },
+        "random": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 0.0059604644775390625
+        }
+      }
+    },
+    {
+      "question_id": "arc_easy_13",
+      "question": "Which tool would best measure the temperature of water?",
+      "correct_answer": "B",
+      "results": {
+        "greedy": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 1.6150474548339844
+        },
+        "top_p": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 7.263898849487305
+        },
+        "dcbs": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 0.34308433532714844
+        },
+        "random": {
+          "predicted": "D",
+          "correct": false,
+          "time_ms": 0.0057220458984375
+        }
+      }
+    },
+    {
+      "question_id": "arc_easy_14",
+      "question": "What type of energy does a battery store?",
+      "correct_answer": "B",
+      "results": {
+        "greedy": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 1.7037391662597656
+        },
+        "top_p": {
+          "predicted": "A",
+          "correct": false,
+          "time_ms": 7.116079330444336
+        },
+        "dcbs": {
+          "predicted": "B",
+          "correct": true,
+          "time_ms": 0.3554821014404297
+        },
+        "random": {
+          "predicted": "C",
+          "correct": false,
+          "time_ms": 0.005245208740234375
+        }
+      }
+    },
+    {
+      "question_id": "arc_easy_15",
+      "question": "Which of these animals is a mammal?",
+      "correct_answer": "B",
+      "results": {
+        "greedy": {
+          "predicted": "C",
+          "correct": false,
+          "time_ms": 1.6748905181884766
+        },
+        "top_p": {
+          "predicted": "C",
+          "correct": false,
+          "time_ms": 7.9498291015625
+        },
+        "dcbs": {
+          "predicted": "C",
+          "correct": false,
+          "time_ms": 0.3681182861328125
+        },
+        "random": {
+          "predicted": "D",
+          "correct": false,
+          "time_ms": 0.006198883056640625
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,272 @@
+[
+  {
+    "id": "arc_easy_1",
+    "question": "A student wants to know how much space a cube takes up. Which unit should the student use?",
+    "options": [
+      "square inches",
+      "cubic inches",
+      "inches",
+      "ounces"
+    ],
+    "choice_labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correct_option": "2",
+    "answer_key": "B"
+  },
+  {
+    "id": "arc_easy_2",
+    "question": "Which characteristic do all living organisms share?",
+    "options": [
+      "They reproduce",
+      "They move",
+      "They make sounds",
+      "They eat meat"
+    ],
+    "choice_labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correct_option": "1",
+    "answer_key": "A"
+  },
+  {
+    "id": "arc_easy_3",
+    "question": "What happens when a solid is heated?",
+    "options": [
+      "It becomes a gas",
+      "It melts",
+      "It freezes",
+      "It evaporates"
+    ],
+    "choice_labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correct_option": "2",
+    "answer_key": "B"
+  },
+  {
+    "id": "arc_easy_4",
+    "question": "Which of these is a renewable energy source?",
+    "options": [
+      "Coal",
+      "Oil",
+      "Solar",
+      "Natural gas"
+    ],
+    "choice_labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correct_option": "3",
+    "answer_key": "C"
+  },
+  {
+    "id": "arc_easy_5",
+    "question": "What is the main function of roots in plants?",
+    "options": [
+      "To make food",
+      "To absorb water",
+      "To produce flowers",
+      "To release oxygen"
+    ],
+    "choice_labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correct_option": "2",
+    "answer_key": "B"
+  },
+  {
+    "id": "arc_easy_6",
+    "question": "What is the primary source of energy for most ecosystems?",
+    "options": [
+      "The sun",
+      "Water",
+      "Soil",
+      "Air"
+    ],
+    "choice_labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correct_option": "1",
+    "answer_key": "A"
+  },
+  {
+    "id": "arc_easy_7",
+    "question": "Which of these is an example of a chemical change?",
+    "options": [
+      "Ice melting",
+      "Wood burning",
+      "Glass breaking",
+      "Water boiling"
+    ],
+    "choice_labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correct_option": "2",
+    "answer_key": "B"
+  },
+  {
+    "id": "arc_easy_8",
+    "question": "What force pulls objects toward Earth?",
+    "options": [
+      "Magnetism",
+      "Gravity",
+      "Friction",
+      "Electricity"
+    ],
+    "choice_labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correct_option": "2",
+    "answer_key": "B"
+  },
+  {
+    "id": "arc_easy_9",
+    "question": "Which layer of Earth is the thickest?",
+    "options": [
+      "Crust",
+      "Mantle",
+      "Outer core",
+      "Inner core"
+    ],
+    "choice_labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correct_option": "2",
+    "answer_key": "B"
+  },
+  {
+    "id": "arc_easy_10",
+    "question": "What do plants need to make their own food?",
+    "options": [
+      "Soil and water",
+      "Sunlight and carbon dioxide",
+      "Oxygen and nitrogen",
+      "Heat and minerals"
+    ],
+    "choice_labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correct_option": "2",
+    "answer_key": "B"
+  },
+  {
+    "id": "arc_easy_11",
+    "question": "Which gas do plants absorb from the air?",
+    "options": [
+      "Oxygen",
+      "Carbon dioxide",
+      "Nitrogen",
+      "Hydrogen"
+    ],
+    "choice_labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correct_option": "2",
+    "answer_key": "B"
+  },
+  {
+    "id": "arc_easy_12",
+    "question": "What happens to water when it freezes?",
+    "options": [
+      "It becomes a gas",
+      "It becomes a solid",
+      "It disappears",
+      "It becomes warmer"
+    ],
+    "choice_labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correct_option": "2",
+    "answer_key": "B"
+  },
+  {
+    "id": "arc_easy_13",
+    "question": "Which tool would best measure the temperature of water?",
+    "options": [
+      "Ruler",
+      "Thermometer",
+      "Scale",
+      "Timer"
+    ],
+    "choice_labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correct_option": "2",
+    "answer_key": "B"
+  },
+  {
+    "id": "arc_easy_14",
+    "question": "What type of energy does a battery store?",
+    "options": [
+      "Heat energy",
+      "Chemical energy",
+      "Light energy",
+      "Sound energy"
+    ],
+    "choice_labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correct_option": "2",
+    "answer_key": "B"
+  },
+  {
+    "id": "arc_easy_15",
+    "question": "Which of these animals is a mammal?",
+    "options": [
+      "Shark",
+      "Whale",
+      "Turtle",
+      "Fish"
+    ],
+    "choice_labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "correct_option": "2",
+    "answer_key": "B"
+  }
+]

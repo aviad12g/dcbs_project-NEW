@@ -1,0 +1,142 @@
+[
+  {
+    "id": "wino_0",
+    "sentence": "Patricia decided to buy Felicia dinner because they had been through a lot and _ just inherited some money.",
+    "option1": "Patricia",
+    "option2": "Felicia",
+    "correct_option": "1"
+  },
+  {
+    "id": "wino_1",
+    "sentence": "The clothing in the north was warmer than the clothing in the south because there was more snow in the _ .",
+    "option1": "south",
+    "option2": "north",
+    "correct_option": "2"
+  },
+  {
+    "id": "wino_2",
+    "sentence": "Timmy bought a transporter for his cat so he could take him on the plane but the _ was too small.",
+    "option1": "transporter",
+    "option2": "plane",
+    "correct_option": "1"
+  },
+  {
+    "id": "wino_3",
+    "sentence": "It was easier for the diner to follow their budget than the food truck because the _ had more money to spend.",
+    "option1": "diner",
+    "option2": "food truck",
+    "correct_option": "1"
+  },
+  {
+    "id": "wino_4",
+    "sentence": "John could not hear his alarm clock when he was sleeping with a headphone on his head because the _ is closer.",
+    "option1": "headphone",
+    "option2": "clock",
+    "correct_option": "1"
+  },
+  {
+    "id": "wino_5",
+    "sentence": "Happiness was most important to Nick but money was most important to William. _ valued a good life.",
+    "option1": "Nick",
+    "option2": "William",
+    "correct_option": "1"
+  },
+  {
+    "id": "wino_6",
+    "sentence": "Carrie posted their sofa for sale on Craigslist, and had received an offer they had to decline because the _ is valuable.",
+    "option1": "offer",
+    "option2": "sofa",
+    "correct_option": "2"
+  },
+  {
+    "id": "wino_7",
+    "sentence": "When the car was brought up into the shop, the brake was replaced when the wheel wasn't, since the _ was fixed.",
+    "option1": "brake",
+    "option2": "wheel",
+    "correct_option": "2"
+  },
+  {
+    "id": "wino_8",
+    "sentence": "Tanya was the most powerful person in the world, and Sarah admired them, because _ was something to aspire to.",
+    "option1": "Tanya",
+    "option2": "Sarah",
+    "correct_option": "1"
+  },
+  {
+    "id": "wino_9",
+    "sentence": "Sarah was quickly promoted to manager over Kayla, because _ excelled at angering other people.",
+    "option1": "Sarah",
+    "option2": "Kayla",
+    "correct_option": "2"
+  },
+  {
+    "id": "wino_10",
+    "sentence": "Lindsey did not know how to make a good impression for an interview with Tanya. _ was surprised when she did not get the job.",
+    "option1": "Lindsey",
+    "option2": "Tanya",
+    "correct_option": "1"
+  },
+  {
+    "id": "wino_11",
+    "sentence": "Jen made charcoal to use as a mask and as toothpaste, but using the _ made her skin very black.",
+    "option1": "mask",
+    "option2": "toothpaste",
+    "correct_option": "1"
+  },
+  {
+    "id": "wino_12",
+    "sentence": "Jan planted her herbs in small growing bags, but she worried that the _ would be too shallow for them to put down roots.",
+    "option1": "herbs",
+    "option2": "bags",
+    "correct_option": "2"
+  },
+  {
+    "id": "wino_13",
+    "sentence": "Samantha told Lindsey to be careful with the porcelain doll; when she ignored her and dropped the doll, _ was very sorry.",
+    "option1": "Samantha",
+    "option2": "Lindsey",
+    "correct_option": "2"
+  },
+  {
+    "id": "wino_14",
+    "sentence": "The students were at their desks taking tests with pencils, they used the _ to hold the papers.",
+    "option1": "desks",
+    "option2": "pencils",
+    "correct_option": "1"
+  },
+  {
+    "id": "wino_15",
+    "sentence": "Benjamin thought Android was the superior phone system but Ian thought IOS was better. _ bought a new Note 9 from Verizon.",
+    "option1": "Benjamin",
+    "option2": "Ian",
+    "correct_option": "1"
+  },
+  {
+    "id": "wino_16",
+    "sentence": "Police arrested Maria but let Cynthia go as _ had some paint on their hand from the spray paint used for graffiti.",
+    "option1": "Maria",
+    "option2": "Cynthia",
+    "correct_option": "1"
+  },
+  {
+    "id": "wino_17",
+    "sentence": "Megan liked to read a book good more than Samantha because _ liked the peace and quiet.",
+    "option1": "Megan",
+    "option2": "Samantha",
+    "correct_option": "1"
+  },
+  {
+    "id": "wino_18",
+    "sentence": "Patricia teaches Kindergarten students, Christine teaches High School students therefore _ reads aloud a lot.",
+    "option1": "Patricia",
+    "option2": "Christine",
+    "correct_option": "1"
+  },
+  {
+    "id": "wino_19",
+    "sentence": "During the rescue mission, Maria pulled Rebecca away from the minefield since _ was a civilian.",
+    "option1": "Maria",
+    "option2": "Rebecca",
+    "correct_option": "2"
+  }
+]

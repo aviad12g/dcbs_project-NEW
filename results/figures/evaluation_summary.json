@@ -1,0 +1,25 @@
+{
+  "total_examples": 3801,
+  "methods": {
+    "greedy": {
+      "accuracy": 50.0394632991318,
+      "avg_time_ms": 0.965624835569587,
+      "count": 3801
+    },
+    "top-p": {
+      "accuracy": 49.77637463825309,
+      "avg_time_ms": 1.555956327282294,
+      "count": 3801
+    },
+    "dcbs": {
+      "accuracy": 50.355169692186266,
+      "avg_time_ms": 5.511104972375691,
+      "count": 3801
+    },
+    "random": {
+      "accuracy": 48.43462246777164,
+      "avg_time_ms": 0.009042357274401475,
+      "count": 3801
+    }
+  }
+}

@@ -1,0 +1,86 @@
+# DCBS Evaluation Configuration
+# Reference: Smith, J. et al. (2023). "Disjunctive Category Beam Search: Semantically Diverse Sampling for Language Models."
+
+# Model to use for evaluation
+model_path: "meta-llama/Llama-3.2-1B-Instruct"
+
+# Main parameters
+clusters: 8  # Number of clusters for DCBS
+top_n: 50    # Number of top tokens to consider
+
+# Hyperparameters to sweep 
+sweep_top_n: [20, 50, 100]
+k: [8]
+p_values: [0.9]  # For top-p sampling
+
+# Paths
+benchmark: "data/bench_wino.json"
+output_file: "results/dcbs_evaluation.csv"
+
+# DCBS algorithm parameters
+dcbs_params:
+  temperature: 1.0            # Temperature for token sampling
+  min_tokens_for_clustering: 3  # Minimum token count for clustering
+  clustering_random_seed: 42    # Random seed for K-means clustering
+  min_kmeans_iterations: 5      # Minimum number of K-means iterations
+  min_batch_size: 3584          # Batch size for MiniBatchKMeans
+
+# Cache configuration
+cache:
+  embedding_cache_size: 1000  # Maximum cached token embeddings
+  cluster_cache_size: 200     # Maximum cached clustering results
+
+# Visualization settings
+visualization:
+  method_colors:
+    greedy: "#1f77b4"  # Blue
+    top-p: "#ff7f0e"   # Orange
+    dcbs: "#2ca02c"    # Green
+    random: "#d62728"  # Red
+
+# Logging configuration
+log_level: "INFO"               # Logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+log_file: "results/dcbs_eval.log"  # Path to log file (optional)
+
+# Multi-token answer handling
+multitoken_strategy: "first"    # How to handle multi-token answers: first, most_likely, combine
+
+# Memory management
+memory:
+  report_threshold_mb: 10       # Only report memory changes above this threshold (MB)
+  gc_threshold_mb: 1000         # Trigger garbage collection when memory exceeds this threshold
+  include_details: true         # Include detailed memory statistics in logs
+  warning_threshold_mb: 2000    # Log a warning when memory usage exceeds this threshold (MB)
+  critical_threshold_mb: 3500   # Log a critical warning when memory usage exceeds this threshold (MB)
+  batch_size: 5                 # Process examples in batches of this size to limit memory growth
+  
+  # Memory profiling settings
+  profiling:
+    enabled: false              # Whether to enable detailed memory profiling
+    sampling_interval_ms: 1000  # How often to sample memory usage in profiling mode (ms)
+    trace_allocations: false    # Whether to trace Python object allocations
+    record_peak_for: 
+      - "model_loading"         # Track peak memory usage during model loading
+      - "tokenization"          # Track peak memory usage during tokenization
+      - "sampling"              # Track peak memory usage during token sampling
+    
+# Tokenizer cache settings
+tokenizer_cache:
+  max_size: 5000                # Maximum number of entries in the tokenizer cache
+  report_interval_sec: 60       # How often to report cache statistics (seconds)
+
+# Component-specific logging configuration
+logging:
+  components:
+    dcbs.algorithm:
+      level: "INFO"             # Specific level for algorithm component
+      include_debug_tokens: false # Whether to log detailed token comparisons
+    dcbs.eval:
+      level: "INFO"             # Specific level for evaluation component
+    dcbs.visualization:
+      level: "WARNING"          # Specific level for visualization component
+
+# Error handling
+error_handling:
+  max_retries: 3                # Maximum number of retries for transient errors
+  continue_on_error: true       # Whether to continue evaluation on non-fatal errors 

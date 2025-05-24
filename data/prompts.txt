@@ -1,0 +1,10 @@
+Explain how DCBS sampling works in language models
+Compare greedy sampling to DCBS sampling in terms of diversity and quality
+Write a short story about a robot learning to be creative
+What are the effects of different cluster sizes (k) on DCBS output?
+Describe three ways to improve text generation diversity
+Explain the difference between beam search and DCBS
+What are the computational trade-offs of using DCBS vs traditional sampling?
+How does DCBS compare to nucleus sampling?
+Generate a haiku about artificial intelligence
+Explain step by step how to implement DCBS in PyTorch 
