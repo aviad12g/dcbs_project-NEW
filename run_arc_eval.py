@@ -18,6 +18,8 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 # Remove sys.path.append lines for clean imports
 
+HF_AVAILABLE = True  # Flag to indicate if HuggingFace transformers are available
+
 try:
     import numpy as np
     import torch
@@ -41,6 +43,7 @@ except ImportError as e:
     print(f"Import error: {e}")
     print("Make sure all required packages are installed")
     print("Run: pip install -r requirements.txt")
+    HF_AVAILABLE = False  # Set to False if imports fail
     exit(1)
 
 
