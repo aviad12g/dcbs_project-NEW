@@ -347,10 +347,10 @@ All experiments use fixed random seeds:
 
 | Method | Deterministic | Semantic-Aware | Computational Cost |
 |--------|---------------|----------------|-------------------|
-| Greedy | ✓ | ✗ | O(V) |
-| Top-p | ✗ | ✗ | O(V log V) |
-| Random | ✗ | ✗ | O(1) |
-| DCBS | ✓ | ✓ | O(n × d × k) |
+| Greedy | Yes | No | O(V) |
+| Top-p | No | No | O(V log V) |
+| Random | No | No | O(1) |
+| DCBS | Yes | Yes | O(n × d × k) |
 
 ### 8.3 Performance Metrics
 

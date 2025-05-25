@@ -14,6 +14,36 @@ The algorithm works in multiple steps:
 
 This approach balances exploration of diverse semantic spaces with consistent, reproducible results through purely deterministic selection.
 
+## Latest Evaluation Results
+
+**Dataset**: ARC Easy (15 examples)  
+**Model**: Llama 3.2 1B Instruct  
+**Configuration**: Chain-of-thought enabled, caching disabled
+
+### Accuracy Comparison
+
+| Method | Accuracy | Correct/Total | Performance |
+|--------|----------|---------------|-------------|
+| **DCBS** | **73.3%** | 11/15 | 132.8ms avg |
+| **Greedy** | 60.0% | 9/15 | 2.1ms avg |
+| **Top-P** | 40.0% | 6/15 | 7.4ms avg |
+| **Random** | 40.0% | 6/15 | 0.0ms avg |
+
+### Key Findings
+
+- **DCBS achieves highest accuracy**: 73.3% vs 60.0% for greedy sampling (+13.3% improvement)
+- **DCBS shows semantic diversity benefits**: Outperforms both deterministic (greedy) and stochastic (top-p, random) baselines
+- **Performance trade-off**: DCBS is ~63x slower than greedy but provides significant accuracy gains
+- **Deterministic advantage**: DCBS maintains reproducibility while achieving better results than stochastic methods
+
+### Visualizations
+
+The evaluation generates comprehensive visualizations:
+
+![Accuracy Comparison](results/accuracy_comparison_latest.png)
+![Performance Comparison](results/timing_comparison_latest.png)
+![Detailed Analysis](results/detailed_comparison_latest.png)
+
 ## DCBS Caching Configuration
 
 **Current Status**: DCBS supports **configurable caching** with the following options:

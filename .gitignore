@@ -46,4 +46,8 @@ ENV/
 
 # OS-specific
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Data and results directories (generated content)
+data/
+results/ 

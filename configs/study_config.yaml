@@ -14,7 +14,7 @@ k: [8]
 p_values: [0.9]  # For top-p sampling
 
 # Paths
-benchmark: "data/bench_wino.json"
+benchmark: "data/arc_easy_processed.json"
 output_file: "results/dcbs_evaluation.csv"
 
 # DCBS algorithm parameters

@@ -1,8 +1,8 @@
 """
-Performance optimizations for DCBS in high-throughput scenarios.
+Performance optimizations for DCBS sampling.
 
-This module provides optimized implementations for batch processing,
-GPU acceleration, and memory-efficient operations.
+This module provides batch processing, parallel execution, and memory-efficient
+implementations for high-throughput DCBS operations.
 """
 
 import concurrent.futures
@@ -16,7 +16,7 @@ import torch
 from sklearn.cluster import MiniBatchKMeans
 
 from .cache_manager import CacheConfig, DCBSCacheManager
-from .sampler import SamplingContext
+from .samplers.base import SamplingContext
 
 
 @dataclass

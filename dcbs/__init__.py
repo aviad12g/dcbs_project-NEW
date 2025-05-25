@@ -21,7 +21,7 @@ from .clustering import (
     TopNCandidateSelector,
 )
 from .optimizations import BatchDCBSProcessor, MemoryEfficientDCBS, OptimizationConfig
-from .sampler import (
+from .samplers import (
     DCBSSampler,
     GreedySampler,
     RandomSampler,

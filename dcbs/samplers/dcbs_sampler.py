@@ -1,128 +1,34 @@
 """
-Sampler interface and implementations for different token sampling strategies.
+Deterministic Category Based Sampling implementation.
 
-This module provides a unified interface for various sampling methods including
-greedy, top-p, random, and DCBS (Deterministic Category Based Sampling).
+This module provides DCBS which combines semantic clustering of token embeddings
+with deterministic selection for reproducible yet diverse sampling.
 """
 
-import random
 import os
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import List, Optional, Set, Union
+from typing import List, Optional, Set
 
 import numpy as np
 import torch
 
-from .cache_manager import CacheConfig, get_cache_manager
-from .clustering import (
+from .base import Sampler, SamplingContext, PROB_EPSILON
+from ..cache_manager import CacheConfig, get_cache_manager
+from ..clustering import (
     CandidateSelector,
     KMeansClusterer,
     TokenClusterer,
     TopNCandidateSelector,
 )
 
-# Small value to prevent division by zero
-PROB_EPSILON = 1e-6
-
-
-@dataclass
-class SamplingContext:
-    """Context object containing model-specific information for sampling."""
-
-    embedding_layer: Optional[torch.nn.Embedding] = None
-    tokenizer: Optional[object] = None
-    device: Optional[torch.device] = None
-
-
-class Sampler(ABC):
-    """Abstract base class for token sampling strategies."""
-
-    @abstractmethod
-    def sample(
-        self,
-        logits: torch.Tensor,
-        filter_tokens: Optional[Set[int]] = None,
-        context: Optional[SamplingContext] = None,
-    ) -> int:
-        pass
-
-
-class GreedySampler(Sampler):
-    """Greedy sampling - always selects the highest probability token."""
-
-    def sample(
-        self,
-        logits: torch.Tensor,
-        filter_tokens: Optional[Set[int]] = None,
-        context: Optional[SamplingContext] = None,
-    ) -> int:
-        if filter_tokens is not None and len(filter_tokens) > 0:
-            # Create mask for allowed tokens (more intuitive logic)
-            allowed_mask = torch.full_like(logits, float("-inf"))
-            allowed_indices = list(filter_tokens)
-            allowed_mask[allowed_indices] = logits[allowed_indices]
-            return allowed_mask.argmax().item()
-
-        return logits.argmax().item()
-
-
-class TopPSampler(Sampler):
-    """Top-p (nucleus) sampling - samples from top tokens until cumulative probability >= p."""
-
-    def __init__(self, p: float = 0.9):
-        self.p = p
-
-    def sample(
-        self,
-        logits: torch.Tensor,
-        filter_tokens: Optional[Set[int]] = None,
-        context: Optional[SamplingContext] = None,
-    ) -> int:
-        # Apply filtering first if provided
-        if filter_tokens is not None and len(filter_tokens) > 0:
-            filtered_logits = torch.full_like(logits, float("-inf"))
-            allowed_indices = list(filter_tokens)
-            filtered_logits[allowed_indices] = logits[allowed_indices]
-            logits = filtered_logits
-
-        # Sort logits in descending order
-        sorted_logits, sorted_indices = torch.sort(logits, descending=True)
-        cumulative_probs = torch.cumsum(torch.softmax(sorted_logits, dim=-1), dim=-1)
-
-        # Remove tokens with cumulative probability above threshold
-        sorted_indices_to_remove = cumulative_probs > self.p
-        sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
-        sorted_indices_to_remove[..., 0] = 0
-
-        indices_to_remove = sorted_indices_to_remove.scatter(
-            dim=-1, index=sorted_indices, src=sorted_indices_to_remove
-        )
-        filtered_logits = logits.clone()
-        filtered_logits[indices_to_remove] = float("-inf")
-
-        # Sample from filtered distribution
-        token_id = torch.multinomial(torch.softmax(filtered_logits, dim=-1), 1).item()
-        return token_id
-
-
-class RandomSampler(Sampler):
-    """Random sampling - uniformly samples from allowed tokens."""
-
-    def sample(
-        self,
-        logits: torch.Tensor,
-        filter_tokens: Optional[Set[int]] = None,
-        context: Optional[SamplingContext] = None,
-    ) -> int:
-        if filter_tokens is not None and len(filter_tokens) > 0:
-            return random.choice(list(filter_tokens))
-        else:
-            return random.randint(0, logits.shape[-1] - 1)
-
 
 class DCBSSampler(Sampler):
-    """Deterministic Category Based Sampling using clustering abstractions."""
+    """
+    Deterministic Category Based Sampling using clustering abstractions.
+    
+    This sampling method clusters token embeddings into semantic categories,
+    selects the cluster with highest probability mass, then chooses the
+    highest probability token from that cluster. All selections are deterministic.
+    """
 
     def __init__(
         self,
@@ -134,6 +40,18 @@ class DCBSSampler(Sampler):
         enable_cluster_history: Optional[bool] = None,
         debug_output_file: Optional[str] = None,
     ):
+        """
+        Initialize the DCBS sampler.
+        
+        Args:
+            clusterer: Token clustering strategy
+            candidate_selector: Candidate token selection strategy
+            cache_config: Optional cache configuration
+            enable_caching: Whether to enable caching (default: True)
+            debug_mode: Enable debug logging (default: False)
+            enable_cluster_history: Track cluster decisions (default: False)
+            debug_output_file: File path for debug output
+        """
         self.clusterer = clusterer
         self.candidate_selector = candidate_selector
         self.enable_caching = enable_caching
@@ -143,6 +61,7 @@ class DCBSSampler(Sampler):
             if cache_config:
                 config = CacheConfig(**cache_config)
             else:
+                # Default cache configuration with reasonable limits
                 config = CacheConfig(
                     embedding_cache_size=1000, cluster_cache_size=200, enable_metrics=True
                 )
@@ -151,7 +70,7 @@ class DCBSSampler(Sampler):
             self.cache_manager = None
 
         # DCBS algorithm parameters
-        self.min_tokens_for_clustering = 3
+        self.min_tokens_for_clustering = 3  # Minimum tokens needed for clustering
 
         # Configurable debugging features
         self._debug_mode = self._resolve_debug_mode(debug_mode)
@@ -163,6 +82,7 @@ class DCBSSampler(Sampler):
         self._debug_stats = {"total_samples": 0, "clustering_calls": 0, "cache_hits": 0}
 
     def _resolve_debug_mode(self, debug_mode: Optional[bool]) -> bool:
+        """Resolve debug mode from parameter or environment variable."""
         if debug_mode is not None:
             return debug_mode
         
@@ -177,6 +97,7 @@ class DCBSSampler(Sampler):
         return False
     
     def _resolve_cluster_history(self, enable_cluster_history: Optional[bool]) -> bool:
+        """Resolve cluster history tracking from parameter or environment variable."""
         if enable_cluster_history is not None:
             return enable_cluster_history
         
@@ -196,6 +117,20 @@ class DCBSSampler(Sampler):
         enable_caching: bool = True, debug_mode: Optional[bool] = None, 
         enable_cluster_history: Optional[bool] = None
     ):
+        """
+        Create a DCBS sampler with default clustering and candidate selection.
+        
+        Args:
+            k: Number of clusters for K-means (default: 8)
+            top_n: Number of top tokens to consider (default: 50)
+            cache_config: Optional cache configuration
+            enable_caching: Whether to enable caching
+            debug_mode: Enable debug logging
+            enable_cluster_history: Track cluster decisions
+            
+        Returns:
+            Configured DCBSSampler instance
+        """
         clusterer = KMeansClusterer(k=k)
         candidate_selector = TopNCandidateSelector(top_n=top_n)
         return cls(clusterer, candidate_selector, cache_config, enable_caching, 
@@ -203,14 +138,29 @@ class DCBSSampler(Sampler):
 
     @classmethod
     def create_no_cache(cls, k: int = 8, top_n: int = 50, **kwargs):
+        """Create a DCBS sampler with caching disabled."""
         return cls.create_default(k=k, top_n=top_n, enable_caching=False, **kwargs)
 
     def sample(
         self,
         logits: torch.Tensor,
-        context: SamplingContext,
         filter_tokens: Optional[Set[int]] = None,
+        context: Optional[SamplingContext] = None,
     ) -> int:
+        """
+        Sample a token using DCBS algorithm.
+        
+        Args:
+            logits: Token logits from the model
+            filter_tokens: Optional set of allowed token IDs
+            context: Sampling context with embedding layer (required for DCBS)
+            
+        Returns:
+            Selected token ID
+            
+        Raises:
+            ValueError: If context or embedding_layer is missing
+        """
         if context is None or context.embedding_layer is None:
             raise ValueError("DCBS requires a SamplingContext with embedding_layer")
 
@@ -235,12 +185,14 @@ class DCBSSampler(Sampler):
         return self._dcbs_selection(logits, candidate_ids, embedding, filter_tokens)
 
     def _simple_selection(self, logits: torch.Tensor, candidate_ids: list) -> int:
+        """Select best token when clustering is not applicable."""
         candidate_logits = logits[candidate_ids]
         probs = torch.softmax(candidate_logits, dim=0)
         selected_idx = torch.argmax(probs).item()
         return candidate_ids[selected_idx]
 
     def _has_invalid_logits(self, logits: torch.Tensor, candidate_ids: list) -> bool:
+        """Check if candidate logits contain invalid values."""
         candidate_logits = logits[candidate_ids]
         return (
             torch.isinf(candidate_logits).all() or torch.isnan(candidate_logits).any()
@@ -249,6 +201,7 @@ class DCBSSampler(Sampler):
     def _fallback_selection(
         self, logits: torch.Tensor, filter_tokens: Optional[Set[int]]
     ) -> int:
+        """Fallback selection when DCBS cannot be applied."""
         if filter_tokens:
             filter_list = list(filter_tokens)
             filter_logits = logits[filter_list]
@@ -264,6 +217,7 @@ class DCBSSampler(Sampler):
         embedding: torch.nn.Embedding,
         filter_tokens: Optional[Set[int]],
     ) -> int:
+        """Main DCBS algorithm implementation."""
         self._debug_stats["total_samples"] += 1
         
         candidate_ids_tensor = torch.tensor(candidate_ids, device=logits.device)
@@ -303,6 +257,7 @@ class DCBSSampler(Sampler):
         return selected_token
 
     def _normalize_embeddings(self, embeddings: torch.Tensor) -> torch.Tensor:
+        """Normalize embeddings to unit vectors."""
         norm = torch.norm(embeddings, p=2, dim=1, keepdim=True)
         return embeddings / norm.clamp(min=PROB_EPSILON)
 
@@ -313,6 +268,7 @@ class DCBSSampler(Sampler):
         labels: np.ndarray,
         filter_tokens: Optional[Set[int]],
     ) -> int:
+        """Select token from clusters using deterministic greedy approach."""
         # Group tokens by cluster and calculate probabilities
         clusters = self._group_by_clusters(labels, self.clusterer.num_clusters)
         cluster_probs = self._calculate_cluster_probabilities(clusters, candidate_probs)
@@ -332,6 +288,7 @@ class DCBSSampler(Sampler):
     def _group_by_clusters(
         self, labels: np.ndarray, num_clusters: int
     ) -> List[List[int]]:
+        """Group token indices by their cluster labels."""
         clusters = [[] for _ in range(num_clusters)]
         for i, label in enumerate(labels):
             clusters[label].append(i)
@@ -340,6 +297,7 @@ class DCBSSampler(Sampler):
     def _calculate_cluster_probabilities(
         self, clusters: List[List[int]], candidate_probs: torch.Tensor
     ) -> List[float]:
+        """Calculate total probability mass for each cluster."""
         return [
             candidate_probs[cluster].sum().item() if cluster else 0.0
             for cluster in clusters
@@ -352,6 +310,7 @@ class DCBSSampler(Sampler):
         candidate_probs: torch.Tensor,
         filter_tokens: Optional[Set[int]],
     ) -> int:
+        """Select highest probability token from the chosen cluster."""
         cluster_token_probs = candidate_probs[cluster_token_indices]
 
         # Apply filtering within cluster if needed
@@ -377,6 +336,7 @@ class DCBSSampler(Sampler):
     def _get_cached_embeddings(
         self, token_ids: torch.Tensor, embedding: torch.nn.Embedding
     ) -> torch.Tensor:
+        """Get token embeddings with optional caching."""
         if not self.enable_caching or self.cache_manager is None:
             # Direct embedding lookup without caching
             with torch.no_grad():
@@ -414,6 +374,7 @@ class DCBSSampler(Sampler):
         return result
 
     def _get_cached_clustering(self, embeddings: torch.Tensor) -> np.ndarray:
+        """Get clustering results with optional caching."""
         if not self.enable_caching or self.cache_manager is None:
             return self.clusterer.cluster(embeddings)
         
@@ -497,4 +458,4 @@ class DCBSSampler(Sampler):
         """Clear debug data and statistics."""
         if self._cluster_history:
             self._cluster_history.clear()
-        self._debug_stats = {"total_samples": 0, "clustering_calls": 0, "cache_hits": 0}
+        self._debug_stats = {"total_samples": 0, "clustering_calls": 0, "cache_hits": 0} 

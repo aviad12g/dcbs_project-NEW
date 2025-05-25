@@ -1,7 +1,6 @@
 """
-Unit tests for DCBS evaluation framework.
+Test suite for the DCBS evaluation framework.
 
-This package contains tests for the Disjunctive Category Beam Search (DCBS)
-evaluation framework, including functionality tests, performance benchmarks,
-and regression tests.
+This package contains comprehensive unit tests for all components
+of the DCBS evaluation system.
 """
