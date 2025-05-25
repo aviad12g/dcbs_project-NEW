@@ -42,6 +42,7 @@ class EvaluationConfig:
     include_cot: bool = True
     log_level: str = "INFO"
     load_in_4bit: bool = False
+    enable_caching: bool = True  # NEW: Control DCBS caching
 
 
 @dataclass
@@ -70,7 +71,6 @@ class ModelManager:
         self.context = None
 
     def load_model(self) -> Tuple[object, object, SamplingContext]:
-        """Load model and tokenizer, return context for samplers."""
         logger.info(f"Loading model: {self.model_name}")
 
         # Set dtype based on CUDA support
@@ -123,7 +123,6 @@ class ChatTemplateManager:
 
     @classmethod
     def setup_chat_template(cls, tokenizer, model_name: str) -> None:
-        """Setup appropriate chat template for the model."""
         # Check if model already has a template
         if hasattr(tokenizer, "chat_template") and tokenizer.chat_template is not None:
             logger.info("Using existing chat template")
@@ -175,7 +174,6 @@ class ChatTemplateManager:
 
     @staticmethod
     def validate_template(tokenizer, model_name: str) -> bool:
-        """Validate that the chat template is appropriate for the model."""
         try:
             test_messages = [{"role": "user", "content": "Test message"}]
             result = tokenizer.apply_chat_template(
@@ -192,11 +190,12 @@ class SamplerFactory:
 
     @staticmethod
     def create_samplers(config: EvaluationConfig) -> Dict[str, object]:
-        """Create all sampler instances with given configuration."""
         return {
             "greedy": GreedySampler(),
             "top-p": TopPSampler(p=config.top_p),
-            "dcbs": DCBSSampler.create_default(k=config.k, top_n=config.top_n),
+            "dcbs": DCBSSampler.create_default(
+                k=config.k, top_n=config.top_n, enable_caching=config.enable_caching
+            ),
             "random": RandomSampler(),
         }
 

@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 """
 Comparative evaluation script for different sampling methods.
-
-This script runs greedy, top-p, DCBS, and random sampling on the same dataset,
-computes accuracy for each method, and generates comparative visualizations.
 """
 
 import argparse
@@ -141,6 +138,12 @@ def parse_arguments():
         help="Specify which samplers to evaluate",
     )
 
+    parser.add_argument(
+        "--disable-cache",
+        action="store_true",
+        help="Disable DCBS caching for performance comparison",
+    )
+
     return parser.parse_args()
 
 
@@ -183,6 +186,7 @@ def create_evaluation_config(
     include_cot = True  # Default to True for CoT
     log_level = yaml_config.get("log_level", "INFO")
     load_in_4bit = False  # Default to False
+    enable_caching = True  # Default to True for caching
 
     # Apply CLI overrides (only if explicitly provided)
     if args.model is not None:
@@ -205,6 +209,8 @@ def create_evaluation_config(
         log_level = args.log_level
     if args.load_in_4bit:
         load_in_4bit = True
+    if args.disable_cache:
+        enable_caching = False
 
     # Create and return the config
     config = EvaluationConfig(
@@ -218,6 +224,7 @@ def create_evaluation_config(
         include_cot=include_cot,
         log_level=log_level,
         load_in_4bit=load_in_4bit,
+        enable_caching=enable_caching,
     )
 
     logger.info(
