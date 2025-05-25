@@ -315,27 +315,41 @@ class AccuracyVisualizer:
 
     @staticmethod
     def _binomial_test(correct1: int, total1: int, correct2: int, total2: int) -> float:
-        """Perform binomial test to compare two proportions."""
-        p1 = correct1 / total1 if total1 > 0 else 0
-        p2 = correct2 / total2 if total2 > 0 else 0
-
-        # Use scipy's binomial test for two proportions
-        # This is a simplified implementation - for production use, consider
-        # more sophisticated tests like Fisher's exact test
-        if p1 == p2:
+        """Perform Fisher's Exact Test to compare two proportions.
+        
+        Fisher's Exact Test is more appropriate than z-score tests for comparing
+        proportions, especially with smaller sample sizes, as it provides exact
+        p-values rather than asymptotic approximations.
+        
+        Args:
+            correct1: Number of correct predictions for method 1
+            total1: Total predictions for method 1
+            correct2: Number of correct predictions for method 2
+            total2: Total predictions for method 2
+            
+        Returns:
+            Two-tailed p-value from Fisher's Exact Test
+        """
+        # Handle edge cases
+        if total1 == 0 or total2 == 0:
             return 1.0
-
-        # Calculate z-score for difference in proportions
-        pooled_p = (correct1 + correct2) / (total1 + total2)
-        se = np.sqrt(pooled_p * (1 - pooled_p) * (1 / total1 + 1 / total2))
-
-        if se == 0:
+            
+        # Calculate incorrect counts
+        incorrect1 = total1 - correct1
+        incorrect2 = total2 - correct2
+        
+        # Create contingency table for Fisher's Exact Test
+        # Format: [[correct1, incorrect1], [correct2, incorrect2]]
+        contingency_table = [[correct1, incorrect1], [correct2, incorrect2]]
+        
+        try:
+            # Use scipy's Fisher's Exact Test implementation
+            # Returns odds ratio and two-tailed p-value
+            _, p_value = stats.fisher_exact(contingency_table, alternative='two-sided')
+            return p_value
+        except (ValueError, ZeroDivisionError):
+            # Fallback for edge cases where Fisher's test fails
             return 1.0
-
-        z = abs(p1 - p2) / se
-        p_value = 2 * (1 - stats.norm.cdf(abs(z)))
-
-        return p_value
 
 
 def create_summary_table(results: Dict, output_path: str) -> None:

@@ -19,7 +19,7 @@ import torch
 import yaml
 
 from dcbs import DCBSSampler, GreedySampler, RandomSampler, SamplingContext, TopPSampler
-from load_model import load_model_and_tokenizer
+from .load_model import load_model_and_tokenizer
 from src.errors import (
     ConfigurationError,
     DataError,

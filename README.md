@@ -206,6 +206,57 @@ dcbs_default = DCBSSampler.create_default(k=8, top_n=50)
 token = dcbs_default.sample(logits, filter_tokens=filter_tokens, context=context)
 ```
 
+### DCBSSampler Debugging Configuration
+
+The DCBSSampler supports configurable debugging features for development and analysis:
+
+#### Environment Variables
+
+```bash
+# Enable debug mode
+export DCBS_DEBUG_MODE=true
+
+# Enable cluster decision history tracking
+export DCBS_ENABLE_CLUSTER_HISTORY=true
+
+# Specify debug output file (optional)
+export DCBS_DEBUG_OUTPUT_FILE=/path/to/debug.log
+```
+
+#### Programmatic Configuration
+
+```python
+# Configure debugging via constructor
+dcbs = DCBSSampler(
+    clusterer=KMeansClusterer(k=8),
+    candidate_selector=TopNCandidateSelector(top_n=50),
+    debug_mode=True,
+    enable_cluster_history=True,
+    debug_output_file="dcbs_debug.log"
+)
+
+# Or via factory method
+dcbs = DCBSSampler.create_default(
+    k=8, top_n=50,
+    debug_mode=True,
+    enable_cluster_history=True
+)
+
+# Access debug information
+debug_stats = dcbs.get_debug_stats()
+cluster_history = dcbs.get_cluster_history()
+
+# Clear debug data
+dcbs.clear_debug_data()
+```
+
+#### Debug Features
+
+- **Debug Mode**: Enables detailed logging of clustering decisions and token selection
+- **Cluster History**: Tracks clustering decisions for post-analysis
+- **Debug Output**: Configurable output to file or console
+- **Statistics Tracking**: Monitors sampling calls, clustering operations, and cache performance
+
 ## Complete ARC Easy Evaluation Results
 
 ### Final Optimized Results (2,946 Questions)
@@ -281,7 +332,11 @@ Optimized DCBS Performance:
 
 ## Generated Analysis and Documentation
 
-The evaluation framework produces comprehensive analysis outputs including professional visualizations and detailed reports:
+The evaluation framework produces comprehensive analysis outputs including professional visualizations and detailed reports with rigorous statistical analysis:
+
+### Statistical Analysis
+
+All visualizations implement **Fisher's Exact Test** for statistical comparisons between sampling methods, providing exact p-values rather than asymptotic approximations. This ensures rigorous statistical validation of performance differences.
 
 ### Generated Analysis Files
 
@@ -289,7 +344,7 @@ The complete evaluation generates the following analysis artifacts in `results/f
 
 1. **`accuracy_comparison.png`** - Comparative accuracy analysis across all sampling methods
    - Bar chart visualization with percentage and absolute counts
-   - Professional formatting with statistical significance indicators
+   - Professional formatting with Fisher's Exact Test significance indicators
 
 2. **`timing_comparison.png`** - Performance timing analysis
    - Complete model inference and sampling timing measurements
@@ -307,6 +362,17 @@ The complete evaluation generates the following analysis artifacts in `results/f
    - Detailed statistical analysis and methodology
    - Configuration specifications and experimental parameters
    - Key findings and technical recommendations
+
+### Project Enhancement Documentation
+
+For comprehensive details on all project enhancements including thread safety, performance optimization, and extended model support, see:
+
+**[docs/Enhancement_Summary.md](docs/Enhancement_Summary.md)** - Complete enhancement documentation covering:
+- Thread-safe cache management implementation
+- Mathematical algorithm documentation
+- Performance optimization features
+- Extended model support with chat templates
+- Integration examples and usage guidelines
 
 ### Evaluation Results Visualizations
 
@@ -365,6 +431,27 @@ The complete technical analysis report (`COMPLETE_ANALYSIS_REPORT.md`) provides 
 - **Accuracy Maintenance**: Equivalent performance (68.1% vs 68.5%)
 - **Semantic Benefits**: Preserved clustering advantages
 - **Statistical Validation**: Complete dataset verification
+
+## Statistical Significance
+
+**Fisher's Exact Test Analysis (Greedy vs DCBS)**
+
+Based on the complete ARC Easy evaluation (2,946 questions):
+
+| Method | Correct/Total | Accuracy | 
+|--------|---------------|----------|
+| Greedy | 2,017/2,946 | 68.5% |
+| DCBS | 2,007/2,946 | 68.1% |
+
+**Statistical Test Results:**
+- **P-value**: 0.801065 (Fisher's Exact Test, two-sided)
+- **Odds Ratio**: 1.0158
+- **Effect Size**: +0.34 percentage points
+- **Conclusion**: No statistically significant difference between methods (p > 0.05)
+
+The Fisher's Exact Test confirms that the 0.4 percentage point difference between Greedy and DCBS is not statistically significant, supporting the conclusion that DCBS achieves equivalent performance to Greedy sampling while providing semantic clustering benefits.
+
+*Full statistical analysis available in: `results/fisher_exact_greedy_vs_dcbs.txt`*
 
 ## Generated Outputs
 
