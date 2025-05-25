@@ -118,7 +118,7 @@ class EvaluationRunner:
         # Sample using the specified sampler
         if sampler_name == "dcbs":
             # DCBS requires context as a required parameter
-            pred_id = sampler.sample(logits, context, filter_tokens=filter_tokens)
+            pred_id = sampler.sample(logits, filter_tokens=filter_tokens, context=context)
         else:
             # Other samplers use the standard interface
             pred_id = sampler.sample(

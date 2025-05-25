@@ -143,8 +143,8 @@ class TestDCBS(unittest.TestCase):
         # Create uniform logits
         logits = torch.ones(vocab_size)
 
-        # Sample a token using canonical DCBSSampler
-        token_id = self.sampler.sample(logits, context)
+        # Sample a token
+        token_id = self.sampler.sample(logits, context=context)
 
         # Verify it's a valid token ID
         self.assertGreaterEqual(token_id, 0)
@@ -177,7 +177,7 @@ class TestDCBS(unittest.TestCase):
         # Sample multiple times to verify behavior
         samples = []
         for _ in range(10):
-            token_id = sampler.sample(logits, context)
+            token_id = sampler.sample(logits, context=context)
             samples.append(token_id)
 
         # All samples should be in the top tokens (10-14)
@@ -261,7 +261,7 @@ class TestDCBS(unittest.TestCase):
 
         # Create DCBS sampler with k=2 clusters which should split along our predefined clusters
         sampler = DCBSSampler.create_default(k=2, top_n=20)
-        token_id = sampler.sample(logits, context)
+        token_id = sampler.sample(logits, context=context)
 
         # Due to deterministic nature, we can verify the token is valid
         self.assertGreaterEqual(token_id, 0)
@@ -294,7 +294,7 @@ class TestDCBS(unittest.TestCase):
         # Sample multiple times
         samples = []
         for _ in range(10):
-            token_id = self.sampler.sample(logits, context, filter_tokens=filter_tokens)
+            token_id = self.sampler.sample(logits, filter_tokens=filter_tokens, context=context)
             samples.append(token_id)
 
         # All samples should be in the filter set
@@ -325,7 +325,7 @@ class TestDCBS(unittest.TestCase):
 
         # Create DCBS sampler with k=1, should behave like argmax
         sampler = DCBSSampler.create_default(k=1, top_n=vocab_size)
-        token_id = sampler.sample(logits, context)
+        token_id = sampler.sample(logits, context=context)
 
         # Should return token 3 (deterministic argmax behavior)
         self.assertEqual(token_id, 3)
@@ -355,7 +355,7 @@ class TestDCBS(unittest.TestCase):
         filter_tokens = set()
 
         # Should handle this gracefully (empty filter means no filtering)
-        token_id = self.sampler.sample(logits, context, filter_tokens=filter_tokens)
+        token_id = self.sampler.sample(logits, filter_tokens=filter_tokens, context=context)
 
         # Just verify it doesn't crash and returns a valid token
         self.assertGreaterEqual(token_id, 0)
@@ -383,7 +383,7 @@ class TestDCBS(unittest.TestCase):
         logits = torch.ones(vocab_size)
 
         # Sample a token
-        token_id = self.sampler.sample(logits, context)
+        token_id = self.sampler.sample(logits, context=context)
 
         # Verify it's a valid token ID
         self.assertGreaterEqual(token_id, 0)
@@ -412,7 +412,7 @@ class TestDCBS(unittest.TestCase):
         )
         logits = torch.ones(vocab_size)
 
-        token_id = self.sampler.sample(logits, context)
+        token_id = self.sampler.sample(logits, context=context)
         self.assertGreaterEqual(token_id, 0)
         self.assertLess(token_id, vocab_size)
 

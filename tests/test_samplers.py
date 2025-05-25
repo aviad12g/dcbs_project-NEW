@@ -178,11 +178,12 @@ class TestDCBSSampler(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.sampler = DCBSSampler(k=2, top_n=4)
+        self.sampler = DCBSSampler.create_default(k=2, top_n=4)
         
-        # Create mock embedding layer
-        self.mock_embedding = Mock()
-        self.mock_embedding.weight = torch.randn(10, 8)  # 10 tokens, 8 dimensions
+        # Create proper embedding layer (not mock)
+        vocab_size = 10
+        embed_dim = 8
+        self.mock_embedding = torch.nn.Embedding(vocab_size, embed_dim)
         
         # Create mock context
         self.context = SamplingContext(
@@ -193,15 +194,15 @@ class TestDCBSSampler(unittest.TestCase):
 
     def test_dcbs_initialization(self):
         """Test DCBSSampler initialization."""
-        sampler = DCBSSampler(k=3, top_n=10)
-        self.assertEqual(sampler.k, 3)
-        self.assertEqual(sampler.top_n, 10)
+        sampler = DCBSSampler.create_default(k=3, top_n=10)
+        self.assertEqual(sampler.clusterer.k, 3)
+        self.assertEqual(sampler.candidate_selector.top_n, 10)
 
     def test_dcbs_create_default(self):
         """Test DCBSSampler.create_default factory method."""
         sampler = DCBSSampler.create_default(k=4, top_n=20)
-        self.assertEqual(sampler.k, 4)
-        self.assertEqual(sampler.top_n, 20)
+        self.assertEqual(sampler.clusterer.k, 4)
+        self.assertEqual(sampler.candidate_selector.top_n, 20)
 
     @patch('dcbs.clustering.KMeansClusterer')
     @patch('dcbs.clustering.TopNCandidateSelector')
@@ -222,7 +223,7 @@ class TestDCBSSampler(unittest.TestCase):
         
         logits = torch.tensor([3.0, 2.0, 1.0, 0.5, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0])
         
-        result = self.sampler.sample(logits, self.context)
+        result = self.sampler.sample(logits, context=self.context)
         
         self.assertIsInstance(result, int)
         self.assertIn(result, [0, 1, 2, 3])  # Should be one of the candidates
@@ -249,12 +250,12 @@ class TestDCBSSampler(unittest.TestCase):
                 mock_clusterer.return_value = mock_clusterer_instance
                 
                 logits = torch.tensor([3.0, 2.0, 1.0, 0.5])
-                filter_tokens = {0, 1}
+                filter_tokens = {2, 3}  # Allow only tokens 2 and 3
                 
-                result = self.sampler.sample(logits, self.context, filter_tokens=filter_tokens)
+                result = self.sampler.sample(logits, filter_tokens=filter_tokens, context=self.context)
                 
                 self.assertIsInstance(result, int)
-                self.assertNotIn(result, filter_tokens)
+                self.assertIn(result, filter_tokens)  # Should be in the allowed set
 
 
 class TestSamplerInterface(unittest.TestCase):

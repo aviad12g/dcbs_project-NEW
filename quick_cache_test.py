@@ -52,7 +52,7 @@ def quick_cache_test():
     cached_times = []
     for i in range(num_iterations):
         start_time = time.time()
-        result_cached = sampler_cached.sample(test_logits, context, filter_tokens=filter_tokens)
+        result_cached = sampler_cached.sample(test_logits, filter_tokens=filter_tokens, context=context)
         elapsed = (time.time() - start_time) * 1000
         cached_times.append(elapsed)
         print(f"  Iteration {i+1}: {elapsed:.2f}ms -> token {result_cached}")
@@ -68,7 +68,7 @@ def quick_cache_test():
     no_cache_times = []
     for i in range(num_iterations):
         start_time = time.time()
-        result_no_cache = sampler_no_cache.sample(test_logits, context, filter_tokens=filter_tokens)
+        result_no_cache = sampler_no_cache.sample(test_logits, filter_tokens=filter_tokens, context=context)
         elapsed = (time.time() - start_time) * 1000
         no_cache_times.append(elapsed)
         print(f"  Iteration {i+1}: {elapsed:.2f}ms -> token {result_no_cache}")

@@ -56,7 +56,7 @@ class TestDCBSTokenFiltering(unittest.TestCase):
         # Sample multiple times
         samples = []
         for _ in range(20):
-            token_id = self.sampler.sample(logits, context, filter_tokens=filter_tokens)
+            token_id = self.sampler.sample(logits, filter_tokens=filter_tokens, context=context)
             samples.append(token_id)
 
         # All samples should be in the filter set
@@ -91,7 +91,7 @@ class TestDCBSTokenFiltering(unittest.TestCase):
 
         # Run multiple trials - should always return token 5
         for _ in range(10):
-            token_id = self.sampler.sample(logits, context, filter_tokens=filter_tokens)
+            token_id = self.sampler.sample(logits, filter_tokens=filter_tokens, context=context)
             self.assertEqual(token_id, 5, f"Expected token 5, got {token_id}")
 
     def test_filter_tokens_deterministic(self):
@@ -120,7 +120,7 @@ class TestDCBSTokenFiltering(unittest.TestCase):
         # Since DCBS is deterministic and greedy, should always pick token 2
         results = []
         for _ in range(10):
-            token_id = self.sampler.sample(logits, context, filter_tokens=filter_tokens)
+            token_id = self.sampler.sample(logits, filter_tokens=filter_tokens, context=context)
             results.append(token_id)
 
         # All results should be the same (deterministic)
