@@ -17,7 +17,7 @@ This approach balances exploration of diverse semantic spaces with consistent, r
 ## Project Structure
 
 ```
-dcbs_project1/
+dcbs_project-NEW/
 ├── dcbs/                    # Core sampling package
 │   ├── __init__.py         # Package initialization
 │   └── sampler.py          # All sampler implementations
