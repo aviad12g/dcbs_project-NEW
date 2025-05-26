@@ -264,7 +264,7 @@ token = dcbs_default.sample(logits, filter_tokens=filter_tokens, context=context
 
 ## Complete ARC Easy Evaluation Results
 
-### Final Optimized Results (2,946 Questions)
+### Final Optimized Results (2,946 Questions) (Old)
 
 | Rank | Method | Accuracy | Correct/Total | Avg Time | Performance |
 |------|--------|----------|---------------|----------|-------------|
