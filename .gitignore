@@ -48,6 +48,6 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Data and results directories (generated content)
+# Data directories (generated content)
 data/
-results/ 
+# Results are now tracked in git 

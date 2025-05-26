@@ -1,0 +1,14 @@
+Fisher's Exact Test: greedy vs dcbs Sampling
+==================================================
+
+Dataset: (100 questions)
+greedy:  51/100 correct (51.0%)
+dcbs:    53/100 correct (53.0%)
+
+Statistical Test Results:
+Odds Ratio: 0.9230
+P-value: 0.887495
+Significance: not significant (p >= 0.1)
+Effect Size: -2.00 percentage points
+
+Conclusion: No statistically significant difference between greedy and dcbs

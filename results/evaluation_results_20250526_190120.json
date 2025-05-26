@@ -1,0 +1,2861 @@
+{
+  "statistics": {
+    "greedy": {
+      "accuracy": 51.0,
+      "correct": 51,
+      "total": 100,
+      "avg_time_ms": 0.4703974723815918,
+      "std_time_ms": 1.3606166460320868,
+      "confidence_interval": [
+        41.34784047743415,
+        60.578169907613855
+      ]
+    },
+    "top_p": {
+      "accuracy": 49.0,
+      "correct": 49,
+      "total": 100,
+      "avg_time_ms": 0.9071946144104004,
+      "std_time_ms": 0.46796335710990433,
+      "confidence_interval": [
+        39.421830092386145,
+        58.65215952256586
+      ]
+    },
+    "dcbs": {
+      "accuracy": 53.0,
+      "correct": 53,
+      "total": 100,
+      "avg_time_ms": 1.7183160781860352,
+      "std_time_ms": 3.694762445726501,
+      "confidence_interval": [
+        43.28868313724773,
+        62.48934801789626
+      ]
+    },
+    "random": {
+      "accuracy": 22.0,
+      "correct": 22,
+      "total": 100,
+      "avg_time_ms": 0.0,
+      "std_time_ms": 0.0,
+      "confidence_interval": [
+        15.001174503655804,
+        31.07053471500031
+      ]
+    }
+  },
+  "detailed_results": [
+    {
+      "example_id": "Mercury_417466",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 13.1072998046875,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_417466",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.0051727294921875,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_417466",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 38.030385971069336,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_417466",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7081673",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7081673",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9975433349609375,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7081673",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.0039806365966797,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7081673",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7239733",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.9970664978027344,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7239733",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9989738464355469,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7239733",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 0.99945068359375,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7239733",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_4_8",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_4_8",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9653568267822266,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_4_8",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.0035037994384766,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_4_8",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7037258",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7037258",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 1.1241436004638672,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7037258",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.9993782043457031,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7037258",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "CSZ20679",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "CSZ20679",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9860992431640625,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "CSZ20679",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.905679702758789,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "CSZ20679",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_182158",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_182158",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9982585906982422,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_182158",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.9855499267578125,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_182158",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7216668",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.9367465972900391,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7216668",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7216668",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.9882450103759766,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7216668",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "MCAS_2001_5_19",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "MCAS_2001_5_19",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.371622085571289,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "MCAS_2001_5_19",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.9402503967285156,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "MCAS_2001_5_19",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_413631",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_413631",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_413631",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.001119613647461,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_413631",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "MCAS_2005_5_10",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "MCAS_2005_5_10",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9996891021728516,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "MCAS_2005_5_10",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.99945068359375,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "MCAS_2005_5_10",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7166145",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7166145",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.99945068359375,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7166145",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.9834766387939453,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7166145",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "MSA_2013_5_6",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "MSA_2013_5_6",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9999275207519531,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "MSA_2013_5_6",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.9837150573730469,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "MSA_2013_5_6",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_SC_405199",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_405199",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9844303131103516,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_405199",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.0213851928710938,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_405199",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_8_28",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_8_28",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.99945068359375,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_8_28",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.9991397857666016,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_8_28",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_401777",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.9975433349609375,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_401777",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9989738464355469,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_401777",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.9951591491699219,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_401777",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7198188",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7198188",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7198188",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.9829998016357422,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7198188",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "MCAS_1998_4_11",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "MCAS_1998_4_11",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 1.9989013671875,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "MCAS_1998_4_11",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 2.0008087158203125,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "MCAS_1998_4_11",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_LBS10784",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 1.283884048461914,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_LBS10784",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.0998249053955078,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_LBS10784",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.0013580322265625,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_LBS10784",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7033548",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7033548",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.0030269622802734,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7033548",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.9998550415039062,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7033548",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7146195",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7146195",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9984970092773438,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7146195",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 0.9851455688476562,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7146195",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "NCEOGA_2013_8_36",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "NCEOGA_2013_8_36",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 1.001119613647461,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "NCEOGA_2013_8_36",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 2.0089149475097656,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "NCEOGA_2013_8_36",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_415412",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.9124279022216797,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_415412",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_415412",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.9028911590576172,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_415412",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7126840",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 1.001596450805664,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7126840",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.0044574737548828,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7126840",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.0006427764892578,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7126840",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_408362",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_408362",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.0004043579101562,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_408362",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.0004043579101562,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_408362",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "MDSA_2008_8_35",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "MDSA_2008_8_35",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 2.0012855529785156,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "MDSA_2008_8_35",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 0.8902549743652344,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "MDSA_2008_8_35",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_8_21",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 1.001119613647461,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_8_21",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9999275207519531,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_8_21",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 2.0165443420410156,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_8_21",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "VASoL_2008_5_12",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "VASoL_2008_5_12",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9858608245849609,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "VASoL_2008_5_12",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 2.000570297241211,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "VASoL_2008_5_12",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_SC_LBS10680",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_LBS10680",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.0023117065429688,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_LBS10680",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.9617805480957031,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_LBS10680",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "MCAS_2003_5_3",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "MCAS_2003_5_3",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.98419189453125,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "MCAS_2003_5_3",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.9386539459228516,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "MCAS_2003_5_3",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "VASoL_2010_5_18",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "VASoL_2010_5_18",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "VASoL_2010_5_18",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 0.9999275207519531,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "VASoL_2010_5_18",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7074900",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 1.0027885437011719,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7074900",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9825229644775391,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7074900",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 0.9987354278564453,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7074900",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_408762",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 1.012563705444336,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_408762",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 1.0004043579101562,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_SC_408762",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.1005401611328125,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_408762",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "ACTAAP_2015_5_8",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "ACTAAP_2015_5_8",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.0013580322265625,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "ACTAAP_2015_5_8",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.9826889038085938,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "ACTAAP_2015_5_8",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7263008",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7263008",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9853839874267578,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7263008",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 2.0134449005126953,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7263008",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "MCAS_2000_4_29",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.8933544158935547,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "MCAS_2000_4_29",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 2.0232200622558594,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "MCAS_2000_4_29",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.9989013671875,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "MCAS_2000_4_29",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "CSZ_2008_5_CSZ10233",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "CSZ_2008_5_CSZ10233",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9977817535400391,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "CSZ_2008_5_CSZ10233",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.001596450805664,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "CSZ_2008_5_CSZ10233",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7128660",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7128660",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 1.0039806365966797,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7128660",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.4057159423828125,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7128660",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7100520",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.9968280792236328,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7100520",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9810924530029297,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7100520",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 0.9784698486328125,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7100520",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7017728",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.8873939514160156,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7017728",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7017728",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7017728",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7032865",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.9837150573730469,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7032865",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9765625,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7032865",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.9980201721191406,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7032865",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_405057",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_405057",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_405057",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.9953975677490234,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_405057",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7057593",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7057593",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9996891021728516,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7057593",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.001119613647461,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7057593",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_405231",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 1.0013580322265625,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_405231",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9863376617431641,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_405231",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 2.0003318786621094,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_405231",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "VASoL_2007_5_38",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "VASoL_2007_5_38",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.0008811950683594,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "VASoL_2007_5_38",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.9993782043457031,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "VASoL_2007_5_38",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_410895",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.9815692901611328,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_410895",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9992122650146484,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_SC_410895",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.3065338134765625,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_410895",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7015978",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7015978",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.0039806365966797,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7015978",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.9865036010742188,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7015978",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "ACTAAP_2010_5_5",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "ACTAAP_2010_5_5",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 1.0020732879638672,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "ACTAAP_2010_5_5",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.0013580322265625,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "ACTAAP_2010_5_5",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7080955",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7080955",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7080955",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.0023117065429688,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7080955",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "ACTAAP_2009_5_4",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "ACTAAP_2009_5_4",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9889602661132812,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "ACTAAP_2009_5_4",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "ACTAAP_2009_5_4",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7017010",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7017010",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.007080078125,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7017010",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 0.9720325469970703,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7017010",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7146108",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7146108",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.0025501251220703,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7146108",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.9769668579101562,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7146108",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2012_4_12",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2012_4_12",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9834766387939453,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2012_4_12",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 2.9816627502441406,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2012_4_12",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "VASoL_2009_5_3",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 1.0120868682861328,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "VASoL_2009_5_3",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9827613830566406,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "VASoL_2009_5_3",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.9737014770507812,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "VASoL_2009_5_3",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_401253",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_401253",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 1.0008811950683594,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_401253",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.1093616485595703,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_401253",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7235953",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7235953",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9999275207519531,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7235953",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.0020732879638672,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7235953",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_403974",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_403974",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_403974",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 0.9992122650146484,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_403974",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7241063",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.9839534759521484,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7241063",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9825229644775391,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7241063",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 2.0024776458740234,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7241063",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "MCAS_2010_8_12015",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.9984970092773438,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "MCAS_2010_8_12015",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 1.0018348693847656,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "MCAS_2010_8_12015",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.0008811950683594,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "MCAS_2010_8_12015",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7168350",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.98419189453125,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7168350",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.99945068359375,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7168350",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 0.9992122650146484,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7168350",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_402980",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 1.0149478912353516,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_402980",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9975433349609375,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_402980",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.9841194152832031,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_402980",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_417126",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_417126",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9839534759521484,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_417126",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 0.9911060333251953,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_417126",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2010_8_2",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2010_8_2",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9143352508544922,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2010_8_2",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.0035037994384766,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2010_8_2",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2010_8_13",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2010_8_13",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9837150573730469,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2010_8_13",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 0.8893013000488281,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2010_8_13",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_177223",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_177223",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9844303131103516,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_177223",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.9922256469726562,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_177223",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7200533",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.89263916015625,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7200533",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7200533",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.9899139404296875,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7200533",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_400707",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_400707",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9663105010986328,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_400707",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 2.171039581298828,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_400707",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_400380",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 1.0018348693847656,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_400380",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 1.001596450805664,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_400380",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.001596450805664,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_400380",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7205590",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7205590",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9796619415283203,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7205590",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.0020732879638672,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7205590",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_4_30",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_4_30",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9975433349609375,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_4_30",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.004934310913086,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_4_30",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2012_4_17",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 1.0006427764892578,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2012_4_17",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9849071502685547,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2012_4_17",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 0.9837150573730469,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2012_4_17",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "VASoL_2008_3_5",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "VASoL_2008_3_5",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "VASoL_2008_3_5",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 2.1102428436279297,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "VASoL_2008_3_5",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_415390",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_415390",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.0023117065429688,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_415390",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.005411148071289,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_415390",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_408436",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_408436",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9996891021728516,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_408436",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.9992122650146484,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_408436",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_401143",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_401143",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9808540344238281,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_401143",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.9841194152832031,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_401143",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "LEAP_2005_8_10403",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 1.0142326354980469,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "LEAP_2005_8_10403",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 1.0154247283935547,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "LEAP_2005_8_10403",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 3.0014514923095703,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "LEAP_2005_8_10403",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7108045",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 1.3318061828613281,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7108045",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 1.001119613647461,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7108045",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.9905567169189453,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7108045",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_SC_402251",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 1.0004043579101562,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_402251",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 1.5106201171875,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_402251",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.0056495666503906,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_402251",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7071418",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7071418",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 1.001119613647461,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7071418",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.0104179382324219,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7071418",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_407370",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_407370",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9336471557617188,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_SC_407370",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 2.0017623901367188,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_407370",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7084595",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7084595",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 1.001119613647461,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7084595",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.9987354278564453,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7084595",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7041335",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7041335",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9999275207519531,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7041335",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 2.467632293701172,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7041335",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7236320",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7236320",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9789466857910156,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7236320",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.01470947265625,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7236320",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "LEAP__5_10308",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "LEAP__5_10308",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "LEAP__5_10308",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 0.9901523590087891,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "LEAP__5_10308",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7068425",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.9999275207519531,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7068425",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.9867420196533203,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7068425",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.0004043579101562,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7068425",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_SC_401308",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_401308",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_401308",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.026153564453125,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_401308",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2008_4_18",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2008_4_18",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 1.0001659393310547,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2008_4_18",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 2.003192901611328,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2008_4_18",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7165550",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7165550",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.0044574737548828,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7165550",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.9984970092773438,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7165550",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7114923",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7114923",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9822845458984375,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7114923",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 0.9984970092773438,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7114923",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_SC_408434",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_408434",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.9865036010742188,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_408434",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 2.0437240600585938,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_SC_408434",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7008453",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7008453",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.9999275207519531,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7008453",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 0.9996891021728516,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7008453",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2010_8_14",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 1.3976097106933594,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2010_8_14",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2010_8_14",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 2.003908157348633,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2010_8_14",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_8_24",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 1.4367103576660156,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_8_24",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 2.149343490600586,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_8_24",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.9001960754394531,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2015_8_24",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2008_4_6",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2008_4_6",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.0035037994384766,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2008_4_6",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "NYSEDREGENTS_2008_4_6",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_400279",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_400279",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9992122650146484,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_400279",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 0.9996891021728516,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_400279",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7092190",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.9918212890625,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7092190",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "Mercury_7092190",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 2.0020008087158203,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7092190",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7113890",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.9849071502685547,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7113890",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 0.9837150573730469,
+      "predicted_answer": "B"
+    },
+    {
+      "example_id": "Mercury_7113890",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 1.0073184967041016,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "Mercury_7113890",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "TAKS_2009_8_17",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 1.0001659393310547,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "TAKS_2009_8_17",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 1.0006427764892578,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "TAKS_2009_8_17",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.9941329956054688,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "TAKS_2009_8_17",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "A"
+    },
+    {
+      "example_id": "AKDE&ED_2008_4_3",
+      "method": "greedy",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "AKDE&ED_2008_4_3",
+      "method": "top_p",
+      "correct": false,
+      "elapsed_ms": 1.0013580322265625,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "AKDE&ED_2008_4_3",
+      "method": "dcbs",
+      "correct": false,
+      "elapsed_ms": 0.9438991546630859,
+      "predicted_answer": "D"
+    },
+    {
+      "example_id": "AKDE&ED_2008_4_3",
+      "method": "random",
+      "correct": false,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7202353",
+      "method": "greedy",
+      "correct": true,
+      "elapsed_ms": 0.9961128234863281,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7202353",
+      "method": "top_p",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7202353",
+      "method": "dcbs",
+      "correct": true,
+      "elapsed_ms": 1.9974708557128906,
+      "predicted_answer": "C"
+    },
+    {
+      "example_id": "Mercury_7202353",
+      "method": "random",
+      "correct": true,
+      "elapsed_ms": 0.0,
+      "predicted_answer": "C"
+    }
+  ],
+  "config": {
+    "model": "meta-llama/Llama-3.2-1B-Instruct",
+    "total_examples": 100,
+    "methods": [
+      "greedy",
+      "top_p",
+      "dcbs",
+      "random"
+    ],
+    "include_cot": true
+  }
+}
