@@ -20,6 +20,13 @@ from .clustering import (
     TokenClusterer,
     TopNCandidateSelector,
 )
+from .category_sampling import (
+    CategorySampler,
+    CategorySelector,
+    GreedyCategorySelector,
+    TokenSelector,
+    GreedyTokenSelector,
+)
 from .optimizations import BatchDCBSProcessor, MemoryEfficientDCBS, OptimizationConfig
 from .samplers import (
     DCBSSampler,
@@ -43,6 +50,11 @@ __all__ = [
     "SingleCluster",
     "TopNCandidateSelector",
     "FilteredCandidateSelector",
+    "CategorySampler",
+    "CategorySelector",
+    "GreedyCategorySelector",
+    "TokenSelector",
+    "GreedyTokenSelector",
     "CacheConfig",
     "CacheMetrics",
     "DCBSCacheManager",

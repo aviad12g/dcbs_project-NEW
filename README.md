@@ -16,33 +16,32 @@ This approach balances exploration of diverse semantic spaces with consistent, r
 
 ## Latest Evaluation Results
 
-**Dataset**: ARC Easy (15 examples)  
+**Dataset**: ARC Easy (100 examples)  
 **Model**: Llama 3.2 1B Instruct  
-**Configuration**: Chain-of-thought enabled, caching disabled
+**Configuration**: Chain-of-thought enabled, token-by-token generation
 
 ### Accuracy Comparison
 
-| Method | Accuracy | Correct/Total | Performance |
-|--------|----------|---------------|-------------|
-| **DCBS** | **73.3%** | 11/15 | 132.8ms avg |
-| **Greedy** | 60.0% | 9/15 | 2.1ms avg |
-| **Top-P** | 40.0% | 6/15 | 7.4ms avg |
-| **Random** | 40.0% | 6/15 | 0.0ms avg |
+| Method | Accuracy | Correct/Total | Avg Time (ms) |
+|--------|----------|---------------|---------------|
+| **DCBS** | **53.0%** | 53/100 | 1.72 |
+| **Greedy** | 51.0% | 51/100 | 0.47 |
+| **Top-p** | 49.0% | 49/100 | 0.91 |
+| **Random** | 22.0% | 22/100 | 0.00 |
 
 ### Key Findings
 
-- **DCBS achieves highest accuracy**: 73.3% vs 60.0% for greedy sampling (+13.3% improvement)
-- **DCBS shows semantic diversity benefits**: Outperforms both deterministic (greedy) and stochastic (top-p, random) baselines
-- **Performance trade-off**: DCBS is ~63x slower than greedy but provides significant accuracy gains
+- **DCBS achieves highest accuracy**: 53.0% vs 51.0% for greedy sampling (+2.0% improvement)
+- **DCBS vs Greedy**: The difference is not statistically significant (Fisher's exact test, p > 0.05)
+- **Performance trade-off**: DCBS is ~3.7x slower than greedy but provides accuracy improvements
 - **Deterministic advantage**: DCBS maintains reproducibility while achieving better results than stochastic methods
 
 ### Visualizations
 
 The evaluation generates comprehensive visualizations:
 
-![Accuracy Comparison](results/accuracy_comparison_latest.png)
-![Performance Comparison](results/timing_comparison_latest.png)
-![Detailed Analysis](results/detailed_comparison_latest.png)
+![Accuracy Comparison](results/accuracy_by_method.png)
+![Performance Comparison](results/timing_comparison.png)
 
 ## DCBS Caching Configuration
 
@@ -109,7 +108,7 @@ The project implements four sampling strategies with a unified interface:
 - **Characteristics**: Fully deterministic, fastest execution
 
 ### 2. **Top-p (Nucleus) Sampling**
-- **Algorithm**: Samples from the smallest set of tokens whose cumulative probability ≥ p
+- **Algorithm**: Samples from the smallest set of tokens whose cumulative probability greater than or equal to p
 - **Characteristics**: Stochastic, balances quality and diversity
 - **Configuration**: `p=0.9` (default)
 
@@ -296,27 +295,30 @@ token = dcbs_default.sample(logits, filter_tokens=filter_tokens, context=context
 
 **Fisher's Exact Test Analysis (Greedy vs DCBS)**
 
-Based on the complete ARC Easy evaluation (2,946 questions):
+Based on the latest ARC Easy evaluation (100 questions):
 
 | Method | Correct/Total | Accuracy | 
 |--------|---------------|----------|
-| Greedy | 2,017/2,946 | 68.5% |
-| DCBS | 2,007/2,946 | 68.1% |
+| Greedy | 51/100 | 51.0% |
+| DCBS | 53/100 | 53.0% |
 
 **Statistical Test Results:**
-- **P-value**: 0.801065 (Fisher's Exact Test, two-sided)
-- **Odds Ratio**: 1.0158
-- **Effect Size**: +0.34 percentage points
+- **P-value**: 0.887495 (Fisher's Exact Test, two-sided)
+- **Odds Ratio**: 0.9230
+- **Effect Size**: -2.00 percentage points
 - **Conclusion**: No statistically significant difference between methods (p > 0.05)
+
+The improved object-oriented implementation with function objects follows best practices and ensures greedy selection for both categories and tokens. This provides a cleaner implementation while maintaining the same sampling behavior.
 
 ## Generated Outputs
 
 The evaluation produces:
 
 1. **Main accuracy chart** (`results/accuracy_by_method.png`)
-2. **Detailed comparison** (`results/detailed_comparison.png`) 
+2. **Timing comparison** (`results/timing_comparison.png`) 
 3. **Results summary** (`results/results_summary.md`)
-4. **Raw data** (`results/summary_results.json`)
+4. **Raw data** (`results/evaluation_results_20250526_190120.json`)
+5. **Statistical analysis** (`results/fisher_exact_greedy_vs_dcbs.txt`)
 
 ## Development
 

@@ -242,40 +242,50 @@ class ExampleProcessor:
             return f"System: {system_msg}\n\nUser: {user_msg}\n\nAssistant: "
 
     def generate_reasoning(self, prompt: str, max_length: int = 200, sampler=None) -> str:
-        """Generate chain-of-thought reasoning using fast model generation.
+        """Generate chain-of-thought reasoning using token-by-token generation with the provided sampler.
         
         Args:
             prompt: The prompt to generate reasoning from
             max_length: Maximum length of generated reasoning
-            sampler: Sampler to use (ignored for CoT generation for speed)
+            sampler: Sampler to use for generation (the same sampler being evaluated)
             
         Returns:
             Generated reasoning text
         """
-        inputs = self.tokenizer(prompt, return_tensors="pt", padding=True, truncation=True).to(self.device)
-
-        try:
-            # Use fast model generation instead of slow token-by-token sampling
-            with torch.no_grad():
-                outputs = self.model.generate(
-                    inputs.input_ids,
-                    attention_mask=inputs.attention_mask,
-                    max_new_tokens=min(max_length, 50),  # Reduced for speed
-                    do_sample=True,  # Enable sampling for diversity
-                    temperature=0.7,  # Moderate temperature
-                    top_p=0.9,  # Nucleus sampling
-                    pad_token_id=self.tokenizer.pad_token_id,
-                    eos_token_id=self.tokenizer.eos_token_id,
-                )
+        if sampler is None:
+            raise ValueError("A sampler must be provided for CoT generation")
             
-            # Extract generated reasoning
-            reasoning_tokens = outputs[0][inputs.input_ids.shape[1] :]
-            reasoning = self.tokenizer.decode(reasoning_tokens, skip_special_tokens=True).strip()
-
-        except Exception as e:
-            logger.warning(f"CoT generation failed: {e}, using fallback reasoning")
-            reasoning = "Let me analyze the options step by step."
-
+        inputs = self.tokenizer(prompt, return_tensors="pt", padding=True, truncation=True).to(self.device)
+        input_length = inputs.input_ids.shape[1]
+        generated_tokens = inputs.input_ids[0].tolist()
+        
+        # Generate tokens one by one using the provided sampler
+        for _ in range(max_length):
+            # Get current input as tensor
+            current_input = torch.tensor([generated_tokens], device=self.device)
+            
+            # Forward pass to get next token logits
+            with torch.no_grad():
+                outputs = self.model(current_input)
+                next_token_logits = outputs.logits[0, -1, :]
+            
+            # Use the provided sampler to select the next token
+            context = SamplingContext(
+                embedding_layer=self.model.get_input_embeddings(),
+                device=self.device
+            )
+            next_token = sampler.sample(next_token_logits, context=context)
+            
+            # Add token to generated sequence
+            generated_tokens.append(next_token)
+            
+            # Stop if we reach the EOS token
+            if next_token == self.tokenizer.eos_token_id:
+                break
+                
+        # Decode the generated tokens
+        reasoning = self.tokenizer.decode(generated_tokens[input_length:], skip_special_tokens=True).strip()
+        
         # Clean up reasoning (remove premature answers)
         stop_patterns = [
             "the answer is a", "the answer is b", "the answer is c", "the answer is d",

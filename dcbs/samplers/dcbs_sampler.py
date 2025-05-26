@@ -17,6 +17,7 @@ from ..clustering import (
     CandidateSelector,
     TokenClusterer,
 )
+from ..category_sampling import CategorySampler, greedy_category_sampler
 
 
 class DCBSSampler(Sampler):
@@ -32,6 +33,7 @@ class DCBSSampler(Sampler):
         self,
         clusterer: TokenClusterer,
         candidate_selector: CandidateSelector,
+        category_sampler: Optional[CategorySampler] = None,
         cache_config: Optional[dict] = None,
         enable_caching: bool = True,
         debug_mode: Optional[bool] = None,
@@ -44,6 +46,7 @@ class DCBSSampler(Sampler):
         Args:
             clusterer: Token clustering strategy
             candidate_selector: Candidate token selection strategy
+            category_sampler: Strategy for sampling from categories (default: greedy)
             cache_config: Optional cache configuration
             enable_caching: Whether to enable caching (default: True)
             debug_mode: Enable debug logging (default: False)
@@ -52,6 +55,7 @@ class DCBSSampler(Sampler):
         """
         self.clusterer = clusterer
         self.candidate_selector = candidate_selector
+        self.category_sampler = category_sampler or greedy_category_sampler
         self.enable_caching = enable_caching
 
         # Initialize cache manager only if caching is enabled
@@ -135,11 +139,17 @@ class DCBSSampler(Sampler):
         """
         # Import here to avoid tight coupling at module level
         from ..clustering import KMeansClusterer, TopNCandidateSelector
+        from ..category_sampling import CategorySampler, GreedyCategorySelector, GreedyTokenSelector
         
         clusterer = KMeansClusterer(k=k)
         candidate_selector = TopNCandidateSelector(top_n=top_n)
-        return cls(clusterer, candidate_selector, cache_config, enable_caching, 
-                  debug_mode, enable_cluster_history)
+        category_sampler = CategorySampler(
+            category_selector=GreedyCategorySelector(),
+            token_selector=GreedyTokenSelector()
+        )
+        
+        return cls(clusterer, candidate_selector, category_sampler, cache_config, 
+                  enable_caching, debug_mode, enable_cluster_history)
 
     @classmethod
     def create_no_cache(cls, k: int = 8, top_n: int = 50, **kwargs):
@@ -245,9 +255,12 @@ class DCBSSampler(Sampler):
         
         self._log_debug(f"Clustering produced {len(set(labels))} clusters from {self.clusterer.num_clusters} requested")
 
-        # Select token from clusters
-        selected_token = self._select_from_clusters(
-            candidate_ids, candidate_probs, labels, filter_tokens
+        # Group tokens by cluster
+        clusters = self._group_by_clusters(labels, self.clusterer.num_clusters)
+        
+        # Use category sampler to select token
+        selected_token = self.category_sampler.sample_from_clusters(
+            candidate_ids, candidate_probs, clusters, filter_tokens
         )
         
         # Record decision for analysis
@@ -266,30 +279,6 @@ class DCBSSampler(Sampler):
         norm = torch.norm(embeddings, p=2, dim=1, keepdim=True)
         return embeddings / norm.clamp(min=PROB_EPSILON)
 
-    def _select_from_clusters(
-        self,
-        candidate_ids: list,
-        candidate_probs: torch.Tensor,
-        labels: np.ndarray,
-        filter_tokens: Optional[Set[int]],
-    ) -> int:
-        """Select token from clusters using deterministic greedy approach."""
-        # Group tokens by cluster and calculate probabilities
-        clusters = self._group_by_clusters(labels, self.clusterer.num_clusters)
-        cluster_probs = self._calculate_cluster_probabilities(clusters, candidate_probs)
-
-        if sum(cluster_probs) == 0:
-            return self._fallback_selection(None, filter_tokens)
-
-        # GREEDY selection of cluster (deterministic argmax)
-        selected_cluster_idx = np.argmax(cluster_probs)
-        cluster_token_indices = clusters[selected_cluster_idx]
-
-        # Apply filtering and select best token using GREEDY selection
-        return self._select_best_from_cluster(
-            candidate_ids, cluster_token_indices, candidate_probs, filter_tokens
-        )
-
     def _group_by_clusters(
         self, labels: np.ndarray, num_clusters: int
     ) -> List[List[int]]:
@@ -298,45 +287,6 @@ class DCBSSampler(Sampler):
         for i, label in enumerate(labels):
             clusters[label].append(i)
         return clusters
-
-    def _calculate_cluster_probabilities(
-        self, clusters: List[List[int]], candidate_probs: torch.Tensor
-    ) -> List[float]:
-        """Calculate total probability mass for each cluster."""
-        return [
-            candidate_probs[cluster].sum().item() if cluster else 0.0
-            for cluster in clusters
-        ]
-
-    def _select_best_from_cluster(
-        self,
-        candidate_ids: list,
-        cluster_token_indices: List[int],
-        candidate_probs: torch.Tensor,
-        filter_tokens: Optional[Set[int]],
-    ) -> int:
-        """Select highest probability token from the chosen cluster."""
-        cluster_token_probs = candidate_probs[cluster_token_indices]
-
-        # Apply filtering within cluster if needed
-        if filter_tokens:
-            valid_indices = [
-                i
-                for i, token_idx in enumerate(cluster_token_indices)
-                if candidate_ids[token_idx] in filter_tokens
-            ]
-
-            if not valid_indices:
-                return self._fallback_selection(None, filter_tokens)
-
-            cluster_token_indices = [cluster_token_indices[i] for i in valid_indices]
-            cluster_token_probs = cluster_token_probs[valid_indices]
-
-        # GREEDY selection of highest probability token from cluster (deterministic argmax)
-        selected_in_cluster_idx = torch.argmax(cluster_token_probs).item()
-        selected_token_idx = cluster_token_indices[selected_in_cluster_idx]
-
-        return candidate_ids[selected_token_idx]
 
     def _get_cached_embeddings(
         self, token_ids: torch.Tensor, embedding: torch.nn.Embedding
