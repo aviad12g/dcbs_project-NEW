@@ -294,7 +294,7 @@ class AccuracyVisualizer:
         sample_sizes = []
 
         # Order methods for consistent display
-        method_order = ["greedy", "top-p", "dcbs", "random"]
+        method_order = ["greedy", "top_p", "dcbs", "random"]
 
         for method in method_order:
             if method in statistics:
@@ -399,7 +399,7 @@ def create_summary_table(results: Dict, output_path: str) -> None:
         "|--------|--------------|--------|---------------|---------------|",
     ]
 
-    for method in ["greedy", "top-p", "dcbs", "random"]:
+    for method in ["greedy", "top_p", "dcbs", "random"]:
         if method in statistics:
             stats = statistics[method]
             ci = stats.get("confidence_interval", (0, 0))

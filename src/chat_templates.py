@@ -190,179 +190,38 @@ class MistralTemplate(ChatTemplate):
         return True
 
 
-class OpenAITemplate(ChatTemplate):
-    """Template for OpenAI/GPT-style models."""
-
-    def apply(
-        self, messages: List[Dict[str, str]], add_generation_prompt: bool = True
-    ) -> str:
-        """Apply OpenAI-style template."""
-        result = ""
-
-        for message in messages:
-            role = message["role"].title()
-            content = message["content"]
-            result += f"{role}: {content}\n"
-
-        if add_generation_prompt:
-            result += "Assistant: "
-
-        return result
-
-    def get_special_tokens(self) -> Dict[str, str]:
-        """Get OpenAI special tokens."""
-        return {"bos_token": "", "eos_token": "", "separator": "\n"}
-
-    def validate_messages(self, messages: List[Dict[str, str]]) -> bool:
-        """Validate messages for OpenAI template."""
-        if not messages:
-            return False
-
-        valid_roles = {"system", "user", "assistant"}
-        for message in messages:
-            if "role" not in message or "content" not in message:
-                return False
-            if message["role"] not in valid_roles:
-                return False
-
-        return True
-
-
-class ChatMLTemplate(ChatTemplate):
-    """Template for ChatML format (used by various models)."""
-
-    def apply(
-        self, messages: List[Dict[str, str]], add_generation_prompt: bool = True
-    ) -> str:
-        """Apply ChatML template."""
-        result = ""
-
+class GenericTemplate(ChatTemplate):
+    """Template for generic chat models."""
+    
+    def apply_template(self, messages: List[Dict[str, str]], add_generation_prompt: bool = True) -> str:
+        """Apply generic template."""
+        formatted = ""
         for message in messages:
             role = message["role"]
             content = message["content"]
-            result += f"<|im_start|>{role}\n{content}<|im_end|>\n"
-
+            
+            if role == "system":
+                formatted += f"System: {content}\n\n"
+            elif role == "user":
+                formatted += f"User: {content}\n\n"
+            elif role == "assistant":
+                formatted += f"Assistant: {content}\n\n"
+        
         if add_generation_prompt:
-            result += "<|im_start|>assistant\n"
-
-        return result
-
+            formatted += "Assistant: "
+        
+        return formatted
+    
     def get_special_tokens(self) -> Dict[str, str]:
-        """Get ChatML special tokens."""
-        return {
-            "bos_token": "",
-            "eos_token": "<|im_end|>",
-            "start_token": "<|im_start|>",
-            "end_token": "<|im_end|>",
-        }
-
+        """Get generic special tokens."""
+        return {}
+    
     def validate_messages(self, messages: List[Dict[str, str]]) -> bool:
-        """Validate messages for ChatML template."""
-        if not messages:
-            return False
-
-        valid_roles = {"system", "user", "assistant"}
-        for message in messages:
-            if "role" not in message or "content" not in message:
-                return False
-            if message["role"] not in valid_roles:
-                return False
-
-        return True
-
-
-class AnthropicTemplate(ChatTemplate):
-    """Template for Anthropic Claude models."""
-
-    def apply(
-        self, messages: List[Dict[str, str]], add_generation_prompt: bool = True
-    ) -> str:
-        """Apply Anthropic template."""
-        result = ""
-
-        for message in messages:
-            if message["role"] == "system":
-                result += f"System: {message['content']}\n\n"
-            elif message["role"] == "user":
-                result += f"Human: {message['content']}\n\n"
-            elif message["role"] == "assistant":
-                result += f"Assistant: {message['content']}\n\n"
-
-        if add_generation_prompt:
-            result += "Assistant: "
-
-        return result
-
-    def get_special_tokens(self) -> Dict[str, str]:
-        """Get Anthropic special tokens."""
-        return {
-            "bos_token": "",
-            "eos_token": "",
-            "human_prefix": "Human:",
-            "assistant_prefix": "Assistant:",
-            "system_prefix": "System:",
-        }
-
-    def validate_messages(self, messages: List[Dict[str, str]]) -> bool:
-        """Validate messages for Anthropic template."""
-        if not messages:
-            return False
-
-        valid_roles = {"system", "user", "assistant"}
-        for message in messages:
-            if "role" not in message or "content" not in message:
-                return False
-            if message["role"] not in valid_roles:
-                return False
-
-        return True
-
-
-class GemmaTemplate(ChatTemplate):
-    """Template for Google Gemma models."""
-
-    def apply(
-        self, messages: List[Dict[str, str]], add_generation_prompt: bool = True
-    ) -> str:
-        """Apply Gemma template."""
-        result = ""
-
-        for message in messages:
-            if message["role"] == "user":
-                result += f"<start_of_turn>user\n{message['content']}<end_of_turn>\n"
-            elif message["role"] == "assistant":
-                result += f"<start_of_turn>model\n{message['content']}<end_of_turn>\n"
-            elif message["role"] == "system":
-                # Gemma typically handles system messages as part of user context
-                result += f"<start_of_turn>user\n{message['content']}<end_of_turn>\n"
-
-        if add_generation_prompt:
-            result += "<start_of_turn>model\n"
-
-        return result
-
-    def get_special_tokens(self) -> Dict[str, str]:
-        """Get Gemma special tokens."""
-        return {
-            "bos_token": "<bos>",
-            "eos_token": "<eos>",
-            "start_of_turn": "<start_of_turn>",
-            "end_of_turn": "<end_of_turn>",
-        }
-
-    def validate_messages(self, messages: List[Dict[str, str]]) -> bool:
-        """Validate messages for Gemma template."""
-        if not messages:
-            return False
-
-        valid_roles = {"system", "user", "assistant"}
-        for message in messages:
-            if "role" not in message or "content" not in message:
-                return False
-            if message["role"] not in valid_roles:
-                return False
-
-        return True
+        """Validate messages for generic template."""
+        return all(
+            isinstance(msg, dict) and "role" in msg and "content" in msg
+            for msg in messages
+        )
 
 
 class ChatTemplateManager:
@@ -413,7 +272,7 @@ class ChatTemplateManager:
             "llama": LlamaTemplate(version="3"),
             "llama2": LlamaTemplate(version="2"),
             "mistral": MistralTemplate(),
-            "openai": OpenAITemplate(),
+            "openai": GenericTemplate(),
             "chatml": ChatMLTemplate(),
             "anthropic": AnthropicTemplate(),
             "gemma": GemmaTemplate(),

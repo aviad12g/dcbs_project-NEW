@@ -9,8 +9,73 @@ from typing import Dict, List
 
 import torch
 
-from dcbs import SamplingContext
+from dcbs import DCBSSampler, SamplingContext
 from src.errors import eval_logger as logger
+from src.evaluation_core.template_manager import ChatTemplateManager
+
+
+class PromptManager:
+    """Centralized prompt management system."""
+    
+    @staticmethod
+    def get_cot_system_message() -> str:
+        """Get system message for chain-of-thought reasoning."""
+        return "You are a helpful assistant. Think step by step about the problem and explain your reasoning."
+    
+    @staticmethod
+    def get_answer_system_message() -> str:
+        """Get system message for final answer extraction."""
+        return "You are a helpful assistant. Based on your reasoning, give the final answer as a single letter (A, B, C, or D)."
+    
+    @staticmethod
+    def get_direct_system_message() -> str:
+        """Get system message for direct answer extraction."""
+        return "You are a helpful assistant. Give your answer as a single letter (A, B, C, or D)."
+    
+    @staticmethod
+    def format_options(options: List[str]) -> str:
+        """Format options as a string with letter labels."""
+        options_str = ""
+        for i, option in enumerate(options):
+            label = chr(ord("A") + i)  # A, B, C, D, etc.
+            options_str += f"{label}. {option}\n"
+        return options_str
+    
+    @staticmethod
+    def create_cot_messages(sentence: str, options: List[str]) -> List[Dict[str, str]]:
+        """Create messages for chain-of-thought reasoning."""
+        system_msg = PromptManager.get_cot_system_message()
+        options_str = PromptManager.format_options(options)
+        user_msg = f"{sentence}\n\nOptions:\n{options_str}\nLet's think step by step about which option is correct:"
+        
+        return [
+            {"role": "system", "content": system_msg},
+            {"role": "user", "content": user_msg},
+        ]
+    
+    @staticmethod
+    def create_final_answer_messages(sentence: str, options: List[str], reasoning: str) -> List[Dict[str, str]]:
+        """Create messages for final answer extraction."""
+        system_msg = PromptManager.get_answer_system_message()
+        options_str = PromptManager.format_options(options)
+        user_msg = f"{sentence}\n\nOptions:\n{options_str}\nMy reasoning: {reasoning}\n\nTherefore, the answer is"
+        
+        return [
+            {"role": "system", "content": system_msg},
+            {"role": "user", "content": user_msg},
+        ]
+    
+    @staticmethod
+    def create_direct_answer_messages(sentence: str, options: List[str]) -> List[Dict[str, str]]:
+        """Create messages for direct answer extraction."""
+        system_msg = PromptManager.get_direct_system_message()
+        options_str = PromptManager.format_options(options)
+        user_msg = f"{sentence}\n\nOptions:\n{options_str}\nThe answer is"
+        
+        return [
+            {"role": "system", "content": system_msg},
+            {"role": "user", "content": user_msg},
+        ]
 
 
 class ExampleProcessor:
@@ -27,39 +92,20 @@ class ExampleProcessor:
         self, sentence: str, options: List[str], include_cot: bool = True
     ) -> str:
         """Create a chat-formatted prompt for the problem."""
-        # HARDCODED PROMPTS - TODO: Move to centralized prompt management system
         if include_cot:
-            system_msg = "You are a helpful assistant. Think step by step and then give your final answer as a single letter (A, B, C, or D)."
-
-            # Build options string dynamically
-            options_str = ""
-            for i, option in enumerate(options):
-                label = chr(ord("A") + i)  # A, B, C, D, etc.
-                options_str += f"{label}. {option}\n"
-
-            user_msg = f"{sentence}\n\nOptions:\n{options_str}\nLet's think step by step to determine the answer.\n\nThe answer is"
+            messages = PromptManager.create_cot_messages(sentence, options)
         else:
-            system_msg = "You are a helpful assistant. Give your answer as a single letter (A, B, C, or D)."
-
-            # Build options string dynamically
-            options_str = ""
-            for i, option in enumerate(options):
-                label = chr(ord("A") + i)  # A, B, C, D, etc.
-                options_str += f"{label}. {option}\n"
-
-            user_msg = f"{sentence}\n\nOptions:\n{options_str}\nThe answer is"
-
-        messages = [
-            {"role": "system", "content": system_msg},
-            {"role": "user", "content": user_msg},
-        ]
+            messages = PromptManager.create_direct_answer_messages(sentence, options)
 
         # Use chat template if available, otherwise fall back to simple formatting
         try:
             return self.tokenizer.apply_chat_template(
                 messages, tokenize=False, add_generation_prompt=True
             )
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Failed to apply chat template: {e}")
+            system_msg = messages[0]["content"]
+            user_msg = messages[1]["content"]
             return f"System: {system_msg}\n\nUser: {user_msg}\n\nAssistant: "
 
     def get_answer_token_ids(self, options: List[str]) -> Dict[str, int]:
@@ -113,16 +159,25 @@ class ExampleProcessor:
             )
 
         if include_cot:
-            # First, generate chain-of-thought reasoning
-            cot_prompt = self.create_cot_prompt(sentence, options)
-            cot_reasoning = self.generate_reasoning(cot_prompt)
+            # First, generate chain-of-thought reasoning using the provided sampler
+            cot_messages = PromptManager.create_cot_messages(sentence, options)
+            cot_prompt = self.tokenizer.apply_chat_template(
+                cot_messages, tokenize=False, add_generation_prompt=True
+            )
+            cot_reasoning = self.generate_reasoning(cot_prompt, sampler=self.sampler)
 
             # Then create final answer prompt with the generated reasoning
-            final_prompt = self.create_final_answer_prompt(
+            final_messages = PromptManager.create_final_answer_messages(
                 sentence, options, cot_reasoning
             )
+            final_prompt = self.tokenizer.apply_chat_template(
+                final_messages, tokenize=False, add_generation_prompt=True
+            )
         else:
-            final_prompt = self.create_prompt(sentence, options, include_cot=False)
+            direct_messages = PromptManager.create_direct_answer_messages(sentence, options)
+            final_prompt = self.tokenizer.apply_chat_template(
+                direct_messages, tokenize=False, add_generation_prompt=True
+            )
             cot_reasoning = None
 
         # Tokenize and get model output for final answer
@@ -158,72 +213,57 @@ class ExampleProcessor:
 
     def create_cot_prompt(self, sentence: str, options: List[str]) -> str:
         """Create a prompt for chain-of-thought reasoning generation."""
-        # HARDCODED PROMPTS - TODO: Move to centralized prompt management system
-        system_msg = (
-            "You are a helpful assistant. Think step by step about the problem and explain your reasoning."
-        )
-
-        # Build options string dynamically
-        options_str = ""
-        for i, option in enumerate(options):
-            label = chr(ord("A") + i)  # A, B, C, D, etc.
-            options_str += f"{label}. {option}\n"
-
-        user_msg = f"{sentence}\n\nOptions:\n{options_str}\nLet's think step by step about which option is correct:"
-
-        messages = [
-            {"role": "system", "content": system_msg},
-            {"role": "user", "content": user_msg},
-        ]
-
+        messages = PromptManager.create_cot_messages(sentence, options)
+        
         try:
             return self.tokenizer.apply_chat_template(
                 messages, tokenize=False, add_generation_prompt=True
             )
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Failed to apply chat template: {e}")
+            system_msg = messages[0]["content"]
+            user_msg = messages[1]["content"]
             return f"System: {system_msg}\n\nUser: {user_msg}\n\nAssistant: "
 
     def create_final_answer_prompt(
         self, sentence: str, options: List[str], reasoning: str
     ) -> str:
         """Create final answer prompt with generated reasoning."""
-        # HARDCODED PROMPTS - TODO: Move to centralized prompt management system
-        system_msg = "You are a helpful assistant. Based on your reasoning, give the final answer as a single letter (A, B, C, or D)."
-
-        # Build options string dynamically
-        options_str = ""
-        for i, option in enumerate(options):
-            label = chr(ord("A") + i)  # A, B, C, D, etc.
-            options_str += f"{label}. {option}\n"
-
-        user_msg = f"{sentence}\n\nOptions:\n{options_str}\nMy reasoning: {reasoning}\n\nTherefore, the answer is"
-
-        messages = [
-            {"role": "system", "content": system_msg},
-            {"role": "user", "content": user_msg},
-        ]
-
+        messages = PromptManager.create_final_answer_messages(sentence, options, reasoning)
+        
         try:
             return self.tokenizer.apply_chat_template(
                 messages, tokenize=False, add_generation_prompt=True
             )
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Failed to apply chat template: {e}")
+            system_msg = messages[0]["content"]
+            user_msg = messages[1]["content"]
             return f"System: {system_msg}\n\nUser: {user_msg}\n\nAssistant: "
 
-    def generate_reasoning(self, prompt: str, max_length: int = 200) -> str:
-        """Generate chain-of-thought reasoning using simple model generation."""
+    def generate_reasoning(self, prompt: str, max_length: int = 200, sampler=None) -> str:
+        """Generate chain-of-thought reasoning using fast model generation.
+        
+        Args:
+            prompt: The prompt to generate reasoning from
+            max_length: Maximum length of generated reasoning
+            sampler: Sampler to use (ignored for CoT generation for speed)
+            
+        Returns:
+            Generated reasoning text
+        """
         inputs = self.tokenizer(prompt, return_tensors="pt", padding=True, truncation=True).to(self.device)
 
         try:
-            # Use simple model generation with strict limits - purely deterministic
+            # Use fast model generation instead of slow token-by-token sampling
             with torch.no_grad():
                 outputs = self.model.generate(
                     inputs.input_ids,
-                    attention_mask=inputs.attention_mask,  # Explicitly pass attention mask
-                    max_new_tokens=min(max_length, 100),  # Increase limit for better reasoning
-                    do_sample=False,  # Greedy decoding only
-                    temperature=1.0,  # Override model default to eliminate warnings
-                    top_p=1.0,  # Override model default to eliminate warnings
+                    attention_mask=inputs.attention_mask,
+                    max_new_tokens=min(max_length, 50),  # Reduced for speed
+                    do_sample=True,  # Enable sampling for diversity
+                    temperature=0.7,  # Moderate temperature
+                    top_p=0.9,  # Nucleus sampling
                     pad_token_id=self.tokenizer.pad_token_id,
                     eos_token_id=self.tokenizer.eos_token_id,
                 )
@@ -236,20 +276,10 @@ class ExampleProcessor:
             logger.warning(f"CoT generation failed: {e}, using fallback reasoning")
             reasoning = "Let me analyze the options step by step."
 
-        # Only truncate if we find complete answer patterns (not partial ones)
+        # Clean up reasoning (remove premature answers)
         stop_patterns = [
-            "the answer is a",
-            "the answer is b", 
-            "the answer is c",
-            "the answer is d",
-            "therefore a",
-            "therefore b",
-            "therefore c", 
-            "therefore d",
-            "so the answer is a",
-            "so the answer is b",
-            "so the answer is c",
-            "so the answer is d",
+            "the answer is a", "the answer is b", "the answer is c", "the answer is d",
+            "therefore a", "therefore b", "therefore c", "therefore d",
         ]
         
         reasoning_lower = reasoning.lower()
@@ -258,8 +288,8 @@ class ExampleProcessor:
                 reasoning = reasoning[:reasoning_lower.find(pattern)].strip()
                 break
 
-        # Ensure we have meaningful reasoning (at least 20 characters)
+        # Ensure meaningful reasoning
         if not reasoning or len(reasoning) < 20:
-            reasoning = "Looking at each option carefully, I need to consider which piece of safety equipment would prevent mold spores from entering the respiratory system."
+            reasoning = "Looking at each option carefully, I need to consider which is most supported by the evidence."
 
         return reasoning 

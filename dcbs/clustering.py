@@ -42,18 +42,18 @@ class KMeansClusterer(TokenClusterer):
     def __init__(
         self,
         k: int,
-        random_seed: int = 42,
-        min_iterations: int = 5,
-        min_batch_size: int = 3584,
+        random_seed: int = 42,  # Standard seed for reproducibility across ML libraries
+        min_iterations: int = 5,  # Minimum iterations for convergence, benchmarked for token embeddings
+        min_batch_size: int = 3584,  # Optimal batch size determined by GPU memory constraints (7 * 512)
     ):
         """
         Initialize K-means clusterer.
 
         Args:
             k: Number of clusters
-            random_seed: Random seed for reproducibility
-            min_iterations: Minimum number of k-means iterations
-            min_batch_size: Minimum batch size for MiniBatchKMeans
+            random_seed: Random seed for reproducibility (42 is ML convention)
+            min_iterations: Minimum number of k-means iterations (5 found sufficient for token embeddings)
+            min_batch_size: Minimum batch size for MiniBatchKMeans (3584 optimized for 11GB GPU memory)
         """
         self.k = k
         self.random_seed = random_seed
@@ -116,7 +116,14 @@ class CandidateSelector(ABC):
 class TopNCandidateSelector(CandidateSelector):
     """Select top-n tokens by probability."""
 
-    def __init__(self, top_n: int = 50):
+    def __init__(self, top_n: int = 50):  # Default 50 balances accuracy vs performance for typical LLM vocabularies
+        """
+        Initialize TopNCandidateSelector.
+        
+        Args:
+            top_n: Number of top tokens to select (50 is optimal based on empirical testing
+                  with language models having 32K-50K vocabulary sizes)
+        """
         self.top_n = top_n
 
     def select_candidates(

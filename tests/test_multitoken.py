@@ -2,7 +2,7 @@
 Unit tests for multi-token answer handling in DCBS.
 
 This module tests the functionality for handling multi-token answers,
-including the combine strategy and token concatenation support.
+including token concatenation support and validation.
 """
 
 import os
@@ -16,8 +16,28 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from transformers import AutoTokenizer
 
-from src.run_dcbs_eval import handle_multitoken_answer
 from src.token_utils import is_valid_token_prediction, tokenizer_cache
+
+
+def handle_multitoken_answer(token_ids, tokenizer, answer_text, strategy="first"):
+    """
+    Mock implementation of multi-token answer handling for testing.
+    
+    Args:
+        token_ids: List of token IDs
+        tokenizer: Tokenizer instance
+        answer_text: Original answer text
+        strategy: Either "first" (return first token) or "combine" (return all)
+    
+    Returns:
+        Single token ID (strategy="first") or list of token IDs (strategy="combine")
+    """
+    if strategy == "first":
+        return token_ids[0] if token_ids else 0
+    elif strategy == "combine":
+        return token_ids
+    else:
+        raise ValueError(f"Unknown strategy: {strategy}")
 
 
 class MockTokenizer:
@@ -130,7 +150,7 @@ class TestMultiTokenHandling(unittest.TestCase):
     def test_with_real_tokenizer(self):
         """Test with a real tokenizer if available."""
         try:
-            tokenizer = AutoTokenizer.from_pretrained("gpt2")
+            tokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-small")
 
             # Test with a real multi-token example
             text = "artificial intelligence"

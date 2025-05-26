@@ -13,6 +13,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from dcbs import SamplingContext
 from src.errors import eval_logger as logger
+from src.evaluation_core.template_manager import ChatTemplateManager
 
 
 class ModelManager:
@@ -65,6 +66,16 @@ class ModelManager:
         # Add padding token if missing
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
+            
+        # Set up the chat template using the template manager
+        ChatTemplateManager.setup_chat_template(self.tokenizer, self.model_name)
+        
+        # Validate that the chat template is working correctly
+        if not ChatTemplateManager.validate_template(self.tokenizer, self.model_name):
+            logger.warning(
+                f"Chat template validation failed for {self.model_name}. "
+                "This may cause issues with prompt formatting."
+            )
 
         self.device = next(self.model.parameters()).device
 

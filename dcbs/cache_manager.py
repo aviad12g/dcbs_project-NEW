@@ -137,6 +137,39 @@ class ThreadSafeCache:
 class DCBSCacheManager:
     """Centralized cache manager for DCBS operations."""
 
+    # Singleton instance for backward compatibility
+    _instance: Optional['DCBSCacheManager'] = None
+    _instance_lock = threading.Lock()
+
+    @classmethod
+    def get_instance(cls, config: Optional[CacheConfig] = None) -> 'DCBSCacheManager':
+        """Get the singleton cache manager instance (for backward compatibility).
+        
+        This method is provided for backward compatibility. New code should
+        use dependency injection by creating and passing DCBSCacheManager instances.
+        
+        Args:
+            config: Optional cache configuration
+            
+        Returns:
+            Singleton cache manager instance
+        """
+        if cls._instance is None:
+            with cls._instance_lock:
+                if cls._instance is None:
+                    cache_config = config or CacheConfig()
+                    cls._instance = cls(cache_config)
+        
+        return cls._instance
+    
+    @classmethod
+    def reset_instance(cls) -> None:
+        """Reset the singleton cache manager instance (for testing)."""
+        with cls._instance_lock:
+            if cls._instance:
+                cls._instance.clear_all_caches()
+            cls._instance = None
+
     def __init__(self, config: CacheConfig):
         self.config = config
 
@@ -256,29 +289,21 @@ class DCBSCacheManager:
         return stats
 
 
-# Global cache manager instance (lazy initialization)
-_global_cache_manager: Optional[DCBSCacheManager] = None
-_cache_manager_lock = threading.Lock()
-
-
+# Backward compatibility functions using the singleton pattern
 def get_cache_manager(config: Optional[CacheConfig] = None) -> DCBSCacheManager:
-    """Get or create the global cache manager instance."""
-    global _global_cache_manager
-
-    if _global_cache_manager is None:
-        with _cache_manager_lock:
-            if _global_cache_manager is None:
-                cache_config = config or CacheConfig()
-                _global_cache_manager = DCBSCacheManager(cache_config)
-
-    return _global_cache_manager
+    """Get the cache manager singleton instance (for backward compatibility).
+    
+    New code should use dependency injection by creating and passing DCBSCacheManager instances.
+    
+    Args:
+        config: Optional cache configuration
+        
+    Returns:
+        Cache manager instance
+    """
+    return DCBSCacheManager.get_instance(config)
 
 
 def reset_cache_manager() -> None:
-    """Reset the global cache manager (useful for testing)."""
-    global _global_cache_manager
-
-    with _cache_manager_lock:
-        if _global_cache_manager:
-            _global_cache_manager.clear_all_caches()
-        _global_cache_manager = None
+    """Reset the cache manager singleton instance (for testing)."""
+    DCBSCacheManager.reset_instance()

@@ -152,8 +152,8 @@ class ArgumentParserSetup:
         parser.add_argument(
             "--samplers",
             nargs="+",
-            choices=["greedy", "top-p", "dcbs", "random"],
-            help="Specify which samplers to evaluate",
+            choices=["greedy", "top_p", "dcbs", "random"],
+            help="Specify which samplers to evaluate (default: all)",
         )
 
         return parser

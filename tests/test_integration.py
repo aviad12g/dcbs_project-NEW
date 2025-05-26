@@ -125,12 +125,12 @@ class TestSamplerFactory:
         samplers = SamplerFactory.create_samplers(config)
 
         assert "greedy" in samplers
-        assert "top-p" in samplers
+        assert "top_p" in samplers
         assert "dcbs" in samplers
         assert "random" in samplers
 
         # Test that configurations are applied
-        assert samplers["top-p"].p == 0.8
+        assert samplers["top_p"].p == 0.8
         assert samplers["dcbs"].k == 5
         assert samplers["dcbs"].top_n == 20
 
@@ -255,37 +255,38 @@ class TestVisualization:
             "statistics": {
                 "greedy": {
                     "accuracy": 75.0,
-                    "correct": 75,
-                    "total": 100,
-                    "avg_time_ms": 10.5,
-                    "confidence_interval": (65.5, 84.5),
+                    "correct": 15,
+                    "total": 20,
+                    "avg_time_ms": 500.0,
+                    "confidence_interval": (55.0, 89.0),
                 },
-                "top-p": {
-                    "accuracy": 73.2,
-                    "correct": 73,
-                    "total": 100,
-                    "avg_time_ms": 12.3,
-                    "confidence_interval": (63.2, 83.2),
+                "top_p": {
+                    "accuracy": 70.0,
+                    "correct": 14,
+                    "total": 20,
+                    "avg_time_ms": 520.0,
+                    "confidence_interval": (50.0, 85.0),
                 },
                 "dcbs": {
-                    "accuracy": 77.8,
-                    "correct": 78,
-                    "total": 100,
-                    "avg_time_ms": 15.1,
-                    "confidence_interval": (68.1, 87.5),
+                    "accuracy": 80.0,
+                    "correct": 16,
+                    "total": 20,
+                    "avg_time_ms": 600.0,
+                    "confidence_interval": (60.0, 92.0),
                 },
                 "random": {
-                    "accuracy": 49.5,
-                    "correct": 49,
-                    "total": 100,
-                    "avg_time_ms": 8.9,
-                    "confidence_interval": (39.2, 59.8),
+                    "accuracy": 25.0,
+                    "correct": 5,
+                    "total": 20,
+                    "avg_time_ms": 450.0,
+                    "confidence_interval": (10.0, 45.0),
                 },
             },
             "config": {
                 "model": "test-model",
-                "total_examples": 100,
-                "methods": ["greedy", "top-p", "dcbs", "random"],
+                "total_examples": 20,
+                "methods": ["greedy", "top_p", "dcbs", "random"],
+                "include_cot": True,
             },
         }
 

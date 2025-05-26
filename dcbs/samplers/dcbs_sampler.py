@@ -15,9 +15,7 @@ from .base import Sampler, SamplingContext, PROB_EPSILON
 from ..cache_manager import CacheConfig, get_cache_manager
 from ..clustering import (
     CandidateSelector,
-    KMeansClusterer,
     TokenClusterer,
-    TopNCandidateSelector,
 )
 
 
@@ -120,6 +118,10 @@ class DCBSSampler(Sampler):
         """
         Create a DCBS sampler with default clustering and candidate selection.
         
+        Note: This method imports specific implementations to maintain backward 
+        compatibility. For new code, prefer dependency injection by directly 
+        passing clusterer and candidate_selector instances.
+        
         Args:
             k: Number of clusters for K-means (default: 8)
             top_n: Number of top tokens to consider (default: 50)
@@ -131,6 +133,9 @@ class DCBSSampler(Sampler):
         Returns:
             Configured DCBSSampler instance
         """
+        # Import here to avoid tight coupling at module level
+        from ..clustering import KMeansClusterer, TopNCandidateSelector
+        
         clusterer = KMeansClusterer(k=k)
         candidate_selector = TopNCandidateSelector(top_n=top_n)
         return cls(clusterer, candidate_selector, cache_config, enable_caching, 

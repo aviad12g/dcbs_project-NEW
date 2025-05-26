@@ -27,9 +27,11 @@ class SamplerFactory:
         """
         return {
             "greedy": GreedySampler(),
-            "top-p": TopPSampler(p=config.top_p),
+            "top_p": TopPSampler(p=config.top_p),
             "dcbs": DCBSSampler.create_default(
-                k=config.k, top_n=config.top_n, enable_caching=config.enable_caching
+                k=config.k,
+                top_n=config.top_n,
+                enable_caching=config.enable_caching,
             ),
             "random": RandomSampler(),
         } 

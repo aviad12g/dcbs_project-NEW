@@ -1,5 +1,5 @@
 """
-DCBS evaluation framework.
+DCBS (Diverse Cluster-Based Sampling) project package.
 
 This package contains the evaluation framework for comparing
 Disjunctive Category Beam Search (DCBS) against other sampling methods

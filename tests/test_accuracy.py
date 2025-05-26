@@ -13,6 +13,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import Mock, patch
 
 import numpy as np
 import torch
@@ -22,16 +23,17 @@ from transformers import AutoTokenizer
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Fix imports to use proper paths
-from src.run_dcbs_eval import is_correct
+from src.token_utils import is_valid_token_prediction
 
 
 class TestAccuracy(unittest.TestCase):
     """Test case for accuracy computation."""
 
     def setUp(self):
-        """Set up tokenizer and other resources for testing."""
-        # Use a small model for testing
-        self.tokenizer = AutoTokenizer.from_pretrained("gpt2")
+        """Set up test environment."""
+        # Mock tokenizer for testing
+        self.tokenizer = Mock()
+        self.tokenizer.decode.return_value = "A"
 
         # Set random seed for reproducibility
         random.seed(42)
@@ -141,6 +143,48 @@ class TestAccuracy(unittest.TestCase):
 
         # Greedy should be at least as good as random
         self.assertGreaterEqual(greedy_acc, random_acc)
+
+    def test_correct_prediction(self):
+        """Test that correct predictions are identified properly."""
+        mock_tokenizer = Mock()
+        mock_tokenizer.decode.return_value = "A"
+        
+        # Correct prediction case
+        result = is_valid_token_prediction(
+            pred_id=100, 
+            correct_id=100, 
+            correct_answer="A", 
+            tokenizer=mock_tokenizer
+        )
+        self.assertTrue(result)
+
+    def test_incorrect_prediction(self):
+        """Test that incorrect predictions are identified properly."""
+        mock_tokenizer = Mock()
+        mock_tokenizer.decode.return_value = "B"
+        
+        # Incorrect prediction case
+        result = is_valid_token_prediction(
+            pred_id=101, 
+            correct_id=100, 
+            correct_answer="A", 
+            tokenizer=mock_tokenizer
+        )
+        self.assertFalse(result)
+
+    def test_multitoken_prediction(self):
+        """Test handling of multi-token predictions."""
+        mock_tokenizer = Mock()
+        mock_tokenizer.decode.return_value = "multi"
+        
+        # Multi-token correct answer where pred_id matches first token
+        result = is_valid_token_prediction(
+            pred_id=100, 
+            correct_id=[100, 101], 
+            correct_answer="multi token", 
+            tokenizer=mock_tokenizer
+        )
+        self.assertTrue(result)
 
 
 if __name__ == "__main__":

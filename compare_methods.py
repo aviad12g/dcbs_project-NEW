@@ -6,29 +6,23 @@ This script provides a comprehensive evaluation framework for comparing
 different sampling methods on multiple-choice reasoning tasks.
 """
 
+import csv
 import datetime
 import json
 import os
 import sys
 from typing import Dict, List
 
-try:
-    from src.errors import eval_logger as logger
-    from src.errors import setup_logging
-    from src.evaluation_core import (
-        EvaluationConfig,
-        EvaluationRunner,
-        load_benchmark_data,
-    )
-    from src.visualization import generate_all_visualizations
-    from src.cli_parser import ArgumentParserSetup
-    from src.config_builder import ConfigBuilder
-except ImportError as e:
-    print(f"Import error: {e}")
-    print(f"Make sure you're running from the project root directory")
-    print(f"Current working directory: {os.getcwd()}")
-    print("Try: pip install -e .")
-    sys.exit(1)
+from src.errors import eval_logger as logger
+from src.errors import setup_logging
+from src.evaluation_core import (
+    EvaluationConfig,
+    EvaluationRunner,
+    load_benchmark_data,
+)
+from src.visualization import generate_all_visualizations
+from src.cli_parser import ArgumentParserSetup
+from src.config_builder import ConfigBuilder
 
 
 class ParameterSweepRunner:
@@ -124,8 +118,43 @@ class ResultsManager:
 
         if args.output_format in ["csv", "both"]:
             csv_path = os.path.join(output_dir, f"evaluation_results_{timestamp}.csv")
-            # TODO: Implement CSV export functionality
-            logger.info(f"CSV export not yet implemented: {csv_path}")
+            
+            # Extract statistics for CSV export
+            statistics = results.get("statistics", {})
+            config = results.get("config", {})
+            
+            # Prepare CSV data
+            csv_data = []
+            
+            # Add header row with metadata
+            csv_data.append(["DCBS Evaluation Results", timestamp])
+            csv_data.append(["Model", config.get("model", "Unknown")])
+            csv_data.append(["Benchmark", config.get("benchmark", "Unknown")])
+            csv_data.append(["Total Examples", config.get("total_examples", 0)])
+            csv_data.append([])  # Empty row for separation
+            
+            # Add results table header
+            csv_data.append(["Method", "Accuracy (%)", "Correct", "Total", "95% CI Low", "95% CI High", "Avg Time (ms)"])
+            
+            # Add data for each method
+            for method, stats in statistics.items():
+                ci = stats.get("confidence_interval", (0, 0))
+                csv_data.append([
+                    method,
+                    f"{stats.get('accuracy', 0):.2f}",
+                    stats.get("correct", 0),
+                    stats.get("total", 0),
+                    f"{ci[0]:.2f}" if ci else "N/A",
+                    f"{ci[1]:.2f}" if ci else "N/A",
+                    f"{stats.get('avg_time_ms', 0):.2f}"
+                ])
+            
+            # Write CSV file
+            with open(csv_path, "w", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerows(csv_data)
+                
+            logger.info(f"CSV results saved to: {csv_path}")
 
         if args.save_details:
             details_path = os.path.join(output_dir, f"detailed_results_{timestamp}.json")

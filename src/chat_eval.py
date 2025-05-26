@@ -14,33 +14,25 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-# Remove sys.path.append line for clean imports
+import numpy as np
+import torch
+from tqdm import tqdm
+from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
 
-try:
-    import numpy as np
-    import torch
-    from tqdm import tqdm
-    from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
+from dcbs import (
+    DCBSSampler,
+    GreedySampler,
+    RandomSampler,
+    SamplingContext,
+    TopPSampler,
+)
 
-    from dcbs import (
-        DCBSSampler,
-        GreedySampler,
-        RandomSampler,
-        SamplingContext,
-        TopPSampler,
-    )
-
-    # Import local modules
-    from src.errors import eval_logger as logger
-    from src.errors import setup_logging
-    from src.token_utils import get_answer_token_ids, is_valid_token_prediction
-    from src.visualization import generate_all_visualizations
-
-except ImportError as e:
-    print(f"Import error: {e}")
-    print("Make sure all required packages are installed:")
-    print("pip install torch transformers numpy tqdm")
-    exit(1)
+# Import local modules
+from src.errors import eval_logger as logger
+from src.errors import setup_logging, DataError, EvaluationError, log_exception
+from src.evaluation_core.template_manager import ChatTemplateManager
+from src.token_utils import get_answer_token_ids, is_valid_token_prediction
+from src.visualization import generate_all_visualizations
 
 
 class ChatModel:
@@ -51,32 +43,22 @@ class ChatModel:
         self.tokenizer = tokenizer
         self.device = next(model.parameters()).device
 
-        # Ensure chat template is available
-        if not hasattr(tokenizer, "chat_template") or tokenizer.chat_template is None:
-            # Set a default chat template for Llama models
-            tokenizer.chat_template = (
-                "{% if messages[0]['role'] == 'system' %}"
-                "{% set loop_messages = messages[1:] %}"
-                "{% set system_message = messages[0]['content'] %}"
-                "{% else %}"
-                "{% set loop_messages = messages %}"
-                "{% set system_message = false %}"
-                "{% endif %}"
-                "{% for message in loop_messages %}"
-                "{% if loop.index0 == 0 and system_message %}"
-                "{{ '<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n' + system_message + '<|eot_id|>' }}"
-                "{% endif %}"
-                "{{ '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n' + message['content'] + '<|eot_id|>' }}"
-                "{% if loop.last and add_generation_prompt %}"
-                "{{ '<|start_header_id|>assistant<|end_header_id|>\n\n' }}"
-                "{% endif %}"
-                "{% endfor %}"
+        # Ensure chat template is available using the template manager
+        ChatTemplateManager.setup_chat_template(self.tokenizer, self.model.config._name_or_path)
+        
+        # Validate that the chat template is working correctly
+        if not ChatTemplateManager.validate_template(self.tokenizer, self.model.config._name_or_path):
+            logger.warning(
+                "Chat template validation failed. Using fallback template."
             )
 
     def generate_response(
         self, messages: List[Dict[str, str]], sampler, max_new_tokens: int = 50
     ) -> str:
-        """Generate a response using the specified sampler.
+        """Generate a response using the specified sampler with token-by-token generation.
+
+        This ensures each sampler produces genuinely different reasoning that reflects
+        the sampler's characteristics for scientifically accurate comparison.
 
         Args:
             messages: List of chat messages
@@ -95,7 +77,7 @@ class ChatModel:
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
         input_length = inputs.input_ids.shape[1]
 
-        # Generate using the sampler
+        # Generate using the sampler with token-by-token approach
         generated_tokens = []
         current_input = inputs.input_ids
 
@@ -108,7 +90,11 @@ class ChatModel:
                 # Sample next token using the specified sampler
                 if isinstance(sampler, DCBSSampler):
                     next_token = sampler.sample(
-                        logits, embedding=self.model.get_input_embeddings()
+                        logits, context=SamplingContext(
+                            embedding_layer=self.model.get_input_embeddings(),
+                            tokenizer=self.tokenizer,
+                            device=self.device
+                        )
                     )
                 else:
                     next_token = sampler.sample(logits)
@@ -227,14 +213,26 @@ def process_example_with_cot(example: Dict, chat_model: ChatModel, sampler) -> D
     """
     prompt_id = example.get("id", "unknown_id")
 
-    # Validate example
-    if not ("sentence" in example and "option1" in example and "option2" in example):
+    # Validate example - handle both old and new data formats
+    if "sentence" in example and "option1" in example and "option2" in example:
+        # Old format
+        sentence = example["sentence"]
+        options = [example["option1"], example["option2"]]
+        correct_option = example.get("correct_option", "1")
+        correct_answer = example[f"option{correct_option}"]
+    elif "question" in example and "options" in example:
+        # New format
+        sentence = example["question"]
+        options = example["options"]
+        correct_option = example.get("correct_option", "1")
+        # Convert 1-based index to 0-based for options array
+        correct_idx = int(correct_option) - 1
+        if 0 <= correct_idx < len(options):
+            correct_answer = options[correct_idx]
+        else:
+            raise DataError(f"Example {prompt_id} has invalid correct_option: {correct_option}")
+    else:
         raise DataError(f"Example {prompt_id} missing required fields")
-
-    sentence = example["sentence"]
-    options = [example["option1"], example["option2"]]
-    correct_option = example.get("correct_option", "1")
-    correct_answer = example[f"option{correct_option}"]
 
     result = {
         "prompt_id": prompt_id,
@@ -256,7 +254,7 @@ def process_example_with_cot(example: Dict, chat_model: ChatModel, sampler) -> D
         final_messages = create_final_answer_messages(cot_reasoning, sentence, options)
         final_logits = chat_model.get_final_answer_logits(final_messages)
 
-        # Get token IDs for answer options
+        # Get token IDs for answer options with improved strategy
         answer_ids = {}
         for option in options:
             # Try with leading space first, then without
@@ -267,23 +265,74 @@ def process_example_with_cot(example: Dict, chat_model: ChatModel, sampler) -> D
                 option, chat_model.tokenizer, add_leading_space=False
             )
 
-            # Use the single-token version if available
+            # Smart token selection strategy
             if len(token_ids_with_space) == 1:
                 answer_ids[option] = token_ids_with_space[0]
             elif len(token_ids_no_space) == 1:
                 answer_ids[option] = token_ids_no_space[0]
+            elif len(token_ids_with_space) >= 2:
+                # For multi-token options, prefer the first token (more distinctive)
+                # unless it's a common word, then use second token
+                first_token = token_ids_with_space[0]
+                decoded_first = chat_model.tokenizer.decode([first_token]).strip()
+                
+                # If first token is very short or common, use second token
+                if len(decoded_first) <= 2 or decoded_first.lower() in [' the', ' a', ' an', ' it', ' they']:
+                    answer_ids[option] = token_ids_with_space[1] if len(token_ids_with_space) > 1 else first_token
+                else:
+                    answer_ids[option] = first_token
+            elif len(token_ids_no_space) >= 2:
+                # Same logic for no-space tokens
+                first_token = token_ids_no_space[0]
+                decoded_first = chat_model.tokenizer.decode([first_token]).strip()
+                
+                if len(decoded_first) <= 2 or decoded_first.lower() in ['the', 'a', 'an', 'it', 'they']:
+                    answer_ids[option] = token_ids_no_space[1] if len(token_ids_no_space) > 1 else first_token
+                else:
+                    answer_ids[option] = first_token
             else:
-                # Fall back to first token
+                # Fallback
                 answer_ids[option] = (
                     token_ids_with_space[0]
                     if token_ids_with_space
                     else token_ids_no_space[0]
                 )
 
+        # Check for duplicate token IDs and fix them
+        token_counts = {}
+        for option, token_id in answer_ids.items():
+            if token_id in token_counts:
+                token_counts[token_id].append(option)
+            else:
+                token_counts[token_id] = [option]
+        
+        # If duplicates exist, try alternative tokenization
+        for token_id, options_list in token_counts.items():
+            if len(options_list) > 1:
+                logger.warning(f"Duplicate token {token_id} for options: {options_list}")
+                # Try to fix by using different parts of the tokens
+                for i, option in enumerate(options_list):
+                    tokens_space = get_answer_token_ids(f" {option}", chat_model.tokenizer, add_leading_space=False)
+                    tokens_no_space = get_answer_token_ids(option, chat_model.tokenizer, add_leading_space=False)
+                    
+                    # Try using middle token if available
+                    if len(tokens_space) >= 3:
+                        answer_ids[option] = tokens_space[1]  # Use second token
+                    elif len(tokens_space) >= 2:
+                        answer_ids[option] = tokens_space[-1]  # Use last token
+                    elif len(tokens_no_space) >= 2:
+                        answer_ids[option] = tokens_no_space[-1]  # Use last token
+                    # If still the same, just keep original but log warning
+                    
+        # Verify uniqueness
+        final_tokens = set(answer_ids.values())
+        if len(final_tokens) < len(options):
+            logger.error(f"Still have duplicate tokens after fix: {len(options)} options -> {len(final_tokens)} unique tokens")
+
         result["answer_ids"] = answer_ids
-        result["filter_tokens"] = set(answer_ids.values())
+        result["filter_tokens"] = list(answer_ids.values())  # Convert set to list for JSON serialization
         result["correct_id"] = answer_ids[correct_answer]
-        result["logits"] = final_logits
+        # Note: logits tensor removed from results for JSON serialization
 
         # Calculate answer probabilities
         all_probs = torch.softmax(final_logits, dim=0)
@@ -300,7 +349,7 @@ def process_example_with_cot(example: Dict, chat_model: ChatModel, sampler) -> D
 
 
 def evaluate_with_sampler(
-    result: Dict, chat_model: ChatModel, sampler, sampler_name: str
+    result: Dict, chat_model: ChatModel, sampler, sampler_name: str, final_logits: torch.Tensor
 ) -> Dict:
     """Evaluate a single example with a specific sampler.
 
@@ -309,26 +358,30 @@ def evaluate_with_sampler(
         chat_model: ChatModel instance
         sampler: Sampler to use
         sampler_name: Name of the sampler for logging
+        final_logits: Logits tensor for final answer prediction
 
     Returns:
         Evaluation results
     """
     start_time = time.time()
 
-    logits = result["logits"]
-    filter_tokens = result["filter_tokens"]
+    filter_tokens = set(result["filter_tokens"])  # Convert back to set for filtering
     correct_id = result["correct_id"]
     correct_answer = result["correct_answer"]
 
     # Sample using the specified sampler
     if isinstance(sampler, DCBSSampler):
         pred_id = sampler.sample(
-            logits,
+            final_logits,
             filter_tokens=filter_tokens,
-            embedding=chat_model.model.get_input_embeddings(),
+            context=SamplingContext(
+                embedding_layer=chat_model.model.get_input_embeddings(),
+                tokenizer=chat_model.tokenizer,
+                device=chat_model.device
+            )
         )
     else:
-        pred_id = sampler.sample(logits, filter_tokens=filter_tokens)
+        pred_id = sampler.sample(final_logits, filter_tokens=filter_tokens)
 
     elapsed_ms = (time.time() - start_time) * 1000
 
@@ -382,8 +435,8 @@ def main(args):
         # Initialize samplers
         samplers = {
             "greedy": GreedySampler(),
-            "top-p": TopPSampler(p=args.top_p),
-            "dcbs": DCBSSampler(k=args.k, top_n=args.top_n),
+            "top_p": TopPSampler(p=args.top_p),
+            "dcbs": DCBSSampler.create_default(k=args.k, top_n=args.top_n),
             "random": RandomSampler(),
         }
 
@@ -400,24 +453,32 @@ def main(args):
                 logger.info(f"Processing example {i + 1}/{len(benchmark_data)}")
 
             try:
-                # Process with chain-of-thought for each sampler
+                # Generate CoT reasoning ONCE using Greedy (most reliable)
+                base_processed_result = process_example_with_cot(
+                    example, chat_model, samplers["greedy"]
+                )
+                
+                # Get logits ONCE for all samplers using the same CoT reasoning
+                final_messages = create_final_answer_messages(
+                    base_processed_result["cot_reasoning"], 
+                    base_processed_result["sentence"], 
+                    base_processed_result["options"]
+                )
+                final_logits = chat_model.get_final_answer_logits(final_messages)
+
+                # Now evaluate each sampler using the SAME CoT and logits
                 for sampler_name, sampler in samplers.items():
                     logger.debug(
                         f"Processing example {example.get('id', i)} with {sampler_name}"
                     )
 
-                    # Process example with CoT
-                    processed_result = process_example_with_cot(
-                        example, chat_model, sampler
-                    )
-
-                    # Evaluate with sampler
+                    # Use the SAME base result and logits for all samplers
                     eval_result = evaluate_with_sampler(
-                        processed_result, chat_model, sampler, sampler_name
+                        base_processed_result, chat_model, sampler, sampler_name, final_logits
                     )
 
-                    # Combine results
-                    final_result = {**processed_result, **eval_result}
+                    # Combine results - use base_processed_result for consistency
+                    final_result = {**base_processed_result, **eval_result}
                     all_results.append(final_result)
 
                     # Update statistics
@@ -472,22 +533,15 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Chat-based evaluation with chain-of-thought"
-    )
-    parser.add_argument("--model", type=str, required=True, help="Model name or path")
-    parser.add_argument(
-        "--benchmark", type=str, required=True, help="Benchmark JSON file"
-    )
-    parser.add_argument("--output", type=str, required=True, help="Output JSON file")
-    parser.add_argument(
-        "--top-p", type=float, default=0.9, help="Top-p value for nucleus sampling"
-    )
-    parser.add_argument("--k", type=int, default=8, help="Number of clusters for DCBS")
-    parser.add_argument("--top-n", type=int, default=50, help="Top-n tokens for DCBS")
+    parser = argparse.ArgumentParser(description="Chat-based evaluation with CoT")
+    parser.add_argument("--model", required=True, help="Model name or path")
+    parser.add_argument("--benchmark", required=True, help="Benchmark JSON file")
+    parser.add_argument("--output", required=True, help="Output JSON file")
     parser.add_argument("--limit", type=int, help="Limit number of examples")
-    parser.add_argument("--log-level", type=str, default="INFO", help="Logging level")
-
+    parser.add_argument("--top_p", type=float, default=0.9, help="Top-p value")
+    parser.add_argument("--k", type=int, default=3, help="DCBS k value")
+    parser.add_argument("--top_n", type=int, default=50, help="DCBS top_n value")
+    parser.add_argument("--log_level", default="INFO", help="Logging level")
+    
     args = parser.parse_args()
-    exit_code = main(args)
-    exit(exit_code)
+    exit(main(args))
