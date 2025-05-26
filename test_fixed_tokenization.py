@@ -67,14 +67,14 @@ def test_fixed_tokenization():
         print(f"\n INITIAL TOKEN MAPPING:")
         for option, token_id in answer_ids.items():
             decoded = tokenizer.decode([token_id])
-            print(f"  '{option}' → {token_id} ('{decoded}')")
+            print(f"  '{option}' to {token_id} ('{decoded}')")
             
         # Fix duplicates
         duplicates_found = False
         for token_id, options_list in token_counts.items():
             if len(options_list) > 1:
                 duplicates_found = True
-                print(f"\ FIXING DUPLICATES for token {token_id}: {options_list}")
+                print(f"\n FIXING DUPLICATES for token {token_id}: {options_list}")
                 
                 for j, option in enumerate(options_list):
                     tokens_space = get_answer_token_ids(f" {option}", tokenizer, add_leading_space=False)
@@ -83,17 +83,17 @@ def test_fixed_tokenization():
                     # Try different strategies
                     if len(tokens_space) >= 3:
                         answer_ids[option] = tokens_space[1]  # Use second token
-                        print(f"  → '{option}' fixed to {tokens_space[1]} (second space token)")
+                        print(f"  '{option}' fixed to {tokens_space[1]} (second space token)")
                     elif len(tokens_space) >= 2:
                         answer_ids[option] = tokens_space[-1]  # Use last token
-                        print(f"  → '{option}' fixed to {tokens_space[-1]} (last space token)")
+                        print(f"  '{option}' fixed to {tokens_space[-1]} (last space token)")
                     elif len(tokens_no_space) >= 2:
                         answer_ids[option] = tokens_no_space[-1]  # Use last token
-                        print(f"  → '{option}' fixed to {tokens_no_space[-1]} (last direct token)")
+                        print(f"  '{option}' fixed to {tokens_no_space[-1]} (last direct token)")
         
         # Final verification
         final_tokens = set(answer_ids.values())
-        print(f"\ FINAL RESULTS:")
+        print(f"\n FINAL RESULTS:")
         print(f"  Options: {len(case['options'])}, Unique tokens: {len(final_tokens)}")
         
         if len(final_tokens) == len(case['options']):
@@ -103,7 +103,7 @@ def test_fixed_tokenization():
             
         for option, token_id in answer_ids.items():
             decoded = tokenizer.decode([token_id])
-            print(f"  '{option}' → {token_id} ('{decoded}')")
+            print(f"  '{option}' to {token_id} ('{decoded}')")
 
 if __name__ == "__main__":
     test_fixed_tokenization() 

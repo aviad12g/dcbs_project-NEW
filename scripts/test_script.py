@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Test script to check if Python is working correctly.
-"""
+"""Test script."""
 
 import sys
 import argparse

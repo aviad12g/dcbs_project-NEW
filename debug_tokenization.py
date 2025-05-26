@@ -69,7 +69,7 @@ def debug_tokenization():
             
         print(f"\n FINAL TOKEN MAPPING:")
         for option, token_id in answer_ids.items():
-            print(f"  '{option}' → {token_id}")
+            print(f"  '{option}' to {token_id}")
             
         # Check for duplicates
         unique_tokens = set(answer_ids.values())

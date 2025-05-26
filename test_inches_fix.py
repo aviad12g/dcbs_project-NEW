@@ -10,7 +10,7 @@ def test_inches_fix():
     
     options = ["square inches", "cubic inches", "inches", "ounces"]
     
-    print("🔍 IMPROVED TOKENIZATION LOGIC:")
+    print("IMPROVED TOKENIZATION LOGIC:")
     print("="*50)
     
     answer_ids = {}
@@ -63,7 +63,7 @@ def test_inches_fix():
     
     for option, token_id in answer_ids.items():
         decoded = tokenizer.decode([token_id])
-        print(f"  '{option}' → {token_id} ('{decoded}')")
+        print(f"  '{option}' to {token_id} ('{decoded}')")
     
     # Check uniqueness
     unique_tokens = set(answer_ids.values())

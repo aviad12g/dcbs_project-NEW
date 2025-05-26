@@ -48,9 +48,9 @@ def run_fisher_test(results_path, method1="greedy", method2="dcbs", output_path=
     
     print("\nEvaluation Statistics:")
     print("=" * 50)
-    print(f"{method1}:  {method1_correct:,}/{method1_total:,} correct ({method1_pct:.1f}%)")
-    print(f"{method2}:    {method2_correct:,}/{method2_total:,} correct ({method2_pct:.1f}%)")
-    print(f"Dataset: {method1_total:,} questions")
+    print(f"{method1}:  {method1_correct}/{method1_total} correct ({method1_pct:.1f}%)")
+    print(f"{method2}:    {method2_correct}/{method2_total} correct ({method2_pct:.1f}%)")
+    print(f"Dataset: {method1_total} questions")
     
     # Perform Fisher's Exact Test
     print("\nFisher's Exact Test Analysis:")
@@ -67,8 +67,8 @@ def run_fisher_test(results_path, method1="greedy", method2="dcbs", output_path=
     
     print(f"Contingency Table:")
     print(f"                Correct    Incorrect    Total")
-    print(f"{method1}:         {method1_correct:,}        {method1_total - method1_correct:,}       {method1_total:,}")
-    print(f"{method2}:           {method2_correct:,}        {method2_total - method2_correct:,}       {method2_total:,}")
+    print(f"{method1}:         {method1_correct}        {method1_total - method1_correct}       {method1_total}")
+    print(f"{method2}:           {method2_correct}        {method2_total - method2_correct}       {method2_total}")
     print()
     print(f"Odds Ratio:     {odds_ratio:.4f}")
     print(f"P-value:        {p_value:.6f}")
@@ -88,7 +88,7 @@ def run_fisher_test(results_path, method1="greedy", method2="dcbs", output_path=
         conclusion = f"No statistically significant difference between {method1} and {method2}"
     
     print(f"Conclusion: {conclusion}")
-    print(f"Confidence: Based on {method1_total:,} samples with α = 0.05")
+    print(f"Confidence: Based on {method1_total} samples with α = 0.05")
     
     # Save results to file
     if output_path is None:
@@ -97,9 +97,9 @@ def run_fisher_test(results_path, method1="greedy", method2="dcbs", output_path=
     with open(output_path, 'w') as f:
         f.write(f"Fisher's Exact Test: {method1} vs {method2} Sampling\n")
         f.write("=" * 50 + "\n\n")
-        f.write(f"Dataset: ({method1_total:,} questions)\n")
-        f.write(f"{method1}:  {method1_correct:,}/{method1_total:,} correct ({method1_pct:.1f}%)\n")
-        f.write(f"{method2}:    {method2_correct:,}/{method2_total:,} correct ({method2_pct:.1f}%)\n\n")
+        f.write(f"Dataset: ({method1_total} questions)\n")
+        f.write(f"{method1}:  {method1_correct}/{method1_total} correct ({method1_pct:.1f}%)\n")
+        f.write(f"{method2}:    {method2_correct}/{method2_total} correct ({method2_pct:.1f}%)\n\n")
         f.write("Statistical Test Results:\n")
         f.write(f"Odds Ratio: {odds_ratio:.4f}\n")
         f.write(f"P-value: {p_value:.6f}\n")

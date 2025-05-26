@@ -451,7 +451,7 @@ def report_memory_usage(
             log_level = logging.WARNING
 
         if log_message:
-            message = f"Memory usage during {operation_name}: {memory_mb:.2f} MB (Δ: {memory_change:+.2f} MB)"
+            message = f"Memory usage during {operation_name}: {memory_mb:.2f} MB (delta: {memory_change:+.2f} MB)"
 
             if log_level == logging.DEBUG:
                 logger_instance.debug(message)
