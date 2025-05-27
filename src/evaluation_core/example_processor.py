@@ -11,7 +11,6 @@ import torch
 
 from dcbs import DCBSSampler, SamplingContext
 from src.errors import eval_logger as logger
-from src.evaluation_core.template_manager import ChatTemplateManager
 
 
 class PromptManager:
