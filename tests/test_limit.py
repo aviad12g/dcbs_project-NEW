@@ -70,7 +70,6 @@ class TestLimit(unittest.TestCase):
         
         # Mock the model loading and processing
         with patch('src.evaluation_core.runner.ModelManager') as mock_model_mgr, \
-             patch('src.evaluation_core.runner.ChatTemplateManager'), \
              patch('src.evaluation_core.runner.ExampleProcessor') as mock_processor:
             
             # Setup mocks

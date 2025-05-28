@@ -315,32 +315,37 @@ class ConfigValidator:
         """Validate a single field against its schema."""
         expected_type = field_schema["type"]
         
-        # Type validation
-        if expected_type == dict and not isinstance(value, dict):
-            raise ValidationError(
-                f"Field '{path}' must be a dictionary",
-                details={"path": path, "value": value, "expected_type": "dict"}
-            )
-        elif expected_type == list and not isinstance(value, list):
-            raise ValidationError(
-                f"Field '{path}' must be a list",
-                details={"path": path, "value": value, "expected_type": "list"}
-            )
-        elif expected_type in (str, int, float, bool) and not isinstance(value, expected_type):
-            raise ValidationError(
-                f"Field '{path}' must be of type {expected_type.__name__}",
-                details={"path": path, "value": value, "expected_type": expected_type.__name__}
-            )
+        # Handle None values for optional fields with None defaults
+        if value is None and field_schema.get("default") is None and not field_schema.get("required", False):
+            return None
         
-        # Choice validation
-        if "choices" in field_schema and value not in field_schema["choices"]:
+        # Type validation (skip for None values that are allowed)
+        if value is not None:
+            if expected_type == dict and not isinstance(value, dict):
+                raise ValidationError(
+                    f"Field '{path}' must be a dictionary",
+                    details={"path": path, "value": value, "expected_type": "dict"}
+                )
+            elif expected_type == list and not isinstance(value, list):
+                raise ValidationError(
+                    f"Field '{path}' must be a list",
+                    details={"path": path, "value": value, "expected_type": "list"}
+                )
+            elif expected_type in (str, int, float, bool) and not isinstance(value, expected_type):
+                raise ValidationError(
+                    f"Field '{path}' must be of type {expected_type.__name__}",
+                    details={"path": path, "value": value, "expected_type": expected_type.__name__}
+                )
+        
+        # Choice validation (skip for None values)
+        if value is not None and "choices" in field_schema and value not in field_schema["choices"]:
             raise ValidationError(
                 f"Field '{path}' must be one of {field_schema['choices']}",
                 details={"path": path, "value": value, "choices": field_schema["choices"]}
             )
         
-        # Range validation (only for non-list types)
-        if expected_type != list:
+        # Range validation (only for non-list types and non-None values)
+        if value is not None and expected_type != list:
             if "min_value" in field_schema and value < field_schema["min_value"]:
                 raise ValidationError(
                     f"Field '{path}' must be >= {field_schema['min_value']}",
@@ -353,11 +358,12 @@ class ConfigValidator:
                     details={"path": path, "value": value, "max_value": field_schema["max_value"]}
                 )
         
-        # Nested validation
-        if expected_type == dict and "schema" in field_schema:
-            return self._validate_dict(value, field_schema["schema"], path)
-        elif expected_type == list and "item_type" in field_schema:
-            return self._validate_list(value, field_schema, path)
+        # Nested validation (skip for None values)
+        if value is not None:
+            if expected_type == dict and "schema" in field_schema:
+                return self._validate_dict(value, field_schema["schema"], path)
+            elif expected_type == list and "item_type" in field_schema:
+                return self._validate_list(value, field_schema, path)
         
         return value
 

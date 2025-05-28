@@ -3,15 +3,41 @@
 Unified DCBS Evaluation Framework
 
 This script provides a comprehensive evaluation framework for comparing
-different sampling methods on multiple-choice reasoning tasks.
+different sampling methods on multiple-choice reasoning tasks with proper
+conversation flow and LLM message completion.
+
+Key features:
+1. Never let LLM complete 'user' messages, only 'assistant' messages
+2. Proper two-step conversation flow with KV caching
+3. No ChatTemplateManager dependency (uses default tokenizer.chat_template)
+4. Fixed parameter handling and validation
+5. Increased token limits to avoid truncation
+6. Enhanced logging and debugging
+7. Clean codebase with unified implementations
+8. Reproducible results with fixed random seeds
 """
 
 import csv
 import datetime
 import json
 import os
+import random
 import sys
 from typing import Dict, List
+
+import numpy as np
+import torch
+
+# Set global random seeds for reproducibility
+GLOBAL_SEED = 42
+random.seed(GLOBAL_SEED)
+np.random.seed(GLOBAL_SEED)
+torch.manual_seed(GLOBAL_SEED)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed(GLOBAL_SEED)
+    torch.cuda.manual_seed_all(GLOBAL_SEED)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 from src.errors import eval_logger as logger
 from src.errors import setup_logging
@@ -118,42 +144,7 @@ class ResultsManager:
 
         if args.output_format in ["csv", "both"]:
             csv_path = os.path.join(output_dir, f"evaluation_results_{timestamp}.csv")
-            
-            # Extract statistics for CSV export
-            statistics = results.get("statistics", {})
-            config = results.get("config", {})
-            
-            # Prepare CSV data
-            csv_data = []
-            
-            # Add header row with metadata
-            csv_data.append(["DCBS Evaluation Results", timestamp])
-            csv_data.append(["Model", config.get("model", "Unknown")])
-            csv_data.append(["Benchmark", config.get("benchmark", "Unknown")])
-            csv_data.append(["Total Examples", config.get("total_examples", 0)])
-            csv_data.append([])  # Empty row for separation
-            
-            # Add results table header
-            csv_data.append(["Method", "Accuracy (%)", "Correct", "Total", "95% CI Low", "95% CI High", "Avg Time (ms)"])
-            
-            # Add data for each method
-            for method, stats in statistics.items():
-                ci = stats.get("confidence_interval", (0, 0))
-                csv_data.append([
-                    method,
-                    f"{stats.get('accuracy', 0):.2f}",
-                    stats.get("correct", 0),
-                    stats.get("total", 0),
-                    f"{ci[0]:.2f}" if ci else "N/A",
-                    f"{ci[1]:.2f}" if ci else "N/A",
-                    f"{stats.get('avg_time_ms', 0):.2f}"
-                ])
-            
-            # Write CSV file
-            with open(csv_path, "w", newline="") as f:
-                writer = csv.writer(f)
-                writer.writerows(csv_data)
-                
+            ResultsManager._save_csv_results(results, csv_path)
             logger.info(f"CSV results saved to: {csv_path}")
 
         if args.save_details:
@@ -161,6 +152,52 @@ class ResultsManager:
             with open(details_path, "w") as f:
                 json.dump(results, f, indent=2, default=str)
             logger.info(f"Detailed results saved to: {details_path}")
+
+    @staticmethod
+    def _save_csv_results(results: Dict, csv_path: str):
+        """Save results in CSV format with improved structure."""
+        statistics = results.get("statistics", {})
+        config = results.get("config", {})
+        
+        # Prepare CSV data
+        csv_data = []
+        
+        # Add header with metadata
+        csv_data.append(["DCBS Evaluation Results", results.get("evaluation_completed_at", "")])
+        csv_data.append(["Model", config.get("model", "Unknown")])
+        csv_data.append(["Benchmark", config.get("benchmark", "Unknown")])
+        csv_data.append(["Total Examples", config.get("total_examples", 0)])
+        csv_data.append(["CoT Enabled", config.get("include_cot", True)])
+        csv_data.append(["Caching Enabled", config.get("enable_caching", True)])
+        csv_data.append([])  # Empty row for separation
+        
+        # Add results table header
+        csv_data.append(["Method", "Accuracy (%)", "Correct", "Total", "95% CI Low", "95% CI High", "Avg Time (ms)"])
+        
+        # Sort methods by accuracy (descending)
+        sorted_methods = sorted(
+            statistics.items(), 
+            key=lambda x: x[1].get('accuracy', 0), 
+            reverse=True
+        )
+        
+        # Add data for each method
+        for method, stats in sorted_methods:
+            ci = stats.get("confidence_interval", (0, 0))
+            csv_data.append([
+                method.upper(),
+                f"{stats.get('accuracy', 0):.2f}",
+                stats.get("correct", 0),
+                stats.get("total", 0),
+                f"{ci[0]:.2f}" if ci else "N/A",
+                f"{ci[1]:.2f}" if ci else "N/A",
+                f"{stats.get('avg_time_ms', 0):.2f}"
+            ])
+        
+        # Write CSV file
+        with open(csv_path, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerows(csv_data)
 
     @staticmethod
     def print_summary(results: Dict, is_sweep: bool = False):
@@ -204,7 +241,7 @@ class ResultsManager:
             
             for method, stats in method_stats:
                 print(
-                    f"{method.title():<12} "
+                    f"{method.upper():<12} "
                     f"{stats['accuracy']:.2f}%{'':<6} "
                     f"{stats['correct']}/{stats['total']:<10} "
                     f"{stats.get('avg_time_ms', 0):.2f}"
@@ -219,6 +256,7 @@ class ResultsManager:
         print(f"Model: {config['model']}")
         print(f"Total Examples: {config['total_examples']}")
         print(f"Methods: {', '.join(config['methods'])}")
+        print(f"CoT: {'Enabled' if config.get('include_cot', True) else 'Disabled'}")
         print(f"Caching: {'Enabled' if config.get('enable_caching', True) else 'Disabled'}")
         print("-" * 70)
 
@@ -233,7 +271,7 @@ class ResultsManager:
             ci_str = f"({ci[0]:.1f}, {ci[1]:.1f})"
 
             print(
-                f"{method.title():<12} "
+                f"{method.upper():<12} "
                 f"{stats['accuracy']:.2f}%{'':<6} "
                 f"{ci_str:<20} "
                 f"{stats['total']:<8} "
@@ -255,6 +293,7 @@ class EvaluationFramework:
         setup_logging(log_level=log_level)
 
         logger.info("Starting unified DCBS evaluation framework")
+        logger.info("Using improved conversation flow and KV caching")
         logger.info(f"Configuration: {self.config}")
 
         try:

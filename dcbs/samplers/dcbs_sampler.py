@@ -16,8 +16,15 @@ from ..cache_manager import CacheConfig, get_cache_manager
 from ..clustering import (
     CandidateSelector,
     TokenClusterer,
+    KMeansClusterer,
+    TopNCandidateSelector,
 )
-from ..category_sampling import CategorySampler, greedy_category_sampler
+from ..category_sampling import (
+    CategorySampler, 
+    greedy_category_sampler,
+    GreedyCategorySelector,
+    GreedyTokenSelector,
+)
 
 
 class DCBSSampler(Sampler):
@@ -137,10 +144,6 @@ class DCBSSampler(Sampler):
         Returns:
             Configured DCBSSampler instance
         """
-        # Import here to avoid tight coupling at module level
-        from ..clustering import KMeansClusterer, TopNCandidateSelector
-        from ..category_sampling import CategorySampler, GreedyCategorySelector, GreedyTokenSelector
-        
         clusterer = KMeansClusterer(k=k)
         candidate_selector = TopNCandidateSelector(top_n=top_n)
         category_sampler = CategorySampler(

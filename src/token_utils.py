@@ -144,6 +144,83 @@ class TokenizerCache:
 tokenizer_cache = TokenizerCache(max_size=5000)
 
 
+class AnswerTokenResolver:
+    """Resolves answer choice letters to token IDs with fallback strategies."""
+    
+    def __init__(self, tokenizer):
+        self.tokenizer = tokenizer
+        self.logger = logging.getLogger("dcbs.algorithm")
+        
+    def get_answer_token_ids(self, options: List[str]) -> Dict[str, int]:
+        """
+        Get token IDs for answer letters with robust fallback strategies.
+        
+        Args:
+            options: List of answer options
+            
+        Returns:
+            Dictionary mapping options to their token IDs
+        """
+        answer_ids = {}
+        
+        for i, option in enumerate(options):
+            label = chr(ord("A") + i)
+            token_id = self._resolve_single_token_id(label)
+            answer_ids[option] = token_id
+            
+            # Verify the resolution
+            decoded = tokenizer_cache.decode([token_id], self.tokenizer)
+            self.logger.debug(f"Option {label} ({option}): token_id={token_id}, decoded='{decoded}'")
+        
+        # Check for conflicts
+        self._check_for_duplicates(answer_ids)
+        
+        return answer_ids
+    
+    def _resolve_single_token_id(self, label: str) -> int:
+        """Resolve a single answer label to its best token ID."""
+        # Candidate tokenization strategies in order of preference
+        candidates = [
+            f" {label}",      # Space + letter (most common)
+            label,            # Raw letter
+            f"{label}.",      # Letter with period
+            f" {label}.",     # Space + letter + period
+        ]
+        
+        for candidate in candidates:
+            tokens = tokenizer_cache.encode(candidate, self.tokenizer, add_special_tokens=False)
+            
+            if len(tokens) == 1:
+                # Perfect single token match
+                self.logger.debug(f"Found single token {tokens[0]} for '{candidate}'")
+                return tokens[0]
+        
+        # Fallback: use last token from space + letter
+        fallback_tokens = tokenizer_cache.encode(f" {label}", self.tokenizer, add_special_tokens=False)
+        if fallback_tokens:
+            token_id = fallback_tokens[-1]
+            self.logger.debug(f"Using fallback token {token_id} for label {label}")
+            return token_id
+        
+        # Ultimate fallback: ASCII value
+        self.logger.warning(f"Using ASCII fallback for label {label}")
+        return ord(label)
+    
+    def _check_for_duplicates(self, answer_ids: Dict[str, int]) -> None:
+        """Check for and warn about duplicate token IDs."""
+        token_counts = {}
+        for option, token_id in answer_ids.items():
+            if token_id in token_counts:
+                token_counts[token_id].append(option)
+            else:
+                token_counts[token_id] = [option]
+        
+        duplicates = {tid: opts for tid, opts in token_counts.items() if len(opts) > 1}
+        if duplicates:
+            self.logger.warning(f"Found duplicate token IDs: {duplicates}")
+            self.logger.warning("This may affect evaluation accuracy!")
+
+
 def is_valid_token_prediction(
     pred_id: int, correct_id: Union[int, List[int]], correct_answer: str, tokenizer
 ) -> bool:

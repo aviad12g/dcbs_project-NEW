@@ -1,6 +1,6 @@
 # Deterministic Category Based Sampling
 
-A comprehensive evaluation harness for testing different LLM sampling strategies on multiple-choice tasks, featuring a clean implementation of Deterministic Category Based Sampling alongside standard methods.
+A comprehensive evaluation harness for testing different LLM sampling strategies on multiple-choice tasks, featuring a clean implementation of Deterministic Category Based Sampling alongside standard methods with optimized KV caching and conversation flow.
 
 ## Overview
 
@@ -16,88 +16,107 @@ This approach balances exploration of diverse semantic spaces with consistent, r
 
 ## Latest Evaluation Results
 
-**Dataset**: ARC Easy (100 examples)  
+**Dataset**: ARC Easy (500 examples)  
 **Model**: Llama 3.2 1B Instruct  
-**Configuration**: Chain-of-thought enabled, token-by-token generation
+**Configuration**: Chain-of-thought enabled, KV caching optimized, deterministic seeding
 
 ### Accuracy Comparison
 
-| Method | Accuracy | Correct/Total | Avg Time (ms) |
-|--------|----------|---------------|---------------|
-| **DCBS** | **53.0%** | 53/100 | 1.72 |
-| **Greedy** | 51.0% | 51/100 | 0.47 |
-| **Top-p** | 49.0% | 49/100 | 0.91 |
-| **Random** | 22.0% | 22/100 | 0.00 |
+| Method | Accuracy | 95% CI | Correct/Total | Avg Time (ms) |
+|--------|----------|--------|---------------|---------------|
+| **DCBS** | **68.6%** | (64.4, 72.5) | 343/500 | 3.72 |
+| **Greedy** | 68.2% | (64.0, 72.1) | 341/500 | 0.36 |
+| **Top-p** | 67.2% | (63.0, 71.2) | 336/500 | 0.93 |
+| **Random** | 25.2% | (21.6, 29.2) | 126/500 | 0.01 |
+
+### Statistical Significance Analysis
+
+**Fisher's Exact Test Results:**
+
+| Comparison | P-value | Odds Ratio | 95% CI | Effect Size | Significant |
+|------------|---------|------------|--------|-------------|-------------|
+| DCBS vs Greedy | 0.946 | 1.019 | [0.780, 1.330] | +0.4% | No |
+| DCBS vs Top-p | 0.684 | 1.066 | [0.818, 1.391] | +1.4% | No |
+| Greedy vs Top-p | 0.787 | 1.047 | [0.803, 1.365] | +1.0% | No |
+| DCBS vs Random | <0.001 | 6.485 | [4.919, 8.550] | +43.4% | **Yes** |
+| Greedy vs Random | <0.001 | 6.366 | [4.830, 8.389] | +43.0% | **Yes** |
+| Top-p vs Random | <0.001 | 6.067 | [4.608, 7.987] | +42.0% | **Yes** |
 
 ### Key Findings
 
-- **DCBS achieves highest accuracy**: 53.0% vs 51.0% for greedy sampling (+2.0% improvement)
-- **DCBS vs Greedy**: The difference is not statistically significant (Fisher's exact test, p > 0.05)
-- **Performance trade-off**: DCBS is ~3.7x slower than greedy but provides accuracy improvements
-- **Deterministic advantage**: DCBS maintains reproducibility while achieving better results than stochastic methods
+- **No significant differences** between DCBS, Greedy, and Top-p sampling methods on ARC Easy
+- **All methods significantly outperform** random baseline (p < 0.001)
+- **DCBS achieves highest accuracy** (68.6%) with minimal computational overhead (3.72ms avg)
+- **Random sampling** performs at expected baseline (25.2%, close to theoretical 25%)
+- **Deterministic seeding** ensures fully reproducible results across all methods
+
+### Research Insights
+
+The identical performance across sophisticated sampling methods indicates that on ARC Easy with Llama 3.2 1B, the model exhibits high confidence in correct answers. This demonstrates an important limitation: sampling diversity techniques provide minimal benefit when base model predictions are already highly confident.
 
 ### Visualizations
 
-The evaluation generates comprehensive visualizations:
-
 ![Accuracy Comparison](results/accuracy_by_method.png)
 ![Performance Comparison](results/timing_comparison.png)
+![DCBS Optimization Impact](results/dcbs_optimization_impact.png)
 
-## DCBS Caching Configuration
+## KV Caching Implementation
 
-**Current Status**: DCBS supports **configurable caching** with the following options:
+**Current Status**: Production-ready KV caching with optimized conversation flow
 
-### Caching Modes
+### Implementation Features
 
-1. **Enabled (Default)**: Full caching of embeddings and clustering results
-2. **Disabled**: Direct computation without caching
+1. **Two-Step Conversation Flow**:
+   - Step 1: LLM generates reasoning response
+   - Step 2: LLM generates final answer with cached context
+   - Proper `add_generation_prompt=True` usage
+   - Never completes user messages, only assistant messages
 
-### Configuration Options
+2. **Performance Optimization**:
+   - KV cache reuse between reasoning and final answer steps
+   - Token-by-token generation with cache persistence
+   - GPU memory efficient implementation
+   - Deterministic results with fixed random seeds
 
-```bash
-# Enable caching (default behavior)
-python compare_methods.py --model meta-llama/Llama-3.2-1B
+3. **Configuration Options**:
+   ```bash
+   # Enable caching (default behavior)
+   python compare_methods.py --model meta-llama/Llama-3.2-1B-Instruct
+   
+   # Programmatic configuration
+   from dcbs import DCBSSampler
+   sampler = DCBSSampler.create_default(k=8, top_n=50, enable_caching=True)
+   ```
 
-# Disable caching for performance comparison
-python compare_methods.py --model meta-llama/Llama-3.2-1B --disable-cache
+### Performance Metrics
 
-# Programmatic configuration
-from dcbs import DCBSSampler
-
-# With caching (default)
-sampler = DCBSSampler.create_default(k=8, top_n=50, enable_caching=True)
-
-# Without caching
-sampler = DCBSSampler.create_no_cache(k=8, top_n=50)
-```
+- **Processing time**: ~4ms average per example (500 examples)
+- **Memory efficiency**: Optimized for 11GB GPU memory
+- **Throughput**: ~150 examples/minute on RTX 4060 Laptop GPU
+- **Cache effectiveness**: Minimal overhead for conversation flow
 
 ## Project Structure
 
 ```
 dcbs_project-NEW/
 ├── dcbs/                    # Core sampling package
-│   ├── sampler.py          # All sampler implementations
+│   ├── samplers/           # All sampler implementations
 │   ├── clustering.py       # Clustering abstractions and implementations
 │   ├── cache_manager.py    # Thread-safe caching system
 │   └── optimizations.py    # Advanced optimization features
 ├── src/                    # Source code
-│   ├── evaluation_core.py  # Core evaluation logic and framework
+│   ├── evaluation_core/    # Core evaluation logic and framework
 │   ├── visualization.py    # Chart generation with statistical analysis
-│   ├── chat_eval.py       # HuggingFace chat-based evaluation
 │   ├── token_utils.py     # Token handling utilities
-│   ├── errors.py          # Error handling and logging
-│   └── run_dcbs_eval.py   # Legacy evaluation script (deprecated)
+│   └── errors.py          # Error handling and logging
 ├── tests/                  # Comprehensive test suite
 ├── data/                   # Benchmark datasets
 ├── results/               # Generated results and charts
 ├── docs/                  # Documentation
-├── compare_methods.py     # **MAIN EVALUATION SCRIPT** (unified framework)
+├── compare_methods.py     # MAIN EVALUATION SCRIPT (unified framework)
+├── fisher_test.py         # Statistical significance analysis
 └── requirements.txt       # Python dependencies
 ```
-
-## Primary Entry Point
-
-**`compare_methods.py`** - The unified evaluation framework that combines the best features from all evaluation components.
 
 ## Sampling Methods
 
@@ -106,20 +125,24 @@ The project implements four sampling strategies with a unified interface:
 ### 1. **Greedy Sampling**
 - **Algorithm**: Always selects the highest probability token (argmax)
 - **Characteristics**: Fully deterministic, fastest execution
+- **Performance**: 68.2% accuracy, 0.36ms average time
 
 ### 2. **Top-p (Nucleus) Sampling**
-- **Algorithm**: Samples from the smallest set of tokens whose cumulative probability greater than or equal to p
-- **Characteristics**: Stochastic, balances quality and diversity
+- **Algorithm**: Samples from the smallest set of tokens whose cumulative probability ≥ p
+- **Characteristics**: Stochastic sampling with controlled diversity
 - **Configuration**: `p=0.9` (default)
+- **Performance**: 67.2% accuracy, 0.93ms average time
 
 ### 3. **Deterministic Category Based Sampling**
-- **Algorithm**: Clusters tokens by embeddings, selects best cluster, then best token using greedy selection
+- **Algorithm**: Clusters tokens by embeddings, selects best cluster, then best token
 - **Characteristics**: Deterministic, semantically-aware, novel approach
 - **Configuration**: `k=8` clusters, `top_n=50` candidates
+- **Performance**: 68.6% accuracy, 3.72ms average time
 
 ### 4. **Random Sampling**
 - **Algorithm**: Uniform random selection from allowed tokens
-- **Characteristics**: Maximum stochasticity, serves as lower bound
+- **Characteristics**: Maximum stochasticity, serves as baseline
+- **Performance**: 25.2% accuracy, 0.01ms average time
 
 ## Installation
 
@@ -160,26 +183,20 @@ python compare_methods.py
 
 # Specify custom model and dataset
 python compare_methods.py \
-    --model "meta-llama/Llama-3.2-1B" \
+    --model "meta-llama/Llama-3.2-1B-Instruct" \
     --benchmark "data/arc_easy_full.json" \
-    --limit 100
+    --limit 500
 
 # Run with 4-bit quantization for faster inference
 python compare_methods.py \
-    --model "meta-llama/Llama-3.2-1B" \
+    --model "meta-llama/Llama-3.2-1B-Instruct" \
     --load-in-4bit \
-    --limit 50
-
-# Run with caching disabled for performance benchmarking
-python compare_methods.py \
-    --model "meta-llama/Llama-3.2-1B" \
-    --disable-cache \
     --limit 100
 
 # Run specific samplers only
 python compare_methods.py \
     --samplers dcbs greedy \
-    --limit 20
+    --limit 50
 ```
 
 ### Advanced Features
@@ -189,19 +206,17 @@ python compare_methods.py \
 python compare_methods.py \
     --sweep-k 4 8 16 \
     --sweep-top-n 20 50 100 \
-    --limit 50
+    --limit 100
 
 # Memory profiling and detailed output
 python compare_methods.py \
     --memory-profiling \
     --save-details \
     --output-format both \
-    --limit 100
+    --limit 500
 
-# Custom configuration with YAML
-python compare_methods.py \
-    --config configs/custom_study.yaml \
-    --log-level DEBUG
+# Statistical significance analysis
+python fisher_test.py
 ```
 
 ### Command Line Options
@@ -211,11 +226,11 @@ usage: compare_methods.py [-h] [--model MODEL] [--benchmark BENCHMARK]
                          [--output-dir OUTPUT_DIR] [--limit LIMIT]
                          [--top-p TOP_P] [--k K] [--top-n TOP_N]
                          [--no-cot] [--log-level {DEBUG,INFO,WARNING,ERROR}]
-                         [--save-details] [--load-in-4bit] [--disable-cache]
+                         [--save-details] [--load-in-4bit]
                          [--samplers {greedy,top-p,dcbs,random} ...]
 
 Options:
-  --model MODEL         HuggingFace model name or path (default: meta-llama/Llama-3.2-1B)
+  --model MODEL         HuggingFace model name or path (default: meta-llama/Llama-3.2-1B-Instruct)
   --benchmark BENCHMARK Path to benchmark JSON file (default: data/arc_easy_full.json)
   --output-dir OUTPUT_DIR Output directory for results
   --limit LIMIT         Limit number of examples for testing
@@ -225,7 +240,6 @@ Options:
   --no-cot             Disable chain-of-thought reasoning
   --save-details       Save detailed per-example results
   --load-in-4bit       Load model with 4-bit quantization
-  --disable-cache      Disable DCBS caching for performance comparison
   --samplers           Specify which samplers to evaluate (default: all)
 ```
 
@@ -262,63 +276,16 @@ dcbs_default = DCBSSampler.create_default(k=8, top_n=50)
 token = dcbs_default.sample(logits, filter_tokens=filter_tokens, context=context)
 ```
 
-## Complete ARC Easy Evaluation Results
-
-### Final Optimized Results (2,946 Questions) (Old)
-
-| Rank | Method | Accuracy | Correct/Total | Avg Time | Performance |
-|------|--------|----------|---------------|----------|-------------|
-| 1 | **Greedy** | **68.5%** | 2,017/2,946 | 533ms | Excellent |
-| 2 | **DCBS** | **68.1%** | 2,007/2,946 | 532ms | Excellent |
-| 3 | **Top-P** | **57.5%** | 1,695/2,946 | 537ms | Good |
-| 4 | **Random** | **23.7%** | 697/2,946 | 531ms | Baseline |
-
-### Cache Analysis and Performance Optimization
-
-#### Cache vs No Cache Performance Analysis
-
-| Method | With Cache | No Cache | Performance Impact |
-|--------|------------|----------|-------------------|
-| **Greedy** | 493ms | 480ms | +13ms (+2.7%) |
-| **Top-P** | 496ms | 480ms | +16ms (+3.3%) |
-| **DCBS** | 579ms | 554ms | +25ms (+4.5%) |
-| **Random** | 493ms | 476ms | +17ms (+3.6%) |
-
-#### Performance Analysis Findings
-
-1. **Cache effectiveness varies by dataset size**: Small datasets may see overhead, large datasets benefit significantly
-2. **Cache lookup overhead** (~37ms) can exceed clustering costs for small evaluations
-3. **PyTorch clustering optimization** (3ms) reduces the need for caching in single-run scenarios
-4. **Thread-safe implementation** ensures correctness in concurrent evaluation scenarios
-
-## Statistical Significance
-
-**Fisher's Exact Test Analysis (Greedy vs DCBS)**
-
-Based on the latest ARC Easy evaluation (100 questions):
-
-| Method | Correct/Total | Accuracy | 
-|--------|---------------|----------|
-| Greedy | 51/100 | 51.0% |
-| DCBS | 53/100 | 53.0% |
-
-**Statistical Test Results:**
-- **P-value**: 0.887495 (Fisher's Exact Test, two-sided)
-- **Odds Ratio**: 0.9230
-- **Effect Size**: -2.00 percentage points
-- **Conclusion**: No statistically significant difference between methods (p > 0.05)
-
-The improved object-oriented implementation with function objects follows best practices and ensures greedy selection for both categories and tokens. This provides a cleaner implementation while maintaining the same sampling behavior.
-
 ## Generated Outputs
 
 The evaluation produces:
 
 1. **Main accuracy chart** (`results/accuracy_by_method.png`)
 2. **Timing comparison** (`results/timing_comparison.png`) 
-3. **Results summary** (`results/results_summary.md`)
-4. **Raw data** (`results/evaluation_results_20250526_190120.json`)
-5. **Statistical analysis** (`results/fisher_exact_greedy_vs_dcbs.txt`)
+3. **DCBS optimization impact** (`results/dcbs_optimization_impact.png`)
+4. **Results summary** (`results/results_summary.md`)
+5. **Raw data** (`results/evaluation_results_YYYYMMDD_HHMMSS.json`)
+6. **Statistical analysis** (`results/fisher_exact_tests.txt`)
 
 ## Development
 

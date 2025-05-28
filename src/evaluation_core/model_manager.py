@@ -1,8 +1,8 @@
 """
-Model loading and management functionality.
+Model loading and management without ChatTemplateManager.
 
-This module handles model loading, device management, and context creation
-for evaluation runs.
+This module handles model loading using the default tokenizer.chat_template
+for most relevant instruct models, as suggested in the code review.
 """
 
 import os
@@ -16,7 +16,7 @@ from src.errors import eval_logger as logger
 
 
 class ModelManager:
-    """Handles model loading and management separately from evaluation logic."""
+    """Model manager using default chat templates."""
 
     def __init__(self, model_name: str, load_in_4bit: bool = False):
         self.model_name = model_name
@@ -66,21 +66,58 @@ class ModelManager:
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
             
-        # Use default chat template if available
+        # Use default chat template - most relevant instruct models have this
         if hasattr(self.tokenizer, 'chat_template') and self.tokenizer.chat_template is not None:
             logger.info("Using model's default chat template")
-            
-            # Test the chat template to ensure it works
-            try:
-                test_messages = [{"role": "user", "content": "Hello"}]
-                test_result = self.tokenizer.apply_chat_template(
-                    test_messages, tokenize=False, add_generation_prompt=True
-                )
-                logger.info("Chat template validation successful")
-            except Exception as e:
-                logger.warning(f"Chat template validation failed: {e}")
         else:
             logger.warning(f"Model {self.model_name} does not have a default chat template")
+            # Add a fallback template for models without chat templates
+            if "llama" in self.model_name.lower() and "3" in self.model_name:
+                # Llama 3 style template
+                fallback_template = (
+                    "{% if messages[0]['role'] == 'system' %}"
+                    "{% set loop_messages = messages[1:] %}"
+                    "{% set system_message = messages[0]['content'] %}"
+                    "{% else %}"
+                    "{% set loop_messages = messages %}"
+                    "{% set system_message = false %}"
+                    "{% endif %}"
+                    "{% for message in loop_messages %}"
+                    "{% if loop.index0 == 0 and system_message %}"
+                    "{{ '<|begin_of_text|><|start_header_id|>system<|end_header_id|>\\n\\n' + system_message + '<|eot_id|>' }}"
+                    "{% endif %}"
+                    "{{ '<|start_header_id|>' + message['role'] + '<|end_header_id|>\\n\\n' + message['content'] + '<|eot_id|>' }}"
+                    "{% if loop.last and add_generation_prompt %}"
+                    "{{ '<|start_header_id|>assistant<|end_header_id|>\\n\\n' }}"
+                    "{% endif %}"
+                    "{% endfor %}"
+                )
+                self.tokenizer.chat_template = fallback_template
+                logger.info("Applied Llama 3 fallback chat template")
+            else:
+                # Generic fallback template
+                fallback_template = (
+                    "{% for message in messages %}"
+                    "{{ message['role'].title() + ': ' + message['content'] + '\\n' }}"
+                    "{% endfor %}"
+                    "{% if add_generation_prompt %}"
+                    "{{ 'Assistant: ' }}"
+                    "{% endif %}"
+                )
+                self.tokenizer.chat_template = fallback_template
+                logger.info("Applied generic fallback chat template")
+            
+        # Test the chat template to ensure it works
+        try:
+            test_messages = [{"role": "user", "content": "Hello"}]
+            test_result = self.tokenizer.apply_chat_template(
+                test_messages, tokenize=False, add_generation_prompt=True
+            )
+            logger.info("Chat template validation successful")
+            logger.debug(f"Test template result: {test_result[:100]}...")
+        except Exception as e:
+            logger.error(f"Chat template validation failed: {e}")
+            raise RuntimeError(f"Model {self.model_name} has incompatible chat template")
 
         self.device = next(self.model.parameters()).device
 

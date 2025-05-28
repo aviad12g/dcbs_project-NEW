@@ -1,14 +1,12 @@
 """
-Evaluation runner that coordinates the complete evaluation process.
+Evaluation runner with fixed conversation flow and parameter handling.
 
-This module provides the main EvaluationRunner class that orchestrates
-model loading, example processing, and result aggregation.
+This module provides the main evaluation logic using components
+that implement proper conversation flow and remove ChatTemplateManager dependency.
 """
 
 import time
-from typing import Dict, List, Tuple
-
-import numpy as np
+from typing import Dict, List
 
 from src.errors import eval_logger as logger
 from src.evaluation_core.config import EvaluationConfig
@@ -17,57 +15,48 @@ from src.evaluation_core.example_processor import ExampleProcessor
 from src.evaluation_core.sampler_factory import SamplerFactory
 
 
-def calculate_confidence_interval(correct: int, total: int, confidence: float = 0.95) -> Tuple[float, float]:
+def calculate_confidence_interval(correct: int, total: int) -> tuple:
     """Calculate binomial confidence interval for accuracy."""
+    import numpy as np
+    from scipy import stats
+    
     if total == 0:
         return (0.0, 0.0)
-
+    
+    # Wilson score interval (more accurate than normal approximation)
     p = correct / total
     z = 1.96  # 95% confidence
-
-    # Wilson score interval - more accurate than normal approximation
-    n = total
-    z_squared = z * z
-
-    center = (p + z_squared / (2 * n)) / (1 + z_squared / n)
-    margin = (
-        z * np.sqrt((p * (1 - p) + z_squared / (4 * n)) / n) / (1 + z_squared / n)
-    )
-
-    return (max(0, center - margin) * 100, min(1, center + margin) * 100)
+    
+    denominator = 1 + z**2 / total
+    center = (p + z**2 / (2 * total)) / denominator
+    margin = z * np.sqrt((p * (1 - p) + z**2 / (4 * total)) / total) / denominator
+    
+    return (max(0, center - margin) * 100, min(100, center + margin) * 100)
 
 
 class EvaluationRunner:
-    """Main evaluation runner that coordinates the evaluation process."""
+    """Evaluation runner with proper conversation flow."""
 
     def __init__(self, config: EvaluationConfig):
         self.config = config
         self.model_manager = ModelManager(config.model_name, config.load_in_4bit)
         self.samplers = SamplerFactory.create_samplers(config)
-
+        
     def run_evaluation(self, benchmark_data: List[Dict]) -> Dict:
-        """Run evaluation on all methods."""
+        """Run evaluation using proper conversation flow."""
         # Load model
-        try:
-            model, tokenizer, context = self.model_manager.load_model()
-        except Exception as e:
-            logger.error(f"Failed to load model: {e}")
-            # Try using improved model manager as fallback
-            try:
-                from .improved_model_manager import ImprovedModelManager
-                improved_manager = ImprovedModelManager(self.config.model_name, self.config.load_in_4bit)
-                model, tokenizer, context = improved_manager.load_model()
-                logger.info("Successfully loaded model using improved manager")
-            except Exception as e2:
-                logger.error(f"Both model managers failed: {e2}")
-                raise e
-
+        model, tokenizer, context = self.model_manager.load_model()
+        
+        # Create processor
+        processor = ExampleProcessor(model, tokenizer, context)
+        
         # Limit data if requested
         if self.config.limit:
             benchmark_data = benchmark_data[: self.config.limit]
             logger.info(f"Limited evaluation to {self.config.limit} examples")
 
         logger.info(f"Starting evaluation on {len(benchmark_data)} examples")
+        logger.info(f"Using samplers: {list(self.samplers.keys())}")
 
         all_results = []
         method_stats = {
@@ -75,55 +64,30 @@ class EvaluationRunner:
             for name in self.samplers.keys()
         }
 
-        # Process each example
+        # Process examples
         for i, example in enumerate(benchmark_data):
-            if (i + 1) % 10 == 0:
+            if (i + 1) % 10 == 0 or i == 0:
                 logger.info(f"Processing example {i + 1}/{len(benchmark_data)}")
 
             try:
-                # Process each method for this example
+                # Process example once to get reasoning and logits
+                # Use a consistent sampler for reasoning generation (greedy for reproducibility)
+                reasoning_sampler = self.samplers.get("greedy", list(self.samplers.values())[0])
+                
+                processed_result = processor.process_example(
+                    example, 
+                    reasoning_sampler, 
+                    include_cot=self.config.include_cot
+                )
+
+                # Now evaluate with each sampler using the same reasoning/logits
                 for sampler_name, sampler in self.samplers.items():
-                    logger.debug(
-                        f"Processing example {example.get('id', i)} with {sampler_name}"
+                    eval_result = processor.evaluate_with_sampler(
+                        processed_result, sampler, sampler_name
                     )
 
-                    # Create processor for this sampler
-                    processor = ExampleProcessor(model, tokenizer, context, sampler)
-
-                    start_time = time.time()
-
-                    # Process example
-                    result = processor.process_example(
-                        example, include_cot=self.config.include_cot
-                    )
-
-                    elapsed_ms = (time.time() - start_time) * 1000
-
-                    # Check correctness using the sampler
-                    logits = result["logits"]
-                    filter_tokens = result["filter_tokens"]
-                    correct_id = result["correct_id"]
-
-                    # Sample using the specified sampler
-                    if hasattr(sampler, 'sample'):
-                        if 'DCBSSampler' in str(type(sampler)):
-                            pred_id = sampler.sample(logits, filter_tokens=filter_tokens, context=context)
-                        else:
-                            pred_id = sampler.sample(logits, filter_tokens=filter_tokens)
-                    else:
-                        pred_id = correct_id  # Fallback
-
-                    correct = pred_id == correct_id
-
-                    # Combine all results
-                    final_result = {
-                        **result,
-                        "sampler": sampler_name,
-                        "pred_id": pred_id,
-                        "correct": correct,
-                        "elapsed_ms": elapsed_ms,
-                    }
-
+                    # Combine results
+                    final_result = {**processed_result, **eval_result}
                     # Remove logits for JSON serialization
                     final_result.pop("logits", None)
                     all_results.append(final_result)
@@ -131,9 +95,9 @@ class EvaluationRunner:
                     # Update statistics
                     stats = method_stats[sampler_name]
                     stats["total"] += 1
-                    if correct:
+                    if eval_result["correct"]:
                         stats["correct"] += 1
-                    stats["times"].append(elapsed_ms)
+                    stats["times"].append(eval_result["elapsed_ms"])
 
             except Exception as e:
                 logger.error(f"Error processing example {i}: {e}")

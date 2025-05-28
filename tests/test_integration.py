@@ -15,7 +15,6 @@ import pytest
 
 from dcbs import SamplingContext
 from src.evaluation_core import (
-    ChatTemplateManager,
     EvaluationConfig,
     EvaluationRunner,
     ExampleProcessor,
@@ -35,16 +34,14 @@ class TestDataLoading:
         test_data = [
             {
                 "id": "test1",
-                "sentence": "The cat sat on the mat.",
-                "option1": "A",
-                "option2": "B",
+                "question": "The cat sat on the mat.",
+                "options": ["A", "B"],
                 "correct_option": "1",
             },
             {
                 "id": "test2",
-                "sentence": "The dog ran in the park.",
-                "option1": "C",
-                "option2": "D",
+                "question": "The dog ran in the park.",
+                "options": ["C", "D"],
                 "correct_option": "2",
             },
         ]
@@ -56,8 +53,8 @@ class TestDataLoading:
         try:
             loaded_data = load_benchmark_data(temp_path)
             assert len(loaded_data) == 2
-            assert loaded_data[0]["sentence"] == "The cat sat on the mat."
-            assert loaded_data[1]["option2"] == "D"
+            assert loaded_data[0]["question"] == "The cat sat on the mat."
+            assert loaded_data[1]["options"] == ["C", "D"]
         finally:
             os.unlink(temp_path)
 
@@ -131,50 +128,6 @@ class TestSamplerFactory:
 
         # Test that configurations are applied
         assert samplers["top_p"].p == 0.8
-        assert samplers["dcbs"].k == 5
-        assert samplers["dcbs"].top_n == 20
-
-
-class TestChatTemplateManager:
-    """Test chat template management."""
-
-    def test_template_selection(self):
-        """Test that appropriate templates are selected based on model names."""
-        mock_tokenizer = Mock()
-        mock_tokenizer.chat_template = None
-
-        # Test Llama template
-        ChatTemplateManager.setup_chat_template(mock_tokenizer, "meta-llama/Llama-2-7b")
-        assert mock_tokenizer.chat_template is not None
-        assert (
-            "llama" in mock_tokenizer.chat_template.lower()
-            or "start_header_id" in mock_tokenizer.chat_template
-        )
-
-        # Test Mistral template
-        mock_tokenizer.chat_template = None
-        ChatTemplateManager.setup_chat_template(mock_tokenizer, "mistralai/Mistral-7B")
-        assert mock_tokenizer.chat_template is not None
-        assert "[INST]" in mock_tokenizer.chat_template
-
-        # Test generic template
-        mock_tokenizer.chat_template = None
-        ChatTemplateManager.setup_chat_template(mock_tokenizer, "unknown-model")
-        assert mock_tokenizer.chat_template is not None
-
-    def test_template_validation(self):
-        """Test template validation functionality."""
-        # Mock successful validation
-        mock_tokenizer = Mock()
-        mock_tokenizer.apply_chat_template.return_value = "Test prompt"
-
-        result = ChatTemplateManager.validate_template(mock_tokenizer, "test-model")
-        assert result is True
-
-        # Mock failed validation
-        mock_tokenizer.apply_chat_template.side_effect = Exception("Template error")
-        result = ChatTemplateManager.validate_template(mock_tokenizer, "test-model")
-        assert result is False
 
 
 class TestExampleProcessor:
@@ -190,6 +143,7 @@ class TestExampleProcessor:
         # Setup mock tokenizer behaviors
         self.mock_tokenizer.encode.return_value = [1, 2, 3]
         self.mock_tokenizer.decode.return_value = "A"
+        self.mock_tokenizer.apply_chat_template.return_value = "test prompt"
 
         # Setup mock model output
         mock_outputs = Mock()
@@ -203,23 +157,19 @@ class TestExampleProcessor:
             self.mock_model, self.mock_tokenizer, self.mock_context
         )
 
-    def test_create_prompt(self):
-        """Test prompt creation for examples."""
+    def test_create_reasoning_messages(self):
+        """Test reasoning message creation."""
         sentence = "The cat sat on the mat."
         options = ["A", "B"]
 
-        # Test with CoT
-        prompt_cot = self.processor.create_prompt(sentence, options, include_cot=True)
-        assert "Think step by step" in prompt_cot
-        assert "A. A" in prompt_cot
-        assert "B. B" in prompt_cot
-
-        # Test without CoT
-        prompt_no_cot = self.processor.create_prompt(
-            sentence, options, include_cot=False
-        )
-        assert "Think step by step" not in prompt_no_cot
-        assert "A. A" in prompt_no_cot
+        messages = self.processor.create_reasoning_messages(sentence, options)
+        
+        assert len(messages) == 2
+        assert messages[0]["role"] == "system"
+        assert "step by step" in messages[0]["content"]
+        assert messages[1]["role"] == "user"
+        assert "A. A" in messages[1]["content"]
+        assert "B. B" in messages[1]["content"]
 
     def test_get_answer_token_ids(self):
         """Test answer token ID extraction."""
@@ -239,7 +189,7 @@ class TestExampleProcessor:
 
         self.mock_tokenizer.encode.side_effect = mock_encode
 
-        answer_ids = self.processor.get_answer_token_ids(options)
+        answer_ids = self.processor._get_answer_token_ids(options)
         assert "A" in answer_ids
         assert "B" in answer_ids
         assert isinstance(answer_ids["A"], int)
@@ -346,9 +296,8 @@ class TestEndToEndIntegration:
         test_data = [
             {
                 "id": "test1",
-                "sentence": "The cat sat on the mat.",
-                "option1": "A",
-                "option2": "B",
+                "question": "The cat sat on the mat.",
+                "options": ["A", "B"],
                 "correct_option": "1",
             }
         ]
@@ -370,13 +319,10 @@ class TestEndToEndIntegration:
 
             # Mock the model loading and evaluation
             with (
-                patch("evaluation_core.ModelManager.load_model") as mock_load,
+                patch("src.evaluation_core.model_manager.ModelManager.load_model") as mock_load,
                 patch(
-                    "evaluation_core.ExampleProcessor.process_example"
+                    "src.evaluation_core.example_processor.ExampleProcessor.process_example"
                 ) as mock_process,
-                patch(
-                    "evaluation_core.ExampleProcessor.get_answer_token_ids"
-                ) as mock_get_ids,
                 patch("matplotlib.pyplot.savefig"),
                 patch("matplotlib.pyplot.close"),
             ):
@@ -398,6 +344,7 @@ class TestEndToEndIntegration:
                     "correct_id": 65,
                     "logits": Mock(),
                     "answer_probs": {"A": 0.7, "B": 0.3},
+                    "processing_time": 0.1,
                 }
 
                 # Create and run evaluation

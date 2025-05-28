@@ -1,27 +1,40 @@
 @echo off
-echo Starting GPU-accelerated DCBS evaluation...
+REM GPU evaluation script for DCBS
+REM This script runs the unified DCBS evaluation framework on GPU
+
+echo Starting DCBS GPU evaluation...
+echo Using unified evaluation framework
 echo.
 
-echo Python path: %USERPROFILE%\anaconda3\python.exe
-echo Current directory: %CD%
-echo.
+REM Check if Python is available
+python --version > nul 2>&1
+if %errorlevel% neq 0 (
+    echo Python not found in PATH, trying conda environment...
+    call conda activate dcbs_env 2>nul
+    if %errorlevel% neq 0 (
+        echo Could not activate conda environment. Please ensure Python is available.
+        pause
+        exit /b 1
+    )
+)
 
-echo Running evaluation with:
-echo - Model: unsloth/Llama-3.2-1B-Instruct
-echo - Limit: 5 examples (scientific test)
-echo - DCBS k=3, top_n=50
-echo - Top-p: 0.9
-echo.
-
-%USERPROFILE%\anaconda3\python.exe src/chat_eval.py ^
-  --model "unsloth/Llama-3.2-1B-Instruct" ^
-  --benchmark "data/arc_easy_processed.json" ^
-  --output "results/gpu_scientific_dcbs.json" ^
-  --limit 5 ^
-  --top_p 0.9 ^
-  --k 3 ^
-  --top_n 50
+REM Run evaluation using the unified framework
+%USERPROFILE%\anaconda3\python.exe compare_methods.py ^
+    --model "microsoft/DialoGPT-medium" ^
+    --benchmark "data/arc_easy_sample.json" ^
+    --output-dir "results/gpu_evaluation" ^
+    --limit 100 ^
+    --log-level INFO ^
+    --output-format both ^
+    --save-details
 
 echo.
-echo Evaluation completed. Check results/gpu_scientific_dcbs.json
+if %errorlevel% equ 0 (
+    echo Evaluation completed successfully!
+    echo Results saved to results/gpu_evaluation/
+) else (
+    echo Evaluation failed with error code %errorlevel%
+)
+
+echo.
 pause 
