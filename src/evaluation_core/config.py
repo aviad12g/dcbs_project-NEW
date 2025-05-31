@@ -23,4 +23,8 @@ class EvaluationConfig:
     include_cot: bool = True
     log_level: str = "INFO"
     load_in_4bit: bool = False
-    enable_caching: bool = True  # Control DCBS caching 
+    enable_caching: bool = True  # Control DCBS caching
+    clustering_method: str = "kmeans"  # Clustering method for DCBS
+    dbscan_eps: float = 0.3  # DBSCAN epsilon parameter
+    dbscan_min_samples: int = 2  # DBSCAN minimum samples
+    hierarchical_linkage: str = "average"  # Hierarchical clustering linkage 

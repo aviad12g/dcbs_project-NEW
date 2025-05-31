@@ -13,7 +13,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from dcbs import SamplingContext
+from src.dcbs import SamplingContext
 from src.evaluation_core import (
     EvaluationConfig,
     EvaluationRunner,

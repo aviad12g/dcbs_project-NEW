@@ -57,6 +57,12 @@ class ConfigBuilder:
         k = dcbs_params.get("k", 8)
         top_n = dcbs_params.get("top_n", 50)
 
+        # Clustering parameters (defaults)
+        clustering_method = "kmeans"
+        dbscan_eps = 0.3
+        dbscan_min_samples = 2
+        hierarchical_linkage = "average"
+
         # Other parameters from validated config
         include_cot = yaml_config.get("include_cot", True)
         log_level = yaml_config.get("log_level", "INFO")
@@ -74,6 +80,10 @@ class ConfigBuilder:
             "top_n": "top_n",
             "log_level": "log_level",
             "load_in_4bit": "load_in_4bit",
+            "clustering_method": "clustering_method",
+            "dbscan_eps": "dbscan_eps",
+            "dbscan_min_samples": "dbscan_min_samples",
+            "hierarchical_linkage": "hierarchical_linkage",
         }
 
         # Apply overrides from command-line arguments
@@ -87,6 +97,10 @@ class ConfigBuilder:
             "top_n": top_n,
             "log_level": log_level,
             "load_in_4bit": load_in_4bit,
+            "clustering_method": clustering_method,
+            "dbscan_eps": dbscan_eps,
+            "dbscan_min_samples": dbscan_min_samples,
+            "hierarchical_linkage": hierarchical_linkage,
         }
 
         for arg_name, config_key in arg_overrides.items():
@@ -117,6 +131,10 @@ class ConfigBuilder:
             log_level=config_values["log_level"],
             load_in_4bit=config_values["load_in_4bit"],
             enable_caching=enable_caching,
+            clustering_method=config_values["clustering_method"],
+            dbscan_eps=config_values["dbscan_eps"],
+            dbscan_min_samples=config_values["dbscan_min_samples"],
+            hierarchical_linkage=config_values["hierarchical_linkage"],
         )
 
         logger.info(f"Final configuration created: {final_config}")

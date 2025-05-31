@@ -6,6 +6,7 @@ command-line argument parsing in a modular way.
 """
 
 import argparse
+from typing import List, Optional
 
 
 class ArgumentParserSetup:
@@ -71,6 +72,37 @@ class ArgumentParserSetup:
             "--top-n",
             type=int,
             help="Top-n tokens to consider for DCBS clustering (overrides config)",
+        )
+
+        # Clustering method configuration
+        parser.add_argument(
+            "--clustering-method",
+            type=str,
+            choices=["kmeans", "dbscan", "hierarchical"],
+            default="kmeans",
+            help="Clustering method for DCBS",
+        )
+
+        parser.add_argument(
+            "--dbscan-eps",
+            type=float,
+            default=0.3,
+            help="DBSCAN epsilon parameter (maximum distance between samples)",
+        )
+
+        parser.add_argument(
+            "--dbscan-min-samples",
+            type=int,
+            default=2,
+            help="DBSCAN minimum samples in neighborhood",
+        )
+
+        parser.add_argument(
+            "--hierarchical-linkage",
+            type=str,
+            choices=["ward", "complete", "average", "single"],
+            default="average",
+            help="Linkage criterion for hierarchical clustering",
         )
 
         # Advanced features
@@ -159,12 +191,15 @@ class ArgumentParserSetup:
         return parser
 
     @staticmethod
-    def parse_args() -> argparse.Namespace:
+    def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
         """
         Parse command-line arguments.
         
+        Args:
+            args: Optional list of arguments for testing
+
         Returns:
             Parsed arguments namespace
         """
         parser = ArgumentParserSetup.create_parser()
-        return parser.parse_args() 
+        return parser.parse_args(args) 

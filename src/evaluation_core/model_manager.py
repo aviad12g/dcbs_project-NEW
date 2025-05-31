@@ -11,7 +11,7 @@ from typing import Tuple
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from dcbs import SamplingContext
+from src.dcbs import SamplingContext
 from src.errors import eval_logger as logger
 
 
@@ -70,42 +70,8 @@ class ModelManager:
         if hasattr(self.tokenizer, 'chat_template') and self.tokenizer.chat_template is not None:
             logger.info("Using model's default chat template")
         else:
-            logger.warning(f"Model {self.model_name} does not have a default chat template")
-            # Add a fallback template for models without chat templates
-            if "llama" in self.model_name.lower() and "3" in self.model_name:
-                # Llama 3 style template
-                fallback_template = (
-                    "{% if messages[0]['role'] == 'system' %}"
-                    "{% set loop_messages = messages[1:] %}"
-                    "{% set system_message = messages[0]['content'] %}"
-                    "{% else %}"
-                    "{% set loop_messages = messages %}"
-                    "{% set system_message = false %}"
-                    "{% endif %}"
-                    "{% for message in loop_messages %}"
-                    "{% if loop.index0 == 0 and system_message %}"
-                    "{{ '<|begin_of_text|><|start_header_id|>system<|end_header_id|>\\n\\n' + system_message + '<|eot_id|>' }}"
-                    "{% endif %}"
-                    "{{ '<|start_header_id|>' + message['role'] + '<|end_header_id|>\\n\\n' + message['content'] + '<|eot_id|>' }}"
-                    "{% if loop.last and add_generation_prompt %}"
-                    "{{ '<|start_header_id|>assistant<|end_header_id|>\\n\\n' }}"
-                    "{% endif %}"
-                    "{% endfor %}"
-                )
-                self.tokenizer.chat_template = fallback_template
-                logger.info("Applied Llama 3 fallback chat template")
-            else:
-                # Generic fallback template
-                fallback_template = (
-                    "{% for message in messages %}"
-                    "{{ message['role'].title() + ': ' + message['content'] + '\\n' }}"
-                    "{% endfor %}"
-                    "{% if add_generation_prompt %}"
-                    "{{ 'Assistant: ' }}"
-                    "{% endif %}"
-                )
-                self.tokenizer.chat_template = fallback_template
-                logger.info("Applied generic fallback chat template")
+            logger.error(f"Model {self.model_name} does not have a default chat template")
+            raise RuntimeError(f"Model {self.model_name} requires a chat template for proper operation")
             
         # Test the chat template to ensure it works
         try:

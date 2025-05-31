@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from src.evaluation_core.runner import EvaluationRunner
 from src.evaluation_core.example_processor import ExampleProcessor
 from src.evaluation_core.config import EvaluationConfig
-from dcbs import SamplingContext, GreedySampler, DCBSSampler
+from src.dcbs import SamplingContext, GreedySampler, DCBSSampler
 
 
 class TestPerformance(unittest.TestCase):

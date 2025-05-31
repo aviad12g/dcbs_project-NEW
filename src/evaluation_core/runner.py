@@ -40,12 +40,21 @@ class EvaluationRunner:
     def __init__(self, config: EvaluationConfig):
         self.config = config
         self.model_manager = ModelManager(config.model_name, config.load_in_4bit)
-        self.samplers = SamplerFactory.create_samplers(config)
         
     def run_evaluation(self, benchmark_data: List[Dict]) -> Dict:
         """Run evaluation using proper conversation flow."""
         # Load model
         model, tokenizer, context = self.model_manager.load_model()
+        
+        # Create samplers with context and clustering parameters
+        self.samplers = SamplerFactory.create_samplers(
+            self.config, 
+            context,
+            clustering_method=self.config.clustering_method,
+            dbscan_eps=self.config.dbscan_eps,
+            dbscan_min_samples=self.config.dbscan_min_samples,
+            hierarchical_linkage=self.config.hierarchical_linkage
+        )
         
         # Create processor
         processor = ExampleProcessor(model, tokenizer, context)
@@ -57,6 +66,8 @@ class EvaluationRunner:
 
         logger.info(f"Starting evaluation on {len(benchmark_data)} examples")
         logger.info(f"Using samplers: {list(self.samplers.keys())}")
+        if hasattr(self.config, 'clustering_method'):
+            logger.info(f"DCBS clustering method: {self.config.clustering_method}")
 
         all_results = []
         method_stats = {
@@ -132,6 +143,7 @@ class EvaluationRunner:
                 "methods": list(self.samplers.keys()),
                 "include_cot": self.config.include_cot,
                 "enable_caching": self.config.enable_caching,
+                "clustering_method": getattr(self.config, 'clustering_method', 'kmeans'),
             },
             "detailed_results": all_results,
             "evaluation_completed_at": time.strftime("%Y-%m-%d %H:%M:%S"),

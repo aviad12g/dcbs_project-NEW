@@ -5,13 +5,12 @@ This module provides schema validation for YAML configuration files
 and support for environment variable substitution.
 """
 
-import os
-import re
-from typing import Any, Dict, List, Optional, Union
-
 import yaml
+from typing import Any, Dict
 
-from src.errors import ConfigurationError, ValidationError, eval_logger as logger
+from src.config_validation import ConfigValidator
+from src.env_resolver import EnvironmentVariableResolver
+from src.errors import ConfigurationError, ValidationError
 
 
 class ConfigSchema:
@@ -153,250 +152,33 @@ class ConfigSchema:
     }
 
 
-class EnvironmentVariableResolver:
-    """Handles environment variable substitution in configuration values."""
-
-    ENV_VAR_PATTERN = re.compile(r'\$\{([^}]+)\}')
-
-    @classmethod
-    def resolve_env_vars(cls, value: Any) -> Any:
-        """
-        Resolve environment variables in configuration values.
+def validate_config(config: Dict[str, Any], schema: Dict[str, Any] = None) -> Dict[str, Any]:
+    """
+    Validate configuration with environment variable resolution.
+    
+    Args:
+        config: Configuration dictionary to validate
+        schema: Optional custom schema (defaults to ConfigSchema.SCHEMA)
         
-        Args:
-            value: Configuration value that may contain environment variables
-            
-        Returns:
-            Value with environment variables resolved
-        """
-        if isinstance(value, str):
-            return cls._resolve_string_env_vars(value)
-        elif isinstance(value, dict):
-            return {k: cls.resolve_env_vars(v) for k, v in value.items()}
-        elif isinstance(value, list):
-            return [cls.resolve_env_vars(item) for item in value]
-        else:
-            return value
-
-    @classmethod
-    def _resolve_string_env_vars(cls, value: str) -> str:
-        """Resolve environment variables in a string value."""
-        def replace_env_var(match):
-            env_var = match.group(1)
-            # Support default values: ${VAR:default}
-            if ':' in env_var:
-                var_name, default_value = env_var.split(':', 1)
-                return os.getenv(var_name, default_value)
-            else:
-                env_value = os.getenv(env_var)
-                if env_value is None:
-                    raise ConfigurationError(
-                        f"Environment variable '{env_var}' not found",
-                        details={"variable": env_var, "value": value}
-                    )
-                return env_value
-
-        return cls.ENV_VAR_PATTERN.sub(replace_env_var, value)
-
-    @classmethod
-    def apply_env_var_overrides(cls, config: Dict[str, Any], schema: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Apply environment variable overrides to configuration.
+    Returns:
+        Validated configuration with environment variables resolved
         
-        Args:
-            config: Current configuration
-            schema: Configuration schema
-            
-        Returns:
-            Configuration with environment variable overrides applied
-        """
-        result = config.copy()
-        
-        for key, field_schema in schema.items():
-            env_var = field_schema.get("env_var")
-            if env_var and env_var in os.environ:
-                env_value = os.environ[env_var]
-                
-                # Convert environment variable value to appropriate type
-                try:
-                    if field_schema["type"] == bool:
-                        result[key] = env_value.lower() in ("true", "1", "yes", "on")
-                    elif field_schema["type"] == int:
-                        result[key] = int(env_value)
-                    elif field_schema["type"] == float:
-                        result[key] = float(env_value)
-                    elif field_schema["type"] == list:
-                        # Assume comma-separated values
-                        result[key] = [item.strip() for item in env_value.split(",")]
-                    else:
-                        result[key] = env_value
-                        
-                    logger.info(f"Applied environment override: {key} = {result[key]} (from {env_var})")
-                except (ValueError, TypeError) as e:
-                    raise ConfigurationError(
-                        f"Invalid value for environment variable {env_var}: {env_value}",
-                        details={"env_var": env_var, "value": env_value, "expected_type": field_schema["type"]}
-                    )
-            
-            # Recursively apply to nested schemas
-            if field_schema["type"] == dict and "schema" in field_schema:
-                if key in result and isinstance(result[key], dict):
-                    result[key] = cls.apply_env_var_overrides(result[key], field_schema["schema"])
-        
-        return result
-
-
-class ConfigValidator:
-    """Validates configuration against schema."""
-
-    def __init__(self, schema: Dict[str, Any] = None):
-        self.schema = schema or ConfigSchema.SCHEMA
-
-    def validate(self, config: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Validate configuration against schema.
-        
-        Args:
-            config: Configuration to validate
-            
-        Returns:
-            Validated and normalized configuration
-            
-        Raises:
-            ValidationError: If validation fails
-        """
-        try:
-            # Apply environment variable resolution
-            config = EnvironmentVariableResolver.resolve_env_vars(config)
-            
-            # Apply environment variable overrides
-            config = EnvironmentVariableResolver.apply_env_var_overrides(config, self.schema)
-            
-            # Validate against schema
-            validated_config = self._validate_dict(config, self.schema, "root")
-            
-            logger.info("Configuration validation successful")
-            return validated_config
-            
-        except Exception as e:
-            if isinstance(e, (ValidationError, ConfigurationError)):
-                raise
-            else:
-                raise ValidationError(f"Configuration validation failed: {str(e)}") from e
-
-    def _validate_dict(self, config: Dict[str, Any], schema: Dict[str, Any], path: str) -> Dict[str, Any]:
-        """Validate a dictionary against its schema."""
-        result = {}
-        
-        # Check required fields
-        for key, field_schema in schema.items():
-            if field_schema.get("required", False) and key not in config:
-                raise ValidationError(
-                    f"Required field '{key}' missing",
-                    details={"path": path, "field": key}
-                )
-        
-        # Validate each field
-        for key, field_schema in schema.items():
-            if key in config:
-                value = config[key]
-                result[key] = self._validate_field(value, field_schema, f"{path}.{key}")
-            elif "default" in field_schema:
-                result[key] = field_schema["default"]
-        
-        # Check for unknown fields
-        unknown_fields = set(config.keys()) - set(schema.keys())
-        if unknown_fields:
-            logger.warning(f"Unknown configuration fields: {unknown_fields}")
-        
-        return result
-
-    def _validate_field(self, value: Any, field_schema: Dict[str, Any], path: str) -> Any:
-        """Validate a single field against its schema."""
-        expected_type = field_schema["type"]
-        
-        # Handle None values for optional fields with None defaults
-        if value is None and field_schema.get("default") is None and not field_schema.get("required", False):
-            return None
-        
-        # Type validation (skip for None values that are allowed)
-        if value is not None:
-            if expected_type == dict and not isinstance(value, dict):
-                raise ValidationError(
-                    f"Field '{path}' must be a dictionary",
-                    details={"path": path, "value": value, "expected_type": "dict"}
-                )
-            elif expected_type == list and not isinstance(value, list):
-                raise ValidationError(
-                    f"Field '{path}' must be a list",
-                    details={"path": path, "value": value, "expected_type": "list"}
-                )
-            elif expected_type in (str, int, float, bool) and not isinstance(value, expected_type):
-                raise ValidationError(
-                    f"Field '{path}' must be of type {expected_type.__name__}",
-                    details={"path": path, "value": value, "expected_type": expected_type.__name__}
-                )
-        
-        # Choice validation (skip for None values)
-        if value is not None and "choices" in field_schema and value not in field_schema["choices"]:
-            raise ValidationError(
-                f"Field '{path}' must be one of {field_schema['choices']}",
-                details={"path": path, "value": value, "choices": field_schema["choices"]}
-            )
-        
-        # Range validation (only for non-list types and non-None values)
-        if value is not None and expected_type != list:
-            if "min_value" in field_schema and value < field_schema["min_value"]:
-                raise ValidationError(
-                    f"Field '{path}' must be >= {field_schema['min_value']}",
-                    details={"path": path, "value": value, "min_value": field_schema["min_value"]}
-                )
-            
-            if "max_value" in field_schema and value > field_schema["max_value"]:
-                raise ValidationError(
-                    f"Field '{path}' must be <= {field_schema['max_value']}",
-                    details={"path": path, "value": value, "max_value": field_schema["max_value"]}
-                )
-        
-        # Nested validation (skip for None values)
-        if value is not None:
-            if expected_type == dict and "schema" in field_schema:
-                return self._validate_dict(value, field_schema["schema"], path)
-            elif expected_type == list and "item_type" in field_schema:
-                return self._validate_list(value, field_schema, path)
-        
-        return value
-
-    def _validate_list(self, value: List[Any], field_schema: Dict[str, Any], path: str) -> List[Any]:
-        """Validate a list field."""
-        item_type = field_schema["item_type"]
-        result = []
-        
-        for i, item in enumerate(value):
-            item_path = f"{path}[{i}]"
-            
-            if not isinstance(item, item_type):
-                raise ValidationError(
-                    f"List item at '{item_path}' must be of type {item_type.__name__}",
-                    details={"path": item_path, "value": item, "expected_type": item_type.__name__}
-                )
-            
-            # Range validation for list items
-            if "min_value" in field_schema and item < field_schema["min_value"]:
-                raise ValidationError(
-                    f"List item at '{item_path}' must be >= {field_schema['min_value']}",
-                    details={"path": item_path, "value": item, "min_value": field_schema["min_value"]}
-                )
-            
-            if "max_value" in field_schema and item > field_schema["max_value"]:
-                raise ValidationError(
-                    f"List item at '{item_path}' must be <= {field_schema['max_value']}",
-                    details={"path": item_path, "value": item, "max_value": field_schema["max_value"]}
-                )
-            
-            result.append(item)
-        
-        return result
+    Raises:
+        ValidationError: If validation fails
+        ConfigurationError: If environment variable resolution fails
+    """
+    if schema is None:
+        schema = ConfigSchema.SCHEMA
+    
+    # Apply environment variable resolution
+    config = EnvironmentVariableResolver.resolve_env_vars(config)
+    
+    # Apply environment variable overrides
+    config = EnvironmentVariableResolver.apply_env_var_overrides(config, schema)
+    
+    # Validate configuration
+    validator = ConfigValidator(schema)
+    return validator.validate(config)
 
 
 def generate_config_template() -> str:
@@ -489,5 +271,4 @@ def validate_config_file(config_path: str) -> Dict[str, Any]:
     if not isinstance(config, dict):
         raise ConfigurationError("Configuration file must contain a YAML dictionary")
     
-    validator = ConfigValidator()
-    return validator.validate(config) 
+    return validate_config(config) 

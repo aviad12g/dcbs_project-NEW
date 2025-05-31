@@ -10,7 +10,7 @@ from unittest.mock import Mock, patch
 
 import torch
 
-from dcbs.samplers import (
+from src.dcbs.samplers import (
     GreedySampler,
     TopPSampler,
     RandomSampler,

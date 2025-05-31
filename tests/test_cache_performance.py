@@ -17,9 +17,9 @@ import torch
 # Remove sys.path.append line for clean imports
 
 try:
-    from dcbs import CacheConfig, DCBSSampler, SamplingContext
-    from dcbs.cache_manager import get_cache_manager, reset_cache_manager
-    from dcbs.clustering import KMeansClusterer, TopNCandidateSelector
+    from src.dcbs import CacheConfig, DCBSSampler, SamplingContext
+    from src.dcbs.cache_manager import get_cache_manager, reset_cache_manager
+    from src.dcbs.clustering import KMeansClusterer, TopNCandidateSelector
 except ImportError as e:
     pytest.skip(f"DCBS modules not available: {e}", allow_module_level=True)
 

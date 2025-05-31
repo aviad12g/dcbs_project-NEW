@@ -20,7 +20,7 @@ import torch
 # Add the parent directory to the path to enable imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from dcbs import DCBSSampler, SamplingContext
+from src.dcbs import DCBSSampler, SamplingContext
 from src.token_utils import get_top_tokens, sample_token_from_logits
 
 
