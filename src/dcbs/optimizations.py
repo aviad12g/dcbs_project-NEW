@@ -288,7 +288,7 @@ class BatchDCBSProcessor:
         """Optimized DCBS selection with GPU acceleration."""
         # Compute probabilities
         candidate_logits = logits[candidates]
-        candidate_probs = torch.softmax(candidate_logits, dim=0)
+        candidate_probs = torch.softmax(candidate_logits, dim=-1)
 
         # Normalize embeddings
         norms = torch.norm(embeddings, p=2, dim=1, keepdim=True)
@@ -574,7 +574,7 @@ class MemoryEfficientDCBS:
     ) -> int:
         """Standard token selection from clusters."""
         candidate_logits = logits[candidates]
-        candidate_probs = torch.softmax(candidate_logits, dim=0)
+        candidate_probs = torch.softmax(candidate_logits, dim=-1)
 
         # Group by clusters
         k = len(np.unique(labels))

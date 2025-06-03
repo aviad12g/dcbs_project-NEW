@@ -89,6 +89,9 @@ class ExampleProcessor:
         """
         Evaluate a processed example with a specific sampler.
         
+        REVERTED: Each sampler now generates fresh logits independently
+        to ensure DCBS clustering works correctly.
+        
         Args:
             processed_result: Result from process_example
             sampler: Sampler to use
@@ -99,11 +102,21 @@ class ExampleProcessor:
         """
         start_time = time.time()
         
-        logits = processed_result["logits"]
-        filter_tokens = processed_result["filter_tokens"]
+        # REVERTED: Generate fresh logits for each sampler independently
+        sentence = processed_result["sentence"]
+        options = processed_result["options"]
+        include_cot = processed_result.get("cot_reasoning") is not None
+        
+        # Get fresh answer result for this sampler
+        answer_result = self.question_answerer.answer_question(
+            sentence, options, sampler, include_cot
+        )
+        
+        logits = answer_result["logits"]
+        filter_tokens = answer_result["filter_tokens"]
         correct_id = processed_result["correct_id"]
         
-        # Sample using the specified sampler
+        # Sample using the specified sampler with fresh logits
         pred_id = sampler.sample(logits, filter_tokens=filter_tokens)
         
         # Check correctness

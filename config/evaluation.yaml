@@ -1,0 +1,42 @@
+# DCBS Evaluation Configuration
+# Configuration for running the unified evaluation framework
+
+# Model configuration
+model_path: "meta-llama/Llama-3.2-1B-Instruct"
+
+# Benchmark data
+benchmark: "data/arc_easy_full.json"
+
+# Output settings
+output_dir: "results"
+
+# Evaluation settings  
+limit: 300  # 300 examples for comprehensive evaluation (same as 40-example but larger)
+include_cot: true  # Chain of thought reasoning enabled
+log_level: "INFO"
+
+# Model loading
+load_in_4bit: false
+
+# Caching
+enable_caching: true  # Caching enabled as in original
+
+# Sampling parameters
+p_values: [0.9]
+
+# DCBS-specific parameters (same as original)
+dcbs_params:
+  k: 8           # Number of clusters
+  top_n: 50      # Top-n tokens to consider
+  cache_size: 1000
+
+# Clustering configuration (DBSCAN like original!)
+clustering_method: "dbscan"  # DBSCAN clustering like the original 40-example eval
+dbscan_eps: 0.3
+dbscan_min_samples: 2
+hierarchical_linkage: "average"
+
+# Performance settings
+performance:
+  batch_size: 1
+  timeout_seconds: 3600 

@@ -31,7 +31,7 @@ class SamplerFactory:
     def create_dcbs_sampler(
         config: EvaluationConfig, 
         context: Optional[SamplingContext] = None,
-        clustering_method: str = "kmeans",
+        clustering_method: str = "dbscan",
         dbscan_eps: float = 0.3,
         dbscan_min_samples: int = 2,
         hierarchical_linkage: str = "average"
@@ -87,7 +87,7 @@ class SamplerFactory:
     def create_samplers(
         config: EvaluationConfig, 
         context: Optional[SamplingContext] = None,
-        clustering_method: str = "kmeans",
+        clustering_method: Optional[str] = None,
         dbscan_eps: float = 0.3,
         dbscan_min_samples: int = 2,
         hierarchical_linkage: str = "average"
@@ -106,13 +106,16 @@ class SamplerFactory:
         Returns:
             Dictionary mapping sampler names to sampler instances
         """
+        # Use config's clustering method if none specified
+        effective_clustering_method = clustering_method or getattr(config, 'clustering_method', 'dbscan')
+        
         return {
             "greedy": GreedySampler(),
             "top_p": TopPSampler(p=config.top_p),
             "dcbs": SamplerFactory.create_dcbs_sampler(
                 config, 
                 context, 
-                clustering_method,
+                effective_clustering_method,
                 dbscan_eps,
                 dbscan_min_samples,
                 hierarchical_linkage

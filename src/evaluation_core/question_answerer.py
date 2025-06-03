@@ -27,10 +27,53 @@ class QuestionAnswerer:
         self.context = context
         self.device = context.device
         
+        # Check if chat template is available
+        self.has_chat_template = (
+            hasattr(tokenizer, 'chat_template') and 
+            tokenizer.chat_template is not None
+        )
+        
         # Initialize components
         self.message_generator = MessageTemplateGenerator()
         self.token_generator = TokenGenerator(model, tokenizer, self.device)
         self.token_resolver = AnswerTokenResolver(tokenizer)
+    
+    def _format_prompt(self, messages: List[Dict[str, str]], add_generation_prompt: bool = True) -> str:
+        """
+        Format messages into a prompt, using chat template if available or fallback formatting.
+        
+        Args:
+            messages: List of message dictionaries with 'role' and 'content'
+            add_generation_prompt: Whether to add generation prompt
+            
+        Returns:
+            Formatted prompt string
+        """
+        if self.has_chat_template:
+            try:
+                return self.tokenizer.apply_chat_template(
+                    messages, tokenize=False, add_generation_prompt=add_generation_prompt
+                )
+            except Exception as e:
+                logger.warning(f"Chat template failed, using fallback: {e}")
+                # Fall through to simple formatting
+        
+        # Simple fallback formatting
+        prompt = ""
+        for msg in messages:
+            role = msg['role']
+            content = msg['content']
+            if role == 'user':
+                prompt += f"User: {content}\n"
+            elif role == 'assistant':
+                prompt += f"Assistant: {content}\n"
+            elif role == 'system':
+                prompt += f"System: {content}\n"
+        
+        if add_generation_prompt and not prompt.endswith("Assistant: "):
+            prompt += "Assistant: "
+            
+        return prompt
     
     def answer_question(
         self,
@@ -90,10 +133,8 @@ class QuestionAnswerer:
             content = msg['content'][:200] + "..." if len(msg['content']) > 200 else msg['content']
             logger.debug(f"  {i+1}. {role}: {content}")
         
-        # Create the final prompt
-        final_prompt = self.tokenizer.apply_chat_template(
-            final_messages, tokenize=False, add_generation_prompt=True
-        )
+        # Create the final prompt using our flexible formatter
+        final_prompt = self._format_prompt(final_messages, add_generation_prompt=True)
         
         # Add "The final answer is option" to the prompt
         final_prompt += "The final answer is option"
@@ -138,9 +179,8 @@ class QuestionAnswerer:
         # Create messages for direct answer
         messages = self.message_generator.create_direct_answer_messages(question, options)
         
-        prompt = self.tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
-        )
+        # Use our flexible prompt formatter
+        prompt = self._format_prompt(messages, add_generation_prompt=True)
         
         # Add the answer prompt to the assistant's message
         prompt += "The correct answer is option"
@@ -181,7 +221,7 @@ class QuestionAnswerer:
         answer_ids: Dict[str, int]
     ) -> Dict[str, float]:
         """Calculate probabilities for each answer option."""
-        all_probs = torch.softmax(logits, dim=0)
+        all_probs = torch.softmax(logits, dim=-1)
         answer_probs = {
             option: all_probs[token_id].item()
             for option, token_id in answer_ids.items()

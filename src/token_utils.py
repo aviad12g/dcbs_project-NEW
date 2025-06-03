@@ -1,7 +1,5 @@
 """
 Token processing utilities for DCBS sampling.
-
-Utilities for tokenized text including filtering, validation, and token probability manipulation.
 """
 
 import logging
@@ -197,7 +195,7 @@ class AnswerTokenResolver:
         
         # Fallback: use last token from space + letter
         fallback_tokens = tokenizer_cache.encode(f" {label}", self.tokenizer, add_special_tokens=False)
-        if fallback_tokens:
+        if fallback_tokens and len(fallback_tokens) > 0:
             token_id = fallback_tokens[-1]
             self.logger.debug(f"Using fallback token {token_id} for label {label}")
             return token_id
@@ -369,7 +367,7 @@ def sample_token_from_logits(
         else:
             return random.randint(0, len(logits) - 1)
 
-    probs = torch.softmax(filtered_logits, dim=0)
+    probs = torch.softmax(filtered_logits, dim=-1)
     return torch.multinomial(probs, 1).item()
 
 

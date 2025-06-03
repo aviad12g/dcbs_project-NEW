@@ -1,8 +1,8 @@
 """
 Model loading and management without ChatTemplateManager.
 
-This module handles model loading using the default tokenizer.chat_template
-for most relevant instruct models, as suggested in the code review.
+This module handles model loading with optional chat template support.
+Models without chat templates will use simple text completion instead.
 """
 
 import os
@@ -16,7 +16,7 @@ from src.errors import eval_logger as logger
 
 
 class ModelManager:
-    """Model manager using default chat templates."""
+    """Model manager with optional chat template support."""
 
     def __init__(self, model_name: str, load_in_4bit: bool = False):
         self.model_name = model_name
@@ -66,24 +66,22 @@ class ModelManager:
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
             
-        # Use default chat template - most relevant instruct models have this
+        # Check for chat template support (optional)
         if hasattr(self.tokenizer, 'chat_template') and self.tokenizer.chat_template is not None:
             logger.info("Using model's default chat template")
+            # Test the chat template to ensure it works
+            try:
+                test_messages = [{"role": "user", "content": "Hello"}]
+                test_result = self.tokenizer.apply_chat_template(
+                    test_messages, tokenize=False, add_generation_prompt=True
+                )
+                logger.info("Chat template validation successful")
+                logger.debug(f"Test template result: {test_result[:100]}...")
+            except Exception as e:
+                logger.warning(f"Chat template validation failed, will use text completion: {e}")
+                # Don't fail, just warn and continue without chat template
         else:
-            logger.error(f"Model {self.model_name} does not have a default chat template")
-            raise RuntimeError(f"Model {self.model_name} requires a chat template for proper operation")
-            
-        # Test the chat template to ensure it works
-        try:
-            test_messages = [{"role": "user", "content": "Hello"}]
-            test_result = self.tokenizer.apply_chat_template(
-                test_messages, tokenize=False, add_generation_prompt=True
-            )
-            logger.info("Chat template validation successful")
-            logger.debug(f"Test template result: {test_result[:100]}...")
-        except Exception as e:
-            logger.error(f"Chat template validation failed: {e}")
-            raise RuntimeError(f"Model {self.model_name} has incompatible chat template")
+            logger.info(f"Model {self.model_name} does not have a chat template, using text completion mode")
 
         self.device = next(self.model.parameters()).device
 

@@ -178,7 +178,8 @@ class TestDCBSSampler(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.sampler = DCBSSampler.create_default(k=2, top_n=4)
+        from src.dcbs.factory import DCBSSamplerFactory
+        self.sampler = DCBSSamplerFactory.create_default(k=2, top_n=4)
         
         # Create proper embedding layer (not mock)
         vocab_size = 10
@@ -194,13 +195,15 @@ class TestDCBSSampler(unittest.TestCase):
 
     def test_dcbs_initialization(self):
         """Test DCBSSampler initialization."""
-        sampler = DCBSSampler.create_default(k=3, top_n=10)
+        from src.dcbs.factory import DCBSSamplerFactory
+        sampler = DCBSSamplerFactory.create_default(k=3, top_n=10)
         self.assertEqual(sampler.clusterer.k, 3)
         self.assertEqual(sampler.candidate_selector.top_n, 10)
 
     def test_dcbs_create_default(self):
-        """Test DCBSSampler.create_default factory method."""
-        sampler = DCBSSampler.create_default(k=4, top_n=20)
+        """Test DCBSSamplerFactory.create_default factory method."""
+        from src.dcbs.factory import DCBSSamplerFactory
+        sampler = DCBSSamplerFactory.create_default(k=4, top_n=20)
         self.assertEqual(sampler.clusterer.k, 4)
         self.assertEqual(sampler.candidate_selector.top_n, 20)
 

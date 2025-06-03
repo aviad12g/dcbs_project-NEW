@@ -1,8 +1,5 @@
 """
 Clustering interfaces and implementations for DCBS.
-
-This module provides clustering abstractions following the function object pattern,
-making it easy to swap different clustering algorithms without changing the DCBS logic.
 """
 
 from abc import ABC, abstractmethod

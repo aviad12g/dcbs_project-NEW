@@ -21,6 +21,49 @@ class TokenGenerator:
         self.model = model
         self.tokenizer = tokenizer
         self.device = device
+        
+        # Check if chat template is available
+        self.has_chat_template = (
+            hasattr(tokenizer, 'chat_template') and 
+            tokenizer.chat_template is not None
+        )
+    
+    def _format_messages(self, messages: List[Dict[str, str]], add_generation_prompt: bool = True) -> str:
+        """
+        Format messages into a prompt, using chat template if available or fallback formatting.
+        
+        Args:
+            messages: List of message dictionaries with 'role' and 'content'
+            add_generation_prompt: Whether to add generation prompt
+            
+        Returns:
+            Formatted prompt string
+        """
+        if self.has_chat_template:
+            try:
+                return self.tokenizer.apply_chat_template(
+                    messages, tokenize=False, add_generation_prompt=add_generation_prompt
+                )
+            except Exception as e:
+                logger.warning(f"Chat template failed in token generator, using fallback: {e}")
+                # Fall through to simple formatting
+        
+        # Simple fallback formatting
+        prompt = ""
+        for msg in messages:
+            role = msg['role']
+            content = msg['content']
+            if role == 'user':
+                prompt += f"User: {content}\n"
+            elif role == 'assistant':
+                prompt += f"Assistant: {content}\n"
+            elif role == 'system':
+                prompt += f"System: {content}\n"
+        
+        if add_generation_prompt and not prompt.endswith("Assistant: "):
+            prompt += "Assistant: "
+            
+        return prompt
     
     def generate_with_kv_cache(
         self, 
@@ -41,10 +84,8 @@ class TokenGenerator:
         Returns:
             Tuple of (generated_text, new_cache)
         """
-        # Apply chat template
-        prompt = self.tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
-        )
+        # Apply chat template or fallback formatting
+        prompt = self._format_messages(messages, add_generation_prompt=True)
         
         # Log the prompt for debugging
         logger.debug(f"Generated prompt:\n{prompt}")

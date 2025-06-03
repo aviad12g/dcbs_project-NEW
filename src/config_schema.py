@@ -116,6 +116,40 @@ class ConfigSchema:
                 },
             },
         },
+        "clustering_method": {
+            "type": str,
+            "required": False,
+            "default": "dbscan",
+            "description": "Clustering method for DCBS",
+            "choices": ["kmeans", "dbscan", "hierarchical"],
+            "env_var": "DCBS_CLUSTERING_METHOD",
+        },
+        "dbscan_eps": {
+            "type": float,
+            "required": False,
+            "default": 0.3,
+            "description": "DBSCAN epsilon parameter",
+            "min_value": 0.01,
+            "max_value": 10.0,
+            "env_var": "DCBS_DBSCAN_EPS",
+        },
+        "dbscan_min_samples": {
+            "type": int,
+            "required": False,
+            "default": 2,
+            "description": "DBSCAN minimum samples parameter",
+            "min_value": 1,
+            "max_value": 100,
+            "env_var": "DCBS_DBSCAN_MIN_SAMPLES",
+        },
+        "hierarchical_linkage": {
+            "type": str,
+            "required": False,
+            "default": "average",
+            "description": "Hierarchical clustering linkage method",
+            "choices": ["average", "single", "complete", "ward"],
+            "env_var": "DCBS_HIERARCHICAL_LINKAGE",
+        },
         "performance": {
             "type": dict,
             "required": False,
@@ -192,7 +226,7 @@ model_path: "meta-llama/Llama-3.2-1B"  # HuggingFace model name or path
 # Environment variable: DCBS_MODEL_PATH
 
 # Benchmark data
-benchmark: "data/arc_easy_processed.json"  # Path to benchmark JSON file
+benchmark: "data/arc_easy_full.json"  # Path to benchmark JSON file
 # Environment variable: DCBS_BENCHMARK_PATH
 
 # Output settings

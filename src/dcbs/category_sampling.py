@@ -1,8 +1,5 @@
 """
-Category-based sampling implementation with function objects.
-
-This module provides a cleaner implementation of category-based sampling
-using the function object pattern for better maintainability.
+Category-based sampling implementation.
 """
 
 from abc import ABC, abstractmethod
@@ -95,7 +92,7 @@ class GreedyTokenSelector(TokenSelector):
             cluster_token_indices = [cluster_token_indices[i] for i in valid_indices]
             cluster_token_probs = cluster_token_probs[valid_indices]
 
-        # GREEDY selection of highest probability token from cluster
+        # Select highest probability token from cluster
         selected_in_cluster_idx = torch.argmax(cluster_token_probs).item()
         selected_token_idx = cluster_token_indices[selected_in_cluster_idx]
 
@@ -164,7 +161,30 @@ class CategorySampler:
         
         # Select cluster using the category selector
         selected_cluster_idx = self.category_selector.select_category(cluster_probs)
+        
+        # Safety check: ensure cluster index is valid
+        if selected_cluster_idx >= len(clusters):
+            # Fallback to the last available cluster
+            selected_cluster_idx = len(clusters) - 1
+        
         cluster_token_indices = clusters[selected_cluster_idx]
+        
+        # Safety check: handle empty clusters
+        if not cluster_token_indices:
+            # Find first non-empty cluster
+            for i, cluster in enumerate(clusters):
+                if cluster:
+                    cluster_token_indices = cluster
+                    break
+            else:
+                # All clusters are empty, fallback to greedy selection
+                if filter_tokens:
+                    for token_id in candidate_ids:
+                        if token_id in filter_tokens:
+                            return token_id
+                    return next(iter(filter_tokens))
+                best_idx = torch.argmax(candidate_probs).item()
+                return candidate_ids[best_idx]
         
         # Select token using the token selector
         return self.token_selector.select_token(

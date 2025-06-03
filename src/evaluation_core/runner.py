@@ -6,6 +6,7 @@ that implement proper conversation flow and remove ChatTemplateManager dependenc
 """
 
 import time
+import traceback
 from typing import Dict, List
 
 from src.errors import eval_logger as logger
@@ -112,6 +113,7 @@ class EvaluationRunner:
 
             except Exception as e:
                 logger.error(f"Error processing example {i}: {e}")
+                logger.error(f"Full traceback:\n{traceback.format_exc()}")
                 continue
 
         # Calculate final statistics
@@ -143,7 +145,7 @@ class EvaluationRunner:
                 "methods": list(self.samplers.keys()),
                 "include_cot": self.config.include_cot,
                 "enable_caching": self.config.enable_caching,
-                "clustering_method": getattr(self.config, 'clustering_method', 'kmeans'),
+                "clustering_method": getattr(self.config, 'clustering_method', 'dbscan'),
             },
             "detailed_results": all_results,
             "evaluation_completed_at": time.strftime("%Y-%m-%d %H:%M:%S"),

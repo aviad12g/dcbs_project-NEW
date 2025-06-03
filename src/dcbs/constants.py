@@ -1,8 +1,5 @@
 """
 Constants for DCBS implementation.
-
-This module contains all constants and magic numbers used throughout the DCBS implementation
-to improve maintainability and clarity.
 """
 
 # Algorithm Parameters

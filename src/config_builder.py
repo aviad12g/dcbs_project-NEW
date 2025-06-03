@@ -57,11 +57,11 @@ class ConfigBuilder:
         k = dcbs_params.get("k", 8)
         top_n = dcbs_params.get("top_n", 50)
 
-        # Clustering parameters (defaults)
-        clustering_method = "kmeans"
-        dbscan_eps = 0.3
-        dbscan_min_samples = 2
-        hierarchical_linkage = "average"
+        # Clustering parameters from YAML config (with defaults)
+        clustering_method = yaml_config.get("clustering_method", "dbscan")
+        dbscan_eps = yaml_config.get("dbscan_eps", 0.3)
+        dbscan_min_samples = yaml_config.get("dbscan_min_samples", 2)
+        hierarchical_linkage = yaml_config.get("hierarchical_linkage", "average")
 
         # Other parameters from validated config
         include_cot = yaml_config.get("include_cot", True)

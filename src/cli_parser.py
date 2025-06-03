@@ -79,8 +79,8 @@ class ArgumentParserSetup:
             "--clustering-method",
             type=str,
             choices=["kmeans", "dbscan", "hierarchical"],
-            default="kmeans",
-            help="Clustering method for DCBS",
+            default=None,
+            help="Clustering method for DCBS (uses config default if not specified)",
         )
 
         parser.add_argument(

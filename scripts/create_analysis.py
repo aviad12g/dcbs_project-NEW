@@ -1,83 +1,115 @@
 #!/usr/bin/env python3
 """
-Create comprehensive analysis with figures and summary for the full ARC evaluation.
+Create comprehensive analysis with figures and summary for evaluation results.
 """
 
 import argparse
 import os
 import sys
 from pathlib import Path
+import json
+import glob
 
 # Add the parent directory to sys.path to allow importing from src
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.create_final_analysis import (
-    load_results,
-    create_accuracy_comparison_chart,
-    create_timing_comparison_chart,
-    create_cache_comparison_chart,
-    create_optimization_summary_chart,
-    create_detailed_analysis_report
-)
+from src.visualization import generate_all_visualizations
+from src.statistical_analysis import comprehensive_statistical_analysis
+
+
+def load_results(results_dir=None):
+    """Load the latest evaluation results."""
+    if results_dir is None:
+        results_dir = Path('results')
+    else:
+        results_dir = Path(results_dir)
+    
+    # Find the latest results file
+    result_files = list(results_dir.glob('evaluation_results_*.json'))
+    if not result_files:
+        raise FileNotFoundError("No evaluation results found")
+    
+    latest_file = max(result_files, key=os.path.getctime)
+    
+    with open(latest_file, 'r') as f:
+        results = json.load(f)
+    
+    return results
+
+
+def create_detailed_analysis_report(results, output_dir):
+    """Create a detailed analysis report."""
+    report_path = output_dir / 'ANALYSIS_REPORT.md'
+    
+    # Perform statistical analysis
+    stats_analysis = comprehensive_statistical_analysis(results)
+    
+    with open(report_path, 'w') as f:
+        f.write("# DCBS Evaluation Analysis Report\n\n")
+        
+        # Summary statistics
+        f.write("## Summary Statistics\n\n")
+        f.write("| Method | Accuracy | Correct/Total | 95% CI |\n")
+        f.write("|--------|----------|---------------|--------|\n")
+        
+        for method, stats in results['statistics'].items():
+            ci = stats.get('confidence_interval', (0, 0))
+            f.write(f"| {method.upper()} | {stats['accuracy']:.1f}% | "
+                   f"{stats['correct']}/{stats['total']} | "
+                   f"({ci[0]:.1f}%, {ci[1]:.1f}%) |\n")
+        
+        # Statistical analysis
+        f.write("\n## Statistical Analysis\n\n")
+        
+        for comparison, result in stats_analysis['pairwise_comparisons'].items():
+            f.write(f"### {comparison}\n")
+            f.write(f"- p-value: {result['p_value']:.6f}\n")
+            f.write(f"- Corrected p-value: {result['corrected_p_value']:.6f}\n")
+            f.write(f"- Effect size: {result['effect_size']:.3f} ({result['effect_interpretation']})\n")
+            f.write(f"- Significant: {'Yes' if result['significant_corrected'] else 'No'}\n\n")
+        
+        f.write("## Recommendations\n\n")
+        for rec in stats_analysis['recommendations']:
+            f.write(f"- {rec}\n")
+    
+    print(f"Analysis report saved to: {report_path}")
 
 
 def run_analysis(results_dir=None, output_dir=None):
     """
     Generate complete analysis with figures and reports.
-    
-    Args:
-        results_dir: Directory containing evaluation results
-        output_dir: Directory to save analysis outputs
     """
     if output_dir is None:
-        output_dir = Path('results/final_analysis')
+        output_dir = Path('results')
     else:
         output_dir = Path(output_dir)
     
     # Create output directory
     output_dir.mkdir(exist_ok=True)
     
-    # Load all results
+    # Load results
     print("Loading evaluation results...")
-    results = load_results()
+    results = load_results(results_dir)
     
-    # Generate figures
-    print("Creating accuracy comparison chart...")
-    create_accuracy_comparison_chart(results, output_dir)
-    
-    print("Creating timing comparison chart...")
-    create_timing_comparison_chart(results, output_dir)
-    
-    print("Creating cache comparison chart...")
-    create_cache_comparison_chart(results, output_dir)
-    
-    print("Creating optimization summary chart...")
-    create_optimization_summary_chart(results, output_dir)
+    # Generate visualizations using existing function
+    print("Creating charts and visualizations...")
+    generate_all_visualizations(results, str(output_dir))
     
     # Generate detailed report
     print("Creating detailed analysis report...")
     create_detailed_analysis_report(results, output_dir)
     
     print(f"\nAnalysis complete. Files saved to: {output_dir}")
-    print("Generated files:")
-    print("   - accuracy_comparison.png")
-    print("   - timing_comparison.png") 
-    print("   - cache_comparison.png")
-    print("   - optimization_summary.png")
-    print("   - COMPLETE_ANALYSIS_REPORT.md")
     
     # Show key findings
-    full_stats = results['full_no_cache']['statistics']
-    greedy_acc = full_stats.get('greedy', {}).get('accuracy', 0)
-    dcbs_acc = full_stats.get('dcbs', {}).get('accuracy', 0)
-    greedy_time = full_stats.get('greedy', {}).get('avg_time_ms', 0)
-    dcbs_time = full_stats.get('dcbs', {}).get('avg_time_ms', 0)
+    statistics = results['statistics']
+    methods = list(statistics.keys())
+    best_method = max(methods, key=lambda m: statistics[m]['accuracy'])
     
     print(f"\nKey findings:")
-    print(f"   DCBS Accuracy: {dcbs_acc:.1%} vs Greedy {greedy_acc:.1%}")
-    print(f"   DCBS Time: {dcbs_time:.0f}ms vs Greedy {greedy_time:.0f}ms")
-    print(f"   Performance: {((greedy_time - dcbs_time) / greedy_time * 100):+.1f}% vs Greedy")
-    print(f"   Dataset: 2,946 questions (complete ARC Easy)")
+    for method, stats in statistics.items():
+        symbol = "🥇" if method == best_method else "  "
+        print(f"   {symbol} {method.upper()}: {stats['accuracy']:.1f}% ({stats['correct']}/{stats['total']})")
     
     return 0
 
@@ -93,7 +125,7 @@ def main():
     )
     parser.add_argument(
         "--output_dir", type=str, default=None,
-        help="Directory to save analysis outputs (default: results/final_analysis/)"
+        help="Directory to save analysis outputs (default: results/)"
     )
     
     args = parser.parse_args()

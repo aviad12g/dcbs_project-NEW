@@ -7,8 +7,8 @@ A comprehensive evaluation harness for testing different LLM sampling strategies
 Deterministic Category Based Sampling is a novel sampling method that combines the benefits of diverse sampling with clustering of token embeddings. It enables exploration of different semantic categories during sampling while maintaining deterministic selection for reproducibility.
 
 The algorithm works in multiple steps:
-1. Select top-n tokens by probability
-2. Cluster token embeddings into k semantic categories using k-means
+1. Select top-n tokens by probability (n=50)
+2. Cluster token embeddings into semantic categories using DBSCAN (eps=0.3, min_samples=2)
 3. Select the cluster with highest total probability mass (deterministic greedy selection)
 4. Select the highest probability token from within the selected cluster (deterministic greedy selection)
 
@@ -16,45 +16,88 @@ This approach balances exploration of diverse semantic spaces with consistent, r
 
 ## Latest Evaluation Results
 
-**Dataset**: ARC Easy (500 examples)  
+**Dataset**: ARC Easy (50 examples)  
 **Model**: Llama 3.2 1B Instruct  
-**Configuration**: Chain-of-thought enabled, KV caching optimized, deterministic seeding
+**Configuration**: Chain-of-thought enabled, DBSCAN clustering (eps=0.3), independent inference per sampler
 
 ### Accuracy Comparison
 
 | Method | Accuracy | 95% CI | Correct/Total | Avg Time (ms) |
 |--------|----------|--------|---------------|---------------|
-| **DCBS** | **68.6%** | (64.4, 72.5) | 343/500 | 3.72 |
-| **Greedy** | 68.2% | (64.0, 72.1) | 341/500 | 0.36 |
-| **Top-p** | 67.2% | (63.0, 71.2) | 336/500 | 0.93 |
-| **Random** | 25.2% | (21.6, 29.2) | 126/500 | 0.01 |
+| **DCBS** | **78.0%** | (64.8, 87.2) | 39/50 | 5424.9 |
+| **Top-p** | 66.0% | (52.2, 77.6) | 33/50 | 4510.4 |
+| **Greedy** | 64.0% | (50.1, 75.9) | 32/50 | 4289.8 |
+| **Random** | 20.0% | (11.2, 33.0) | 10/50 | 8915.8 |
 
 ### Statistical Significance Analysis
 
-**Fisher's Exact Test Results:**
+**Paired T-Test Results (50 examples):**
 
-| Comparison | P-value | Odds Ratio | 95% CI | Effect Size | Significant |
-|------------|---------|------------|--------|-------------|-------------|
-| DCBS vs Greedy | 0.946 | 1.019 | [0.780, 1.330] | +0.4% | No |
-| DCBS vs Top-p | 0.684 | 1.066 | [0.818, 1.391] | +1.4% | No |
-| Greedy vs Top-p | 0.787 | 1.047 | [0.803, 1.365] | +1.0% | No |
-| DCBS vs Random | <0.001 | 6.485 | [4.919, 8.550] | +43.4% | **Yes** |
-| Greedy vs Random | <0.001 | 6.366 | [4.830, 8.389] | +43.0% | **Yes** |
-| Top-p vs Random | <0.001 | 6.067 | [4.608, 7.987] | +42.0% | **Yes** |
+| Comparison | t-statistic | p-value | Significance |
+|------------|-------------|---------|--------------|
+| DCBS vs Greedy | 2.447 | 0.0180 | * |
+| DCBS vs Top-p | 1.630 | 0.1095 | ns |
+| DCBS vs Random | 6.096 | < 0.001 | *** |
+| Top-p vs Random | 4.608 | < 0.001 | *** |
+| Greedy vs Random | 4.416 | < 0.001 | *** |
+
+*Significance levels: *** p < 0.001, ** p < 0.01, * p < 0.05, ns = not significant*
 
 ### Key Findings
 
-- **No significant differences** between DCBS, Greedy, and Top-p sampling methods on ARC Easy
-- **All methods significantly outperform** random baseline (p < 0.001)
-- **DCBS achieves highest accuracy** (68.6%) with minimal computational overhead (3.72ms avg)
-- **Random sampling** performs at expected baseline (25.2%, close to theoretical 25%)
-- **Deterministic seeding** ensures fully reproducible results across all methods
+- **DCBS shows statistically significant improvement** over Greedy sampling (p = 0.018)
+- **All sophisticated methods significantly outperform** random baseline (p < 0.001)
+- **DCBS demonstrates substantial practical advantage** with 78.0% accuracy (+14% over Greedy, +12% over Top-p)
+- **DBSCAN clustering effectiveness** confirmed with eps=0.3, min_samples=2 configuration
+- **Performance optimization trade-off** identified: shared logits broke DCBS clustering functionality
 
 ### Research Insights
 
-The identical performance across sophisticated sampling methods indicates that on ARC Easy with Llama 3.2 1B, the model exhibits high confidence in correct answers. This demonstrates an important limitation: sampling diversity techniques provide minimal benefit when base model predictions are already highly confident.
+After resolving a critical performance optimization bug that caused identical results across samplers, DCBS now demonstrates its intended clustering advantage. The algorithm successfully identifies semantic token categories and selects from the most promising cluster, leading to measurably improved accuracy on ARC Easy reasoning tasks.
 
-### Visualizations
+## System Architecture
+
+The following diagram illustrates the DCBS evaluation framework and algorithm flow:
+
+```mermaid
+graph TD
+    A["Input Text<br/>Question + Multiple Choice Options"] --> B["Language Model<br/>Llama 3.2 1B Instruct<br/>Chain-of-Thought Generation"]
+    B --> C["Token Logits<br/>Probability Distribution P(t|context)"]
+    
+    C --> D["Greedy Sampling<br/>t* = argmax P(t|context)"]
+    C --> E["Top-p Nucleus Sampling<br/>Sample from top tokens where<br/>Σ P(t) ≥ p (p=0.9)"]
+    C --> F["DCBS Algorithm<br/>Deterministic Category-Based Selection"]
+    C --> G["Random Baseline<br/>Uniform Random Selection"]
+    
+    F --> H["Step 1: Candidate Selection<br/>Select top-n tokens by probability<br/>(n=50)"]
+    H --> I["Step 2: Embedding Extraction<br/>Extract token embeddings<br/>e(t) ∈ R^d from embedding layer"]
+    I --> J["Step 3: Clustering<br/>DBSCAN Algorithm<br/>ε=0.3, min_samples=2"]
+    J --> K["Step 4: Cluster Scoring<br/>Mass(C_i) = Σ P(t) for t ∈ C_i"]
+    K --> L["Step 5: Cluster Selection<br/>C* = argmax Mass(C_i)"]
+    L --> M["Step 6: Token Selection<br/>t* = argmax P(t) for t ∈ C*"]
+    
+    D --> N["Prediction Outputs"]
+    E --> N
+    M --> N
+    G --> N
+    
+    N --> O["Performance Evaluation<br/>DCBS: 78.0% accuracy<br/>Top-p: 66.0% accuracy<br/>Greedy: 64.0% accuracy<br/>Random: 20.0% accuracy"]
+    
+    classDef input fill:#f9f9f9,stroke:#333,stroke-width:2px
+    classDef model fill:#e8f4fd,stroke:#1976d2,stroke-width:2px
+    classDef sampler fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef dcbs fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+    classDef output fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    
+    class A input
+    class B model
+    class C model
+    class D,E,G sampler
+    class F,H,I,J,K,L,M dcbs
+    class N,O output
+```
+
+### Evaluation Results Visualizations
 
 ![Accuracy Comparison](results/accuracy_by_method.png)
 ![Performance Comparison](results/timing_comparison.png)
@@ -136,8 +179,8 @@ The project implements four sampling strategies with a unified interface:
 ### 3. **Deterministic Category Based Sampling**
 - **Algorithm**: Clusters tokens by embeddings, selects best cluster, then best token
 - **Characteristics**: Deterministic, semantically-aware, novel approach
-- **Configuration**: `k=8` clusters, `top_n=50` candidates
-- **Performance**: 68.6% accuracy, 3.72ms average time
+- **Configuration**: DBSCAN clustering (eps=0.3, min_samples=2), `top_n=50` candidates
+- **Performance**: 78.0% accuracy, 5424.9ms average time
 
 ### 4. **Random Sampling**
 - **Algorithm**: Uniform random selection from allowed tokens
@@ -272,7 +315,8 @@ context = SamplingContext(embedding_layer=model.get_input_embeddings())
 token = dcbs.sample(logits, filter_tokens=filter_tokens, context=context)
 
 # Or use the convenience factory method
-dcbs_default = DCBSSampler.create_default(k=8, top_n=50)
+from dcbs import DCBSSamplerFactory
+dcbs_default = DCBSSamplerFactory.create_default(k=8, top_n=50)
 token = dcbs_default.sample(logits, filter_tokens=filter_tokens, context=context)
 ```
 

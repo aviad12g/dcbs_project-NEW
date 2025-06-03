@@ -1,20 +1,9 @@
 #!/usr/bin/env python3
 """
-Unified DCBS Evaluation Framework
+DCBS Evaluation Framework
 
-This script provides a comprehensive evaluation framework for comparing
-different sampling methods on multiple-choice reasoning tasks with proper
-conversation flow and LLM message completion.
-
-Key features:
-1. Never let LLM complete 'user' messages, only 'assistant' messages
-2. Proper two-step conversation flow with KV caching
-3. No ChatTemplateManager dependency (uses default tokenizer.chat_template)
-4. Fixed parameter handling and validation
-5. Increased token limits to avoid truncation
-6. Enhanced logging and debugging
-7. Clean codebase with unified implementations
-8. Reproducible results with fixed random seeds
+Comprehensive evaluation framework for comparing sampling methods
+on multiple-choice reasoning tasks.
 """
 
 import csv
@@ -209,7 +198,7 @@ class ResultsManager:
             is_sweep: Whether this is a parameter sweep result
         """
         print("\n" + "=" * 70)
-        print("UNIFIED DCBS EVALUATION RESULTS")
+        print("DCBS EVALUATION RESULTS")
         print("=" * 70)
 
         if is_sweep:
@@ -219,7 +208,6 @@ class ResultsManager:
 
         print("-" * 70)
         print("Random baseline for 4-option: 25.0%")
-        print("Charts saved to results/")
         print("=" * 70)
 
     @staticmethod
@@ -292,8 +280,7 @@ class EvaluationFramework:
         log_level = self.args.log_level or self.config.log_level
         setup_logging(log_level=log_level)
 
-        logger.info("Starting unified DCBS evaluation framework")
-        logger.info("Using improved conversation flow and KV caching")
+        logger.info("Starting DCBS evaluation framework")
         logger.info(f"Configuration: {self.config}")
 
         try:
@@ -308,7 +295,7 @@ class EvaluationFramework:
 
             self._save_and_display_results(results, is_sweep)
 
-            logger.info("Unified evaluation completed successfully!")
+            logger.info("Evaluation completed successfully!")
 
         except KeyboardInterrupt:
             logger.info("Evaluation interrupted by user")
