@@ -1,19 +1,16 @@
 [flake8]
 max-line-length = 88
-extend-ignore = 
-    # Black compatibility
-    E203,  # Whitespace before ':'
-    E501,  # Line too long (handled by Black)
-    W503,  # Line break before binary operator
-    # Allow more complex functions and classes
-    C901,  # Function too complex
-    # Documentation
-    D100,  # Missing docstring in public module
-    D101,  # Missing docstring in public class  
-    D102,  # Missing docstring in public method
-    D103,  # Missing docstring in public function
-    D104,  # Missing docstring in public package
-    D105,  # Missing docstring in magic method
+extend-ignore =
+    E203,
+    E501,
+    W503,
+    C901,
+    D100,
+    D101,
+    D102,
+    D103,
+    D104,
+    D105
 exclude = 
     .git,
     __pycache__,

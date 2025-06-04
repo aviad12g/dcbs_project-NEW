@@ -372,6 +372,17 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 4. Run the test suite (`pytest tests/`)
 5. Submit a pull request
 
+### Adding a New Sampler
+
+1. Create a new class that inherits from `Sampler` (see `src/dcbs/samplers` for
+   examples).
+2. Register the class in `SamplerFactory` by adding it to the mapping of
+   available samplers.
+3. Update `configs/default.yaml` with a name for the sampler so it can be
+   enabled from the CLI.
+4. Add tests under `tests/` verifying basic functionality.
+5. Run `pytest` locally or via CI to ensure everything passes.
+
 ## Troubleshooting
 
 ### Common Issues

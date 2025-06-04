@@ -14,25 +14,9 @@ from src.evaluation_core.config import EvaluationConfig
 from src.evaluation_core.model_manager import ModelManager
 from src.evaluation_core.example_processor import ExampleProcessor
 from src.evaluation_core.sampler_factory import SamplerFactory
+from src.evaluation_core.metrics import calculate_confidence_interval
 
 
-def calculate_confidence_interval(correct: int, total: int) -> tuple:
-    """Calculate binomial confidence interval for accuracy."""
-    import numpy as np
-    from scipy import stats
-    
-    if total == 0:
-        return (0.0, 0.0)
-    
-    # Wilson score interval (more accurate than normal approximation)
-    p = correct / total
-    z = 1.96  # 95% confidence
-    
-    denominator = 1 + z**2 / total
-    center = (p + z**2 / (2 * total)) / denominator
-    margin = z * np.sqrt((p * (1 - p) + z**2 / (4 * total)) / total) / denominator
-    
-    return (max(0, center - margin) * 100, min(100, center + margin) * 100)
 
 
 class EvaluationRunner:
