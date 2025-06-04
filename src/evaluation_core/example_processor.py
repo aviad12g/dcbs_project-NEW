@@ -115,9 +115,19 @@ class ExampleProcessor:
         logits = answer_result["logits"]
         filter_tokens = answer_result["filter_tokens"]
         correct_id = processed_result["correct_id"]
+
+        predicted_answer = answer_result.get("selected_answer")
         
         # Sample using the specified sampler with fresh logits
         pred_id = sampler.sample(logits, filter_tokens=filter_tokens)
+
+        cluster_info = None
+        if hasattr(sampler, "get_cluster_history"):
+            history = sampler.get_cluster_history()
+            if history:
+                cluster_info = history[-1]
+            if hasattr(sampler, "clear_debug_data"):
+                sampler.clear_debug_data()
         
         # Check correctness
         correct = (pred_id == correct_id)
@@ -127,6 +137,8 @@ class ExampleProcessor:
         return {
             "sampler": sampler_name,
             "pred_id": pred_id,
+            "predicted_answer": predicted_answer,
             "correct": correct,
-            "elapsed_ms": elapsed_ms
-        } 
+            "elapsed_ms": elapsed_ms,
+            "cluster_info": cluster_info,
+        }

@@ -243,13 +243,13 @@ class DCBSSampler(Sampler):
         clusters = self._cluster_candidates(candidate_ids, embedding)
         
         # Select token using category sampler
-        selected_token = self._select_token_from_clusters(
+        selected_token, cluster_probs = self._select_token_from_clusters(
             candidate_ids, candidate_data["probs"], clusters["clusters"], filter_tokens
         )
         
         # Record decision for analysis
         self._record_selection_decision(
-            candidate_ids, clusters["labels"], selected_token
+            candidate_ids, clusters["labels"], clusters["clusters"], cluster_probs, selected_token
         )
         
         self.debugger.log_debug(f"Selected token {selected_token}")
@@ -289,16 +289,21 @@ class DCBSSampler(Sampler):
         }
     
     def _select_token_from_clusters(
-        self, 
-        candidate_ids: list, 
-        candidate_probs: torch.Tensor, 
-        clusters: list, 
+        self,
+        candidate_ids: list,
+        candidate_probs: torch.Tensor,
+        clusters: list,
         filter_tokens: Optional[Set[int]]
-    ) -> int:
-        """Select the best token from the clustered candidates."""
-        return self.category_sampler.sample_from_clusters(
+    ) -> tuple:
+        """Select the best token from the clustered candidates and return cluster probabilities."""
+        cluster_probs = [
+            candidate_probs[cluster].sum().item() if cluster else 0.0
+            for cluster in clusters
+        ]
+        token = self.category_sampler.sample_from_clusters(
             candidate_ids, candidate_probs, clusters, filter_tokens
         )
+        return token, cluster_probs
 
     def _perform_clustering(self, embeddings: torch.Tensor) -> np.ndarray:
         """Perform clustering on embeddings with optional caching."""
@@ -339,7 +344,12 @@ class DCBSSampler(Sampler):
         return clusters
 
     def _record_selection_decision(
-        self, candidate_ids: list, labels: np.ndarray, selected_token: int
+        self,
+        candidate_ids: list,
+        labels: np.ndarray,
+        clusters: list,
+        cluster_probs: list,
+        selected_token: int,
     ) -> None:
         """Record clustering decision for debugging if enabled."""
         if self.debugger.cluster_history_enabled:
@@ -347,8 +357,13 @@ class DCBSSampler(Sampler):
             selected_idx = candidate_ids.index(selected_token)
             selected_cluster = labels[selected_idx]
             self.debugger.record_cluster_decision(
-                candidate_ids, labels, selected_cluster, selected_token, 
-                self.clusterer.num_clusters
+                candidate_ids,
+                labels,
+                selected_cluster,
+                selected_token,
+                self.clusterer.num_clusters,
+                clusters,
+                cluster_probs,
             )
 
     def get_cache_stats(self) -> dict:

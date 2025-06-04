@@ -34,7 +34,9 @@ class SamplerFactory:
         clustering_method: str = "dbscan",
         dbscan_eps: float = 0.3,
         dbscan_min_samples: int = 2,
-        hierarchical_linkage: str = "average"
+        hierarchical_linkage: str = "average",
+        debug_mode: bool = False,
+        enable_cluster_history: bool = False,
     ) -> DCBSSampler:
         """
         Create a DCBS sampler with the specified clustering method.
@@ -81,16 +83,20 @@ class SamplerFactory:
             category_sampler=category_sampler,
             context=context,
             enable_caching=config.enable_caching,
+            debug_mode=debug_mode,
+            enable_cluster_history=enable_cluster_history,
         )
 
     @staticmethod
     def create_samplers(
-        config: EvaluationConfig, 
+        config: EvaluationConfig,
         context: Optional[SamplingContext] = None,
         clustering_method: Optional[str] = None,
         dbscan_eps: float = 0.3,
         dbscan_min_samples: int = 2,
-        hierarchical_linkage: str = "average"
+        hierarchical_linkage: str = "average",
+        debug_mode: bool = False,
+        enable_cluster_history: bool = False,
     ) -> Dict[str, object]:
         """
         Create all sampler instances based on configuration.
@@ -102,6 +108,8 @@ class SamplerFactory:
             dbscan_eps: DBSCAN epsilon parameter
             dbscan_min_samples: DBSCAN minimum samples parameter
             hierarchical_linkage: Linkage criterion for hierarchical clustering
+            debug_mode: Enable verbose debug logging for DCBS
+            enable_cluster_history: Record cluster assignments and probabilities
             
         Returns:
             Dictionary mapping sampler names to sampler instances
@@ -113,12 +121,14 @@ class SamplerFactory:
             "greedy": GreedySampler(),
             "top_p": TopPSampler(p=config.top_p),
             "dcbs": SamplerFactory.create_dcbs_sampler(
-                config, 
-                context, 
+                config,
+                context,
                 effective_clustering_method,
                 dbscan_eps,
                 dbscan_min_samples,
-                hierarchical_linkage
+                hierarchical_linkage,
+                debug_mode=debug_mode,
+                enable_cluster_history=enable_cluster_history,
             ),
             "random": RandomSampler(),
         } 

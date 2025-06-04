@@ -49,12 +49,14 @@ class EvaluationRunner:
         
         # Create samplers with context and clustering parameters
         self.samplers = SamplerFactory.create_samplers(
-            self.config, 
+            self.config,
             context,
             clustering_method=self.config.clustering_method,
             dbscan_eps=self.config.dbscan_eps,
             dbscan_min_samples=self.config.dbscan_min_samples,
-            hierarchical_linkage=self.config.hierarchical_linkage
+            hierarchical_linkage=self.config.hierarchical_linkage,
+            debug_mode=self.config.debug_mode,
+            enable_cluster_history=self.config.enable_cluster_history,
         )
         
         # Create processor
@@ -71,6 +73,7 @@ class EvaluationRunner:
             logger.info(f"DCBS clustering method: {self.config.clustering_method}")
 
         all_results = []
+        prediction_map = {}
         method_stats = {
             name: {"correct": 0, "total": 0, "times": []}
             for name in self.samplers.keys()
@@ -103,6 +106,12 @@ class EvaluationRunner:
                     # Remove logits for JSON serialization
                     final_result.pop("logits", None)
                     all_results.append(final_result)
+
+                    # Track predictions for difference analysis
+                    ex_id = final_result.get("id")
+                    if ex_id not in prediction_map:
+                        prediction_map[ex_id] = {}
+                    prediction_map[ex_id][sampler_name] = final_result
 
                     # Update statistics
                     stats = method_stats[sampler_name]
@@ -137,6 +146,20 @@ class EvaluationRunner:
                 }
 
         # Create final results
+        # Identify cases where DCBS and Greedy differ
+        differences = []
+        for ex_id, preds in prediction_map.items():
+            if "dcbs" in preds and "greedy" in preds:
+                if preds["dcbs"].get("pred_id") != preds["greedy"].get("pred_id"):
+                    differences.append({
+                        "id": ex_id,
+                        "sentence": preds["dcbs"].get("sentence"),
+                        "dcbs_answer": preds["dcbs"].get("predicted_answer"),
+                        "greedy_answer": preds["greedy"].get("predicted_answer"),
+                        "cluster_info": preds["dcbs"].get("cluster_info"),
+                        "answer_probs": preds["dcbs"].get("answer_probs"),
+                    })
+
         results = {
             "statistics": statistics,
             "config": {
@@ -148,6 +171,7 @@ class EvaluationRunner:
                 "clustering_method": getattr(self.config, 'clustering_method', 'dbscan'),
             },
             "detailed_results": all_results,
+            "prediction_differences": differences,
             "evaluation_completed_at": time.strftime("%Y-%m-%d %H:%M:%S"),
         }
 

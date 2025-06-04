@@ -68,6 +68,8 @@ class ConfigBuilder:
         log_level = yaml_config.get("log_level", "INFO")
         load_in_4bit = yaml_config.get("load_in_4bit", False)
         enable_caching = yaml_config.get("enable_caching", True)
+        debug_mode = yaml_config.get("debug_mode", False)
+        enable_cluster_history = yaml_config.get("enable_cluster_history", False)
 
         # Override with command-line arguments using a mapping approach
         arg_overrides = {
@@ -84,6 +86,8 @@ class ConfigBuilder:
             "dbscan_eps": "dbscan_eps",
             "dbscan_min_samples": "dbscan_min_samples",
             "hierarchical_linkage": "hierarchical_linkage",
+            "debug_mode": "debug_mode",
+            "enable_cluster_history": "enable_cluster_history",
         }
 
         # Apply overrides from command-line arguments
@@ -101,6 +105,8 @@ class ConfigBuilder:
             "dbscan_eps": dbscan_eps,
             "dbscan_min_samples": dbscan_min_samples,
             "hierarchical_linkage": hierarchical_linkage,
+            "debug_mode": debug_mode,
+            "enable_cluster_history": enable_cluster_history,
         }
 
         for arg_name, config_key in arg_overrides.items():
@@ -135,6 +141,8 @@ class ConfigBuilder:
             dbscan_eps=config_values["dbscan_eps"],
             dbscan_min_samples=config_values["dbscan_min_samples"],
             hierarchical_linkage=config_values["hierarchical_linkage"],
+            debug_mode=config_values["debug_mode"],
+            enable_cluster_history=config_values["enable_cluster_history"],
         )
 
         logger.info(f"Final configuration created: {final_config}")

@@ -73,6 +73,20 @@ class ConfigSchema:
             "description": "Enable DCBS caching",
             "env_var": "DCBS_ENABLE_CACHING",
         },
+        "debug_mode": {
+            "type": bool,
+            "required": False,
+            "default": False,
+            "description": "Enable debug mode for DCBS sampler",
+            "env_var": "DCBS_DEBUG_MODE",
+        },
+        "enable_cluster_history": {
+            "type": bool,
+            "required": False,
+            "default": False,
+            "description": "Record cluster history and probabilities",
+            "env_var": "DCBS_ENABLE_CLUSTER_HISTORY",
+        },
         "p_values": {
             "type": list,
             "required": False,
