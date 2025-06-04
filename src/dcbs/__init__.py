@@ -32,11 +32,8 @@ from .constants import (
 )
 from .debug import DCBSDebugger
 from .embedding_ops import EmbeddingOperations
-from .optimizations import (
-    OptimizationConfig,
-    BatchDCBSProcessor,
-    MemoryEfficientDCBS,
-)
+from .batch_processor import BatchDCBSProcessor, OptimizationConfig
+from .memory_efficient import MemoryEfficientDCBS
 from .samplers import (
     DCBSSampler,
     GreedySampler,
