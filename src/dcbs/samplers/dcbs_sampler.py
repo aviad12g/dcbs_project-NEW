@@ -93,6 +93,60 @@ class DCBSSampler(Sampler):
     # Factory methods have been moved to src.dcbs.factory.DCBSSamplerFactory
     # to eliminate circular dependencies. Use DCBSSamplerFactory.create_default() instead.
 
+    # ---------------------------------------------------------------------
+    # Backwards compatibility factory methods
+    # ---------------------------------------------------------------------
+    @staticmethod
+    def create_default(
+        k: int = DEFAULT_K_CLUSTERS,
+        top_n: int = DEFAULT_TOP_N,
+        context: Optional[SamplingContext] = None,
+        cache_config: Optional[dict] = None,
+        enable_caching: bool = True,
+        debug_mode: Optional[bool] = None,
+        enable_cluster_history: Optional[bool] = None,
+    ) -> "DCBSSampler":
+        """Create a default DCBSSampler.
+
+        This method forwards to :class:`~src.dcbs.factory.DCBSSamplerFactory`
+        to maintain backwards compatibility with older code that expected
+        these constructors on :class:`DCBSSampler` itself.
+        """
+        from ..factory import DCBSSamplerFactory
+
+        return DCBSSamplerFactory.create_default(
+            k=k,
+            top_n=top_n,
+            context=context,
+            cache_config=cache_config,
+            enable_caching=enable_caching,
+            debug_mode=debug_mode,
+            enable_cluster_history=enable_cluster_history,
+        )
+
+    @staticmethod
+    def create_no_cache(
+        k: int = DEFAULT_K_CLUSTERS,
+        top_n: int = DEFAULT_TOP_N,
+        context: Optional[SamplingContext] = None,
+        **kwargs,
+    ) -> "DCBSSampler":
+        """Create a DCBSSampler with caching disabled."""
+        from ..factory import DCBSSamplerFactory
+
+        return DCBSSamplerFactory.create_no_cache(k=k, top_n=top_n, context=context, **kwargs)
+
+    @staticmethod
+    def create_lightweight(
+        k: int = 4,
+        top_n: int = 20,
+        context: Optional[SamplingContext] = None,
+    ) -> "DCBSSampler":
+        """Create a lightweight DCBSSampler for constrained environments."""
+        from ..factory import DCBSSamplerFactory
+
+        return DCBSSamplerFactory.create_lightweight(k=k, top_n=top_n, context=context)
+
     def sample(
         self,
         logits: torch.Tensor,
