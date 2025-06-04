@@ -180,6 +180,18 @@ class ArgumentParserSetup:
             help="Enable detailed memory profiling",
         )
 
+        parser.add_argument(
+            "--debug-mode",
+            action="store_true",
+            help="Enable debug mode for DCBS sampler",
+        )
+
+        parser.add_argument(
+            "--enable-cluster-history",
+            action="store_true",
+            help="Record cluster history and probabilities",
+        )
+
         # Sampler selection
         parser.add_argument(
             "--samplers",

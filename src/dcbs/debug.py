@@ -98,6 +98,8 @@ class DCBSDebugger:
         selected_cluster: int,
         selected_token: int,
         num_clusters: int,
+        clusters: list,
+        cluster_probs: list,
     ) -> None:
         """Record clustering decision for analysis if enabled."""
         if not self._enable_cluster_history or self._cluster_history is None:
@@ -108,7 +110,10 @@ class DCBSDebugger:
             "num_clusters": len(set(labels)),
             "selected_cluster": selected_cluster,
             "selected_token": selected_token,
-            "cluster_sizes": [np.sum(labels == i) for i in range(num_clusters)]
+            "cluster_sizes": [np.sum(labels == i) for i in range(num_clusters)],
+            "cluster_probs": cluster_probs,
+            "clusters": clusters,
+            "labels": labels.tolist(),
         }
         
         self._cluster_history.append(decision)

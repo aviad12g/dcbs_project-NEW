@@ -142,6 +142,12 @@ class ResultsManager:
                 json.dump(results, f, indent=2, default=str)
             logger.info(f"Detailed results saved to: {details_path}")
 
+        if results.get("prediction_differences"):
+            diff_path = os.path.join(output_dir, f"prediction_differences_{timestamp}.json")
+            with open(diff_path, "w") as f:
+                json.dump(results["prediction_differences"], f, indent=2, default=str)
+            logger.info(f"Prediction differences saved to: {diff_path}")
+
     @staticmethod
     def _save_csv_results(results: Dict, csv_path: str):
         """Save results in CSV format with improved structure."""
@@ -206,6 +212,8 @@ class ResultsManager:
         else:
             ResultsManager._print_single_summary(results)
 
+        ResultsManager._print_prediction_differences(results)
+
         print("-" * 70)
         print("Random baseline for 4-option: 25.0%")
         print("=" * 70)
@@ -265,6 +273,22 @@ class ResultsManager:
                 f"{stats['total']:<8} "
                 f"{stats.get('avg_time_ms', 0):.2f}"
             )
+
+    @staticmethod
+    def _print_prediction_differences(results: Dict):
+        """Print cases where DCBS and Greedy predictions differ."""
+        diffs = results.get("prediction_differences", [])
+        if not diffs:
+            print("No differing predictions between DCBS and Greedy.")
+            return
+
+        print("\nExamples where DCBS and Greedy differ:")
+        for diff in diffs:
+            cid = diff.get("id")
+            dcbs_ans = diff.get("dcbs_answer")
+            greedy_ans = diff.get("greedy_answer")
+            probs = diff.get("cluster_info", {}).get("cluster_probs")
+            print(f"- {cid}: Greedy='{greedy_ans}' vs DCBS='{dcbs_ans}', cluster_probs={probs}")
 
 
 class EvaluationFramework:
