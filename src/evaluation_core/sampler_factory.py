@@ -20,6 +20,8 @@ from src.dcbs import (
     CategorySampler,
     GreedyCategorySelector,
     GreedyTokenSelector,
+    TemperatureSampler,
+    TopKSampler,
 )
 from .config import EvaluationConfig
 
@@ -117,7 +119,7 @@ class SamplerFactory:
         # Use config's clustering method if none specified
         effective_clustering_method = clustering_method or getattr(config, 'clustering_method', 'dbscan')
         
-        return {
+        samplers = {
             "greedy": GreedySampler(),
             "top_p": TopPSampler(p=config.top_p),
             "dcbs": SamplerFactory.create_dcbs_sampler(
@@ -131,4 +133,14 @@ class SamplerFactory:
                 enable_cluster_history=enable_cluster_history,
             ),
             "random": RandomSampler(),
-        } 
+        }
+
+        # Add TemperatureSampler if temperature is specified
+        if config.temperature is not None:
+            samplers["temperature"] = TemperatureSampler(temperature=config.temperature)
+
+        # Add TopKSampler if top_k is specified
+        if config.top_k is not None:
+            samplers["top_k"] = TopKSampler(k=config.top_k)
+
+        return samplers 

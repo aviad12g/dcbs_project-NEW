@@ -10,6 +10,8 @@ from .greedy_sampler import GreedySampler
 from .top_p_sampler import TopPSampler
 from .random_sampler import RandomSampler
 from .dcbs_sampler import DCBSSampler
+from .temperature_sampler import TemperatureSampler
+from .top_k_sampler import TopKSampler
 
 __all__ = [
     "Sampler",
@@ -18,4 +20,6 @@ __all__ = [
     "TopPSampler",
     "RandomSampler",
     "DCBSSampler",
+    "TemperatureSampler",
+    "TopKSampler",
 ] 

@@ -200,6 +200,25 @@ class ArgumentParserSetup:
             help="Specify which samplers to evaluate (default: all)",
         )
 
+        parser.add_argument(
+            "--enable-caching",
+            action="store_true",
+            default=True,
+            help="Enable KV caching for model inference (default: True)",
+        )
+        parser.add_argument(
+            "--temperature",
+            type=float,
+            default=None,
+            help="Temperature for sampling. Higher values increase randomness.",
+        )
+        parser.add_argument(
+            "--top-k",
+            type=int,
+            default=None,
+            help="Top-K value for sampling. Selects from the top K most probable tokens.",
+        )
+
         return parser
 
     @staticmethod

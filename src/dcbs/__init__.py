@@ -41,6 +41,8 @@ from .samplers import (
     Sampler,
     SamplingContext,
     TopPSampler,
+    TemperatureSampler,
+    TopKSampler,
 )
 from .factory import DCBSSamplerFactory
 
@@ -52,6 +54,8 @@ __all__ = [
     "GreedySampler",
     "TopPSampler",
     "RandomSampler",
+    "TemperatureSampler",
+    "TopKSampler",
     # Factory classes
     "DCBSSamplerFactory",
     # Base classes and interfaces

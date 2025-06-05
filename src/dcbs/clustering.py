@@ -11,7 +11,6 @@ from sklearn.cluster import MiniBatchKMeans, DBSCAN, AgglomerativeClustering
 
 from .constants import (
     KMEANS_RANDOM_SEED,
-    KMEANS_MIN_ITERATIONS,
     KMEANS_MIN_BATCH_SIZE,
     DBSCAN_DEFAULT_EPS,
     DBSCAN_MIN_SAMPLES,
@@ -19,6 +18,7 @@ from .constants import (
     HIERARCHICAL_DEFAULT_LINKAGE,
     HIERARCHICAL_DEFAULT_METRIC,
     DEFAULT_TOP_N,
+    KMEANS_DEFAULT_MAX_ITER,
 )
 
 
@@ -52,7 +52,7 @@ class KMeansClusterer(TokenClusterer):
         self,
         k: int,
         random_seed: int = KMEANS_RANDOM_SEED,
-        min_iterations: int = KMEANS_MIN_ITERATIONS,
+        max_iterations: int = KMEANS_DEFAULT_MAX_ITER,
         min_batch_size: int = KMEANS_MIN_BATCH_SIZE,
     ):
         """
@@ -61,12 +61,12 @@ class KMeansClusterer(TokenClusterer):
         Args:
             k: Number of clusters
             random_seed: Random seed for reproducibility (42 is ML convention)
-            min_iterations: Minimum number of k-means iterations (5 found sufficient for token embeddings)
+            max_iterations: Maximum number of k-means iterations
             min_batch_size: Minimum batch size for MiniBatchKMeans (3584 optimized for 11GB GPU memory)
         """
         self.k = k
         self.random_seed = random_seed
-        self.min_iterations = min_iterations
+        self.max_iterations = max_iterations
         self.min_batch_size = min_batch_size
 
     def cluster(self, embeddings: torch.Tensor) -> np.ndarray:
@@ -79,7 +79,7 @@ class KMeansClusterer(TokenClusterer):
         kmeans = MiniBatchKMeans(
             n_clusters=effective_k,
             batch_size=batch_size,
-            max_iter=self.min_iterations,
+            max_iter=self.max_iterations,
             random_state=self.random_seed,
         )
 
