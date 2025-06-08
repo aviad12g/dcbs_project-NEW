@@ -1,0 +1,93 @@
+[
+  {
+    "id": "Mercury_182158",
+    "sentence": "A student has just completed a laboratory activity. What is the last action that the student should perform before leaving the lab area?",
+    "dcbs_answer": "wash hands",
+    "greedy_answer": "turn off all equipment",
+    "cluster_info": null,
+    "answer_probs": {
+      "wash hands": 0.036865234375,
+      "turn off all equipment": 0.83984375,
+      "put away all glassware": 0.032470703125,
+      "wash instruments and table tops": 0.0252685546875
+    }
+  },
+  {
+    "id": "Mercury_7166145",
+    "sentence": "The circulatory system and the endocrine system work together in the human body. Which describes one way in which these systems interact?",
+    "dcbs_answer": "releasing hormones and transporting them to cells of the body",
+    "greedy_answer": "collecting waste products from the cells and transporting it out of the body",
+    "cluster_info": null,
+    "answer_probs": {
+      "taking in oxygen and transporting it to cells of the body": 0.00189971923828125,
+      "releasing hormones and transporting them to cells of the body": 0.00244140625,
+      "absorbing nutrients from food and transporting them to cells in the body": 0.00244140625,
+      "collecting waste products from the cells and transporting it out of the body": 0.984375
+    }
+  },
+  {
+    "id": "NYSEDREGENTS_2015_8_28",
+    "sentence": "All living and nonliving material is composed of",
+    "dcbs_answer": "elements",
+    "greedy_answer": "soil",
+    "cluster_info": null,
+    "answer_probs": {
+      "air": 0.0027313232421875,
+      "elements": 0.0027313232421875,
+      "water": 0.007415771484375,
+      "soil": 0.96875
+    }
+  },
+  {
+    "id": "Mercury_SC_401777",
+    "sentence": "Which process best explains how the Grand Canyon became so wide?",
+    "dcbs_answer": "erosion",
+    "greedy_answer": "sedimentation",
+    "cluster_info": null,
+    "answer_probs": {
+      "folding": 0.0023956298828125,
+      "erosion": 0.0057373046875,
+      "deposition": 0.00347900390625,
+      "sedimentation": 0.96484375
+    }
+  },
+  {
+    "id": "MCAS_1998_4_11",
+    "sentence": "A dish of sugar water was left on a window sill. One week later, there were only sugar crystals left in the dish. The water was gone. The best explanation for the appearance of sugar crystals is",
+    "dcbs_answer": "the water evaporated.",
+    "greedy_answer": "the light shining on the window sill produced more sugar.",
+    "cluster_info": null,
+    "answer_probs": {
+      "some of the water was absorbed by the dish.": 0.002716064453125,
+      "the air condensed.": 0.009521484375,
+      "the light shining on the window sill produced more sugar.": 0.96875,
+      "the water evaporated.": 0.004486083984375
+    }
+  },
+  {
+    "id": "Mercury_7126840",
+    "sentence": "While on a movie set, a stuntman jumps off the roof of a building. As he falls toward an airbag, what is increasing?",
+    "dcbs_answer": "kinetic energy",
+    "greedy_answer": "gravity",
+    "cluster_info": null,
+    "answer_probs": {
+      "gravity": 0.8828125,
+      "wind velocity": 0.0086669921875,
+      "kinetic energy": 0.006744384765625,
+      "potential energy": 0.0086669921875
+    }
+  },
+  {
+    "id": "Mercury_SC_LBS10680",
+    "sentence": "What allows a light bulb to give off light?",
+    "dcbs_answer": "the current flowing through the wire to the light bulb",
+    "greedy_answer": "the battery pushing light through the wire",
+    "cluster_info": null,
+    "answer_probs": {
+      "the current flowing through the wire to the light bulb": 0.002777099609375,
+      "the light bulb giving electrical energy to the battery": 0.00079345703125,
+      "the light bulb generating heat energy": 0.001312255859375,
+      "the battery pushing light through the wire": 0.98828125
+    }
+  }
+]

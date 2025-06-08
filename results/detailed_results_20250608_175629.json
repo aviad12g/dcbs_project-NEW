@@ -1,0 +1,1439 @@
+{
+  "statistics": {
+    "dcbs": {
+      "accuracy": 80.0,
+      "correct": 16,
+      "total": 20,
+      "avg_time_ms": 9952.906394004822,
+      "confidence_interval": [
+        58.39782779742401,
+        91.93436467288
+      ]
+    },
+    "greedy": {
+      "accuracy": 85.0,
+      "correct": 17,
+      "total": 20,
+      "avg_time_ms": 4788.132834434509,
+      "confidence_interval": [
+        63.95767041130426,
+        94.7632208040504
+      ]
+    }
+  },
+  "config": {
+    "model": "meta-llama/Llama-3.2-1B-Instruct",
+    "total_examples": 20,
+    "methods": [
+      "dcbs",
+      "greedy"
+    ],
+    "include_cot": true,
+    "enable_caching": true,
+    "clustering_method": "dbscan"
+  },
+  "detailed_results": [
+    {
+      "id": "Mercury_417466",
+      "sentence": "Which statement best explains why photosynthesis is the foundation of most food webs?",
+      "options": [
+        "Sunlight is the source of energy for nearly all ecosystems.",
+        "Most ecosystems are found on land instead of in water.",
+        "Carbon dioxide is more available than other gases.",
+        "The producers in all ecosystems are plants."
+      ],
+      "correct_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct_option": "1",
+      "cot_reasoning": "The correct answer is A. Sunlight is the source of energy for nearly all ecosystems.\n\nPhotosynthesis is the foundation of most food webs because it is the process by which plants, algae, and some bacteria convert sunlight into energy. This process is the primary source of energy for nearly all ecosystems, from the ocean to the Arctic tundra. The energy from photosynthesis is then transferred to other organisms through the food chain, supporting the entire web of life.\n\nHere's a step-by-step explanation:\n\n1. Photosynthesis occurs in plants, algae, and some bacteria.\n2. These organisms use sunlight as their primary source of energy.\n3. The energy from photosynthesis is then transferred to other organisms through the food chain.\n4. The food chain is the web of relationships between different species in an ecosystem, with each species playing a unique role.\n5. The producers (such as plants and algae) are the foundation of the food web, as they are the primary producers that create the energy that supports the entire ecosystem.\n\nThe other options are incorrect because:\n\n* B is incorrect because most ecosystems are found in water, not on land.\n* C is incorrect because carbon dioxide is not more available in the air than other gases.\n* D is incorrect because not all ecosystems are found on land; many ecosystems, such as those in the ocean and on land, are found in water.",
+      "answer_ids": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 362,
+        "Most ecosystems are found on land instead of in water.": 426,
+        "Carbon dioxide is more available than other gases.": 356,
+        "The producers in all ecosystems are plants.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 0.99609375,
+        "Most ecosystems are found on land instead of in water.": 0.001922607421875,
+        "Carbon dioxide is more available than other gases.": 0.00080108642578125,
+        "The producers in all ecosystems are plants.": 0.00116729736328125
+      },
+      "processing_time": 6.628875732421875,
+      "sampler": "dcbs",
+      "pred_id": 362,
+      "predicted_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct": true,
+      "elapsed_ms": 13154.26754951477,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_417466",
+      "sentence": "Which statement best explains why photosynthesis is the foundation of most food webs?",
+      "options": [
+        "Sunlight is the source of energy for nearly all ecosystems.",
+        "Most ecosystems are found on land instead of in water.",
+        "Carbon dioxide is more available than other gases.",
+        "The producers in all ecosystems are plants."
+      ],
+      "correct_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct_option": "1",
+      "cot_reasoning": "The correct answer is A. Sunlight is the source of energy for nearly all ecosystems.\n\nPhotosynthesis is the foundation of most food webs because it is the process by which plants, algae, and some bacteria convert sunlight into energy. This process is the primary source of energy for nearly all ecosystems, from the ocean to the Arctic tundra. The energy from photosynthesis is then transferred to other organisms through the food chain, supporting the entire web of life.\n\nHere's a step-by-step explanation:\n\n1. Photosynthesis occurs in plants, algae, and some bacteria.\n2. These organisms use sunlight as their primary source of energy.\n3. The energy from photosynthesis is then transferred to other organisms through the food chain.\n4. The food chain is the web of relationships between different species in an ecosystem, with each species playing a unique role.\n5. The producers (such as plants and algae) are the foundation of the food web, as they are the primary producers that create the energy that supports the entire ecosystem.\n\nThe other options are incorrect because:\n\n* B is incorrect because most ecosystems are found in water, not on land.\n* C is incorrect because carbon dioxide is not more available in the air than other gases.\n* D is incorrect because not all ecosystems are found on land; many ecosystems, such as those in the ocean and on land, are found in water.",
+      "answer_ids": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 362,
+        "Most ecosystems are found on land instead of in water.": 426,
+        "Carbon dioxide is more available than other gases.": 356,
+        "The producers in all ecosystems are plants.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 0.99609375,
+        "Most ecosystems are found on land instead of in water.": 0.001922607421875,
+        "Carbon dioxide is more available than other gases.": 0.00080108642578125,
+        "The producers in all ecosystems are plants.": 0.00116729736328125
+      },
+      "processing_time": 6.628875732421875,
+      "sampler": "greedy",
+      "pred_id": 362,
+      "predicted_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct": true,
+      "elapsed_ms": 6462.34917640686,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7081673",
+      "sentence": "Which piece of safety equipment is used to keep mold spores from entering the respiratory system?",
+      "options": [
+        "safety goggles",
+        "breathing mask",
+        "rubber gloves",
+        "lead apron"
+      ],
+      "correct_answer": "breathing mask",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is B. breathing mask.\n\nWhen working with mold, it's essential to prevent mold spores from entering the respiratory system. Breathing masks are designed to filter out mold spores and other airborne contaminants, protecting the user from inhaling them. They are a crucial piece of safety equipment for individuals who work with mold, such as mold remediation specialists, mold inspectors, or anyone who needs to work in a moldy environment.\n\nWhile safety goggles (A) and rubber gloves (C) can help protect against mold exposure, they are not as effective as breathing masks in filtering out mold spores. Lead aprons (D) are not typically used for mold exposure and are more commonly associated with protecting against lead exposure.\n\nTherefore, the correct answer is B. breathing mask.",
+      "answer_ids": {
+        "safety goggles": 362,
+        "breathing mask": 426,
+        "rubber gloves": 356,
+        "lead apron": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "safety goggles": 0.0002574920654296875,
+        "breathing mask": 0.984375,
+        "rubber gloves": 6.532669067382812e-05,
+        "lead apron": 0.0002918243408203125
+      },
+      "processing_time": 3.741058826446533,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "breathing mask",
+      "correct": true,
+      "elapsed_ms": 7539.439678192139,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7081673",
+      "sentence": "Which piece of safety equipment is used to keep mold spores from entering the respiratory system?",
+      "options": [
+        "safety goggles",
+        "breathing mask",
+        "rubber gloves",
+        "lead apron"
+      ],
+      "correct_answer": "breathing mask",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is B. breathing mask.\n\nWhen working with mold, it's essential to prevent mold spores from entering the respiratory system. Breathing masks are designed to filter out mold spores and other airborne contaminants, protecting the user from inhaling them. They are a crucial piece of safety equipment for individuals who work with mold, such as mold remediation specialists, mold inspectors, or anyone who needs to work in a moldy environment.\n\nWhile safety goggles (A) and rubber gloves (C) can help protect against mold exposure, they are not as effective as breathing masks in filtering out mold spores. Lead aprons (D) are not typically used for mold exposure and are more commonly associated with protecting against lead exposure.\n\nTherefore, the correct answer is B. breathing mask.",
+      "answer_ids": {
+        "safety goggles": 362,
+        "breathing mask": 426,
+        "rubber gloves": 356,
+        "lead apron": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "safety goggles": 0.0002574920654296875,
+        "breathing mask": 0.984375,
+        "rubber gloves": 6.532669067382812e-05,
+        "lead apron": 0.0002918243408203125
+      },
+      "processing_time": 3.741058826446533,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "breathing mask",
+      "correct": true,
+      "elapsed_ms": 3675.7640838623047,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7239733",
+      "sentence": "Meiosis is a type of cell division in which germ cells divide to produce haploid cells. Where does meiosis occur?",
+      "options": [
+        "brain cells",
+        "bone cells",
+        "muscle cells",
+        "ovary cells"
+      ],
+      "correct_answer": "ovary cells",
+      "correct_option": "4",
+      "cot_reasoning": "Step 1: The question asks about the location of meiosis, which is a type of cell division.\n\nStep 2: Meiosis is a process that occurs in the reproductive cells (gametes) of an organism.\n\nStep 3: The correct location for meiosis is the ovaries, which are the female reproductive organs responsible for producing eggs (oocytes) and gametes.\n\nStep 4: Therefore, the correct answer is D. ovary cells.",
+      "answer_ids": {
+        "brain cells": 362,
+        "bone cells": 426,
+        "muscle cells": 356,
+        "ovary cells": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 423,
+      "answer_probs": {
+        "brain cells": 0.0004825592041015625,
+        "bone cells": 0.0024566650390625,
+        "muscle cells": 0.0003757476806640625,
+        "ovary cells": 0.98828125
+      },
+      "processing_time": 2.298272132873535,
+      "sampler": "dcbs",
+      "pred_id": 423,
+      "predicted_answer": "ovary cells",
+      "correct": true,
+      "elapsed_ms": 4749.59397315979,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7239733",
+      "sentence": "Meiosis is a type of cell division in which germ cells divide to produce haploid cells. Where does meiosis occur?",
+      "options": [
+        "brain cells",
+        "bone cells",
+        "muscle cells",
+        "ovary cells"
+      ],
+      "correct_answer": "ovary cells",
+      "correct_option": "4",
+      "cot_reasoning": "Step 1: The question asks about the location of meiosis, which is a type of cell division.\n\nStep 2: Meiosis is a process that occurs in the reproductive cells (gametes) of an organism.\n\nStep 3: The correct location for meiosis is the ovaries, which are the female reproductive organs responsible for producing eggs (oocytes) and gametes.\n\nStep 4: Therefore, the correct answer is D. ovary cells.",
+      "answer_ids": {
+        "brain cells": 362,
+        "bone cells": 426,
+        "muscle cells": 356,
+        "ovary cells": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 423,
+      "answer_probs": {
+        "brain cells": 0.0004825592041015625,
+        "bone cells": 0.0024566650390625,
+        "muscle cells": 0.0003757476806640625,
+        "ovary cells": 0.98828125
+      },
+      "processing_time": 2.298272132873535,
+      "sampler": "greedy",
+      "pred_id": 423,
+      "predicted_answer": "ovary cells",
+      "correct": true,
+      "elapsed_ms": 2117.0995235443115,
+      "cluster_info": null
+    },
+    {
+      "id": "NYSEDREGENTS_2015_4_8",
+      "sentence": "Which characteristic describes the texture of a kitten's fur?",
+      "options": [
+        "gray",
+        "warm",
+        "long",
+        "soft"
+      ],
+      "correct_answer": "soft",
+      "correct_option": "4",
+      "cot_reasoning": "To answer this question, let's consider the characteristics of a kitten's fur.\n\nFirstly, kittens are born with a thick undercoat and a soft, fluffy outer coat. This means that kittens are born with fur that is typically soft to the touch.\n\nSecondly, kittens grow their fur as they mature, and their fur becomes longer and thicker as they get older. This means that kittens' fur is not always soft, as it can be coarse and wiry in some cases.\n\nConsidering these facts, the correct answer is D. soft. Kittens' fur is generally soft and fluffy, which is a characteristic that is often associated with kittens.\n\nThe other options are incorrect because:\n\nA. gray is not a characteristic of kittens' fur. Kittens are born with a variety of colors, including solid colors and tabby patterns.\n\nB. warm is not a characteristic of kittens' fur. While kittens may have a warm, fuzzy coat, it is not necessarily warm in the classical sense.\n\nC. long is not a characteristic of kittens' fur. While kittens' fur can grow longer as they mature, it is not always long.",
+      "answer_ids": {
+        "gray": 362,
+        "warm": 426,
+        "long": 356,
+        "soft": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 423,
+      "answer_probs": {
+        "gray": 0.000705718994140625,
+        "warm": 0.0027923583984375,
+        "long": 0.00054931640625,
+        "soft": 0.9921875
+      },
+      "processing_time": 6.001568794250488,
+      "sampler": "dcbs",
+      "pred_id": 423,
+      "predicted_answer": "soft",
+      "correct": true,
+      "elapsed_ms": 8843.937397003174,
+      "cluster_info": null
+    },
+    {
+      "id": "NYSEDREGENTS_2015_4_8",
+      "sentence": "Which characteristic describes the texture of a kitten's fur?",
+      "options": [
+        "gray",
+        "warm",
+        "long",
+        "soft"
+      ],
+      "correct_answer": "soft",
+      "correct_option": "4",
+      "cot_reasoning": "To answer this question, let's consider the characteristics of a kitten's fur.\n\nFirstly, kittens are born with a thick undercoat and a soft, fluffy outer coat. This means that kittens are born with fur that is typically soft to the touch.\n\nSecondly, kittens grow their fur as they mature, and their fur becomes longer and thicker as they get older. This means that kittens' fur is not always soft, as it can be coarse and wiry in some cases.\n\nConsidering these facts, the correct answer is D. soft. Kittens' fur is generally soft and fluffy, which is a characteristic that is often associated with kittens.\n\nThe other options are incorrect because:\n\nA. gray is not a characteristic of kittens' fur. Kittens are born with a variety of colors, including solid colors and tabby patterns.\n\nB. warm is not a characteristic of kittens' fur. While kittens may have a warm, fuzzy coat, it is not necessarily warm in the classical sense.\n\nC. long is not a characteristic of kittens' fur. While kittens' fur can grow longer as they mature, it is not always long.",
+      "answer_ids": {
+        "gray": 362,
+        "warm": 426,
+        "long": 356,
+        "soft": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 423,
+      "answer_probs": {
+        "gray": 0.000705718994140625,
+        "warm": 0.0027923583984375,
+        "long": 0.00054931640625,
+        "soft": 0.9921875
+      },
+      "processing_time": 6.001568794250488,
+      "sampler": "greedy",
+      "pred_id": 423,
+      "predicted_answer": "soft",
+      "correct": true,
+      "elapsed_ms": 5254.333972930908,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7037258",
+      "sentence": "Which best describes the structure of an atom?",
+      "options": [
+        "a lightweight core surrounded by neutral particles",
+        "a massive core surrounded by negatively-charged particles",
+        "a network of interacting positive and negative particles",
+        "overlapping layers of neutral, positive, and negative particles"
+      ],
+      "correct_answer": "a massive core surrounded by negatively-charged particles",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is D. overlapping layers of neutral, positive, and negative particles.\n\nThe structure of an atom is typically described as a neutral, positively charged sphere with a small, dense core. The core is usually made up of a small, heavy nucleus (or nucleus) that contains the protons and neutrons. The protons and neutrons are arranged in a specific arrangement, with the protons in the nucleus and the neutrons in the surrounding space. The electrons are negatively charged and orbit the nucleus in a specific pattern, often referred to as the electron cloud.\n\nThe correct description is:\n\nA lightweight core surrounded by neutral particles\n\nThis is because the nucleus is the densest part of the atom, with the protons and neutrons packed tightly together. The electrons are the negatively charged particles that orbit the nucleus, and they are not directly involved in the structure of the atom.\n\nThe other options are incorrect because:\n\n* Option A is incorrect because the atom is not a lightweight core surrounded by neutral particles. The nucleus is actually much denser than the surrounding particles.\n* Option B is incorrect because the atom is not a massive core surrounded by negatively-charged particles. The electrons are negatively charged, but they are not directly involved in the structure of the atom.\n* Option C is incorrect because the atom is not a network of interacting positive and negative particles. The electrons are negatively charged, but they do not interact with each other in a network-like structure.",
+      "answer_ids": {
+        "a lightweight core surrounded by neutral particles": 362,
+        "a massive core surrounded by negatively-charged particles": 426,
+        "a network of interacting positive and negative particles": 356,
+        "overlapping layers of neutral, positive, and negative particles": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "a lightweight core surrounded by neutral particles": 0.09375,
+        "a massive core surrounded by negatively-charged particles": 0.003204345703125,
+        "a network of interacting positive and negative particles": 0.000919342041015625,
+        "overlapping layers of neutral, positive, and negative particles": 0.890625
+      },
+      "processing_time": 6.291451692581177,
+      "sampler": "dcbs",
+      "pred_id": 423,
+      "predicted_answer": "overlapping layers of neutral, positive, and negative particles",
+      "correct": false,
+      "elapsed_ms": 12635.398864746094,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7037258",
+      "sentence": "Which best describes the structure of an atom?",
+      "options": [
+        "a lightweight core surrounded by neutral particles",
+        "a massive core surrounded by negatively-charged particles",
+        "a network of interacting positive and negative particles",
+        "overlapping layers of neutral, positive, and negative particles"
+      ],
+      "correct_answer": "a massive core surrounded by negatively-charged particles",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is D. overlapping layers of neutral, positive, and negative particles.\n\nThe structure of an atom is typically described as a neutral, positively charged sphere with a small, dense core. The core is usually made up of a small, heavy nucleus (or nucleus) that contains the protons and neutrons. The protons and neutrons are arranged in a specific arrangement, with the protons in the nucleus and the neutrons in the surrounding space. The electrons are negatively charged and orbit the nucleus in a specific pattern, often referred to as the electron cloud.\n\nThe correct description is:\n\nA lightweight core surrounded by neutral particles\n\nThis is because the nucleus is the densest part of the atom, with the protons and neutrons packed tightly together. The electrons are the negatively charged particles that orbit the nucleus, and they are not directly involved in the structure of the atom.\n\nThe other options are incorrect because:\n\n* Option A is incorrect because the atom is not a lightweight core surrounded by neutral particles. The nucleus is actually much denser than the surrounding particles.\n* Option B is incorrect because the atom is not a massive core surrounded by negatively-charged particles. The electrons are negatively charged, but they are not directly involved in the structure of the atom.\n* Option C is incorrect because the atom is not a network of interacting positive and negative particles. The electrons are negatively charged, but they do not interact with each other in a network-like structure.",
+      "answer_ids": {
+        "a lightweight core surrounded by neutral particles": 362,
+        "a massive core surrounded by negatively-charged particles": 426,
+        "a network of interacting positive and negative particles": 356,
+        "overlapping layers of neutral, positive, and negative particles": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "a lightweight core surrounded by neutral particles": 0.09375,
+        "a massive core surrounded by negatively-charged particles": 0.003204345703125,
+        "a network of interacting positive and negative particles": 0.000919342041015625,
+        "overlapping layers of neutral, positive, and negative particles": 0.890625
+      },
+      "processing_time": 6.291451692581177,
+      "sampler": "greedy",
+      "pred_id": 423,
+      "predicted_answer": "overlapping layers of neutral, positive, and negative particles",
+      "correct": false,
+      "elapsed_ms": 6274.690866470337,
+      "cluster_info": null
+    },
+    {
+      "id": "CSZ20679",
+      "sentence": "To express the distance between the Milky Way galaxy and other galaxies, the most appropriate unit of measurement is the",
+      "options": [
+        "meter.",
+        "kilometer.",
+        "light-year.",
+        "astronomical unit."
+      ],
+      "correct_answer": "light-year.",
+      "correct_option": "3",
+      "cot_reasoning": "To determine the most appropriate unit of measurement for the distance between the Milky Way galaxy and other galaxies, we need to consider the scale of the distances involved.\n\nThe Milky Way galaxy is approximately 100,000 light-years in diameter. A light-year is a unit of distance that is equal to the distance light travels in one year, which is about 9.461 \u00d7 10^16 kilometers. This is a very large distance, but it's still much smaller than the distances between galaxies.\n\nA kilometer is a smaller unit of measurement, equivalent to 1000 meters. While it's a reasonable unit for measuring distances on Earth, it's not suitable for measuring the vast distances between galaxies.\n\nAn astronomical unit (AU) is a unit of measurement that is commonly used to express the distances between stars and other celestial objects. However, it's still much smaller than the distances between galaxies.\n\nThe most appropriate unit of measurement for the distance between the Milky Way galaxy and other galaxies is the light-year. This is because the Milky Way is a relatively small galaxy, and the distances between galaxies are so vast that even light travels a significant distance to reach other galaxies. Therefore, a unit of measurement that is based on the speed of light is more suitable for expressing these enormous distances.\n\nTherefore, the most appropriate unit of measurement for the distance between the Milky Way galaxy and other galaxies is the light-year.",
+      "answer_ids": {
+        "meter.": 362,
+        "kilometer.": 426,
+        "light-year.": 356,
+        "astronomical unit.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "meter.": 0.0263671875,
+        "kilometer.": 0.04345703125,
+        "light-year.": 0.875,
+        "astronomical unit.": 0.0299072265625
+      },
+      "processing_time": 6.106752395629883,
+      "sampler": "dcbs",
+      "pred_id": 356,
+      "predicted_answer": "light-year.",
+      "correct": true,
+      "elapsed_ms": 11620.71442604065,
+      "cluster_info": null
+    },
+    {
+      "id": "CSZ20679",
+      "sentence": "To express the distance between the Milky Way galaxy and other galaxies, the most appropriate unit of measurement is the",
+      "options": [
+        "meter.",
+        "kilometer.",
+        "light-year.",
+        "astronomical unit."
+      ],
+      "correct_answer": "light-year.",
+      "correct_option": "3",
+      "cot_reasoning": "To determine the most appropriate unit of measurement for the distance between the Milky Way galaxy and other galaxies, we need to consider the scale of the distances involved.\n\nThe Milky Way galaxy is approximately 100,000 light-years in diameter. A light-year is a unit of distance that is equal to the distance light travels in one year, which is about 9.461 \u00d7 10^16 kilometers. This is a very large distance, but it's still much smaller than the distances between galaxies.\n\nA kilometer is a smaller unit of measurement, equivalent to 1000 meters. While it's a reasonable unit for measuring distances on Earth, it's not suitable for measuring the vast distances between galaxies.\n\nAn astronomical unit (AU) is a unit of measurement that is commonly used to express the distances between stars and other celestial objects. However, it's still much smaller than the distances between galaxies.\n\nThe most appropriate unit of measurement for the distance between the Milky Way galaxy and other galaxies is the light-year. This is because the Milky Way is a relatively small galaxy, and the distances between galaxies are so vast that even light travels a significant distance to reach other galaxies. Therefore, a unit of measurement that is based on the speed of light is more suitable for expressing these enormous distances.\n\nTherefore, the most appropriate unit of measurement for the distance between the Milky Way galaxy and other galaxies is the light-year.",
+      "answer_ids": {
+        "meter.": 362,
+        "kilometer.": 426,
+        "light-year.": 356,
+        "astronomical unit.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "meter.": 0.0263671875,
+        "kilometer.": 0.04345703125,
+        "light-year.": 0.875,
+        "astronomical unit.": 0.0299072265625
+      },
+      "processing_time": 6.106752395629883,
+      "sampler": "greedy",
+      "pred_id": 356,
+      "predicted_answer": "light-year.",
+      "correct": true,
+      "elapsed_ms": 6079.138517379761,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_182158",
+      "sentence": "A student has just completed a laboratory activity. What is the last action that the student should perform before leaving the lab area?",
+      "options": [
+        "wash hands",
+        "turn off all equipment",
+        "put away all glassware",
+        "wash instruments and table tops"
+      ],
+      "correct_answer": "wash hands",
+      "correct_option": "1",
+      "cot_reasoning": "The last action that the student should perform before leaving the lab area is to wash hands. This is a crucial step to prevent the spread of germs and maintain a clean and safe environment for others.",
+      "answer_ids": {
+        "wash hands": 362,
+        "turn off all equipment": 426,
+        "put away all glassware": 356,
+        "wash instruments and table tops": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "wash hands": 0.9765625,
+        "turn off all equipment": 0.0157470703125,
+        "put away all glassware": 0.0016632080078125,
+        "wash instruments and table tops": 0.003997802734375
+      },
+      "processing_time": 0.8788723945617676,
+      "sampler": "dcbs",
+      "pred_id": 362,
+      "predicted_answer": "wash hands",
+      "correct": true,
+      "elapsed_ms": 1916.72682762146,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_182158",
+      "sentence": "A student has just completed a laboratory activity. What is the last action that the student should perform before leaving the lab area?",
+      "options": [
+        "wash hands",
+        "turn off all equipment",
+        "put away all glassware",
+        "wash instruments and table tops"
+      ],
+      "correct_answer": "wash hands",
+      "correct_option": "1",
+      "cot_reasoning": "The last action that the student should perform before leaving the lab area is to wash hands. This is a crucial step to prevent the spread of germs and maintain a clean and safe environment for others.",
+      "answer_ids": {
+        "wash hands": 362,
+        "turn off all equipment": 426,
+        "put away all glassware": 356,
+        "wash instruments and table tops": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "wash hands": 0.9765625,
+        "turn off all equipment": 0.0157470703125,
+        "put away all glassware": 0.0016632080078125,
+        "wash instruments and table tops": 0.003997802734375
+      },
+      "processing_time": 0.8788723945617676,
+      "sampler": "greedy",
+      "pred_id": 362,
+      "predicted_answer": "wash hands",
+      "correct": true,
+      "elapsed_ms": 966.7503833770752,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7216668",
+      "sentence": "Students are investigating the effects of different fertilizers on plant growth. Which units would be best to measure the mass of the fertilizer used?",
+      "options": [
+        "meters",
+        "centimeters",
+        "grams",
+        "milligrams"
+      ],
+      "correct_answer": "grams",
+      "correct_option": "3",
+      "cot_reasoning": "To measure the mass of the fertilizer used, the most appropriate units would be grams. This is because the mass of a substance is typically measured in grams, which is a unit of weight or mass in the metric system.",
+      "answer_ids": {
+        "meters": 362,
+        "centimeters": 426,
+        "grams": 356,
+        "milligrams": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "meters": 0.0023345947265625,
+        "centimeters": 0.0030059814453125,
+        "grams": 0.9453125,
+        "milligrams": 0.025146484375
+      },
+      "processing_time": 1.0271456241607666,
+      "sampler": "dcbs",
+      "pred_id": 356,
+      "predicted_answer": "grams",
+      "correct": true,
+      "elapsed_ms": 2093.8050746917725,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7216668",
+      "sentence": "Students are investigating the effects of different fertilizers on plant growth. Which units would be best to measure the mass of the fertilizer used?",
+      "options": [
+        "meters",
+        "centimeters",
+        "grams",
+        "milligrams"
+      ],
+      "correct_answer": "grams",
+      "correct_option": "3",
+      "cot_reasoning": "To measure the mass of the fertilizer used, the most appropriate units would be grams. This is because the mass of a substance is typically measured in grams, which is a unit of weight or mass in the metric system.",
+      "answer_ids": {
+        "meters": 362,
+        "centimeters": 426,
+        "grams": 356,
+        "milligrams": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "meters": 0.0023345947265625,
+        "centimeters": 0.0030059814453125,
+        "grams": 0.9453125,
+        "milligrams": 0.025146484375
+      },
+      "processing_time": 1.0271456241607666,
+      "sampler": "greedy",
+      "pred_id": 356,
+      "predicted_answer": "grams",
+      "correct": true,
+      "elapsed_ms": 987.6844882965088,
+      "cluster_info": null
+    },
+    {
+      "id": "MCAS_2001_5_19",
+      "sentence": "Plants use sunlight to make",
+      "options": [
+        "soil.",
+        "minerals.",
+        "food.",
+        "water."
+      ],
+      "correct_answer": "food.",
+      "correct_option": "3",
+      "cot_reasoning": "The correct answer is C. food.\n\nPlants use sunlight to make food through a process called photosynthesis. During photosynthesis, plants use sunlight, carbon dioxide, and water to produce glucose and oxygen. This process is essential for plant growth and is the basis of the food chain in many ecosystems.",
+      "answer_ids": {
+        "soil.": 362,
+        "minerals.": 426,
+        "food.": 356,
+        "water.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "soil.": 0.010009765625,
+        "minerals.": 0.0078125,
+        "food.": 0.90234375,
+        "water.": 0.0654296875
+      },
+      "processing_time": 1.303788423538208,
+      "sampler": "dcbs",
+      "pred_id": 423,
+      "predicted_answer": "water.",
+      "correct": false,
+      "elapsed_ms": 4100.121974945068,
+      "cluster_info": null
+    },
+    {
+      "id": "MCAS_2001_5_19",
+      "sentence": "Plants use sunlight to make",
+      "options": [
+        "soil.",
+        "minerals.",
+        "food.",
+        "water."
+      ],
+      "correct_answer": "food.",
+      "correct_option": "3",
+      "cot_reasoning": "The correct answer is C. food.\n\nPlants use sunlight to make food through a process called photosynthesis. During photosynthesis, plants use sunlight, carbon dioxide, and water to produce glucose and oxygen. This process is essential for plant growth and is the basis of the food chain in many ecosystems.",
+      "answer_ids": {
+        "soil.": 362,
+        "minerals.": 426,
+        "food.": 356,
+        "water.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "soil.": 0.010009765625,
+        "minerals.": 0.0078125,
+        "food.": 0.90234375,
+        "water.": 0.0654296875
+      },
+      "processing_time": 1.303788423538208,
+      "sampler": "greedy",
+      "pred_id": 356,
+      "predicted_answer": "food.",
+      "correct": true,
+      "elapsed_ms": 1341.0065174102783,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_SC_413631",
+      "sentence": "Which of these correctly identifies the way materials are transported in a plant?",
+      "options": [
+        "Xylem carries water from the roots to the leaves.",
+        "Phloem carries minerals from the roots to the leaves.",
+        "Xylem carries sugars from the flowers to the stems.",
+        "Phloem carries water from the flowers to the stems."
+      ],
+      "correct_answer": "Xylem carries water from the roots to the leaves.",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Xylem carries water from the roots to the leaves.\n- This statement is incorrect because the xylem is primarily involved in transporting water and minerals from the roots to the leaves, not the other way around.\n\nB. Phloem carries minerals from the roots to the leaves.\n- This statement is incorrect because the phloem is primarily involved in transporting sugars, amino acids, and other organic compounds from the leaves to the rest of the plant, not minerals.\n\nC. Xylem carries sugars from the flowers to the stems.\n- This statement is incorrect because the xylem is primarily involved in transporting water and minerals from the roots to the leaves, not sugars.\n\nD. Phloem carries water from the flowers to the stems.\n- This statement is incorrect because the phloem is primarily involved in transporting sugars, amino acids, and other organic compounds from the leaves to the rest of the plant, not water.\n\nThe correct answer is D. Phloem carries water from the flowers to the stems.",
+      "answer_ids": {
+        "Xylem carries water from the roots to the leaves.": 362,
+        "Phloem carries minerals from the roots to the leaves.": 426,
+        "Xylem carries sugars from the flowers to the stems.": 356,
+        "Phloem carries water from the flowers to the stems.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "Xylem carries water from the roots to the leaves.": 0.0106201171875,
+        "Phloem carries minerals from the roots to the leaves.": 0.017578125,
+        "Xylem carries sugars from the flowers to the stems.": 0.0023651123046875,
+        "Phloem carries water from the flowers to the stems.": 0.95703125
+      },
+      "processing_time": 5.199955701828003,
+      "sampler": "dcbs",
+      "pred_id": 423,
+      "predicted_answer": "Phloem carries water from the flowers to the stems.",
+      "correct": false,
+      "elapsed_ms": 8660.480499267578,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_SC_413631",
+      "sentence": "Which of these correctly identifies the way materials are transported in a plant?",
+      "options": [
+        "Xylem carries water from the roots to the leaves.",
+        "Phloem carries minerals from the roots to the leaves.",
+        "Xylem carries sugars from the flowers to the stems.",
+        "Phloem carries water from the flowers to the stems."
+      ],
+      "correct_answer": "Xylem carries water from the roots to the leaves.",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Xylem carries water from the roots to the leaves.\n- This statement is incorrect because the xylem is primarily involved in transporting water and minerals from the roots to the leaves, not the other way around.\n\nB. Phloem carries minerals from the roots to the leaves.\n- This statement is incorrect because the phloem is primarily involved in transporting sugars, amino acids, and other organic compounds from the leaves to the rest of the plant, not minerals.\n\nC. Xylem carries sugars from the flowers to the stems.\n- This statement is incorrect because the xylem is primarily involved in transporting water and minerals from the roots to the leaves, not sugars.\n\nD. Phloem carries water from the flowers to the stems.\n- This statement is incorrect because the phloem is primarily involved in transporting sugars, amino acids, and other organic compounds from the leaves to the rest of the plant, not water.\n\nThe correct answer is D. Phloem carries water from the flowers to the stems.",
+      "answer_ids": {
+        "Xylem carries water from the roots to the leaves.": 362,
+        "Phloem carries minerals from the roots to the leaves.": 426,
+        "Xylem carries sugars from the flowers to the stems.": 356,
+        "Phloem carries water from the flowers to the stems.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "Xylem carries water from the roots to the leaves.": 0.0106201171875,
+        "Phloem carries minerals from the roots to the leaves.": 0.017578125,
+        "Xylem carries sugars from the flowers to the stems.": 0.0023651123046875,
+        "Phloem carries water from the flowers to the stems.": 0.95703125
+      },
+      "processing_time": 5.199955701828003,
+      "sampler": "greedy",
+      "pred_id": 423,
+      "predicted_answer": "Phloem carries water from the flowers to the stems.",
+      "correct": false,
+      "elapsed_ms": 4934.276580810547,
+      "cluster_info": null
+    },
+    {
+      "id": "MCAS_2005_5_10",
+      "sentence": "When trees develop leaves in the spring, 10 changes occur on the forest floor. Why does the development of leaves cause changes on the forest floor?",
+      "options": [
+        "Rainfall increases.",
+        "Sunlight is reduced.",
+        "Wind speed increases.",
+        "Animal migration is stopped."
+      ],
+      "correct_answer": "Sunlight is reduced.",
+      "correct_option": "2",
+      "cot_reasoning": "Let's analyze the situation step by step:\n\n1. **Development of leaves in the spring**: This is a natural process where trees produce new leaves to prepare for the growing season.\n2. **Changes on the forest floor**: The question asks about the changes that occur on the forest floor as a result of this process.\n3. **Why does this happen?** We need to consider the role of each option in relation to the development of leaves and the changes on the forest floor.\n\nA. **Rainfall increases**: While rainfall can affect the forest ecosystem, it's not directly related to the development of leaves. Rainfall might influence the growth of trees, but it's not the primary reason for the changes on the forest floor.\n\nB. **Sunlight is reduced**: As leaves grow, they absorb sunlight, which is essential for photosynthesis. If sunlight is reduced, trees would not be able to produce the necessary energy to develop new leaves, leading to changes on the forest floor.\n\nC. **Wind speed increases**: Wind can affect trees, but it's not directly related to the development of leaves. Wind might influence the direction of tree growth or the way leaves are arranged, but it's not the primary reason for changes on the forest floor.\n\nD. **Animal migration is stopped**: Animal migration is not directly related to the development of leaves or the changes on the forest floor. Animal migration might affect the forest ecosystem, but it's not the primary reason for the changes that occur on the forest floor.\n\nBased on this step-by-step analysis, the correct answer is:\n\nB. Sunlight is reduced.\n\nThis is because reduced sunlight would limit the trees' ability to produce new leaves, leading to changes on the forest floor.",
+      "answer_ids": {
+        "Rainfall increases.": 362,
+        "Sunlight is reduced.": 426,
+        "Wind speed increases.": 356,
+        "Animal migration is stopped.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Rainfall increases.": 0.0045166015625,
+        "Sunlight is reduced.": 0.9765625,
+        "Wind speed increases.": 0.0004215240478515625,
+        "Animal migration is stopped.": 0.00089263916015625
+      },
+      "processing_time": 7.965893268585205,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "Sunlight is reduced.",
+      "correct": true,
+      "elapsed_ms": 13724.791049957275,
+      "cluster_info": null
+    },
+    {
+      "id": "MCAS_2005_5_10",
+      "sentence": "When trees develop leaves in the spring, 10 changes occur on the forest floor. Why does the development of leaves cause changes on the forest floor?",
+      "options": [
+        "Rainfall increases.",
+        "Sunlight is reduced.",
+        "Wind speed increases.",
+        "Animal migration is stopped."
+      ],
+      "correct_answer": "Sunlight is reduced.",
+      "correct_option": "2",
+      "cot_reasoning": "Let's analyze the situation step by step:\n\n1. **Development of leaves in the spring**: This is a natural process where trees produce new leaves to prepare for the growing season.\n2. **Changes on the forest floor**: The question asks about the changes that occur on the forest floor as a result of this process.\n3. **Why does this happen?** We need to consider the role of each option in relation to the development of leaves and the changes on the forest floor.\n\nA. **Rainfall increases**: While rainfall can affect the forest ecosystem, it's not directly related to the development of leaves. Rainfall might influence the growth of trees, but it's not the primary reason for the changes on the forest floor.\n\nB. **Sunlight is reduced**: As leaves grow, they absorb sunlight, which is essential for photosynthesis. If sunlight is reduced, trees would not be able to produce the necessary energy to develop new leaves, leading to changes on the forest floor.\n\nC. **Wind speed increases**: Wind can affect trees, but it's not directly related to the development of leaves. Wind might influence the direction of tree growth or the way leaves are arranged, but it's not the primary reason for changes on the forest floor.\n\nD. **Animal migration is stopped**: Animal migration is not directly related to the development of leaves or the changes on the forest floor. Animal migration might affect the forest ecosystem, but it's not the primary reason for the changes that occur on the forest floor.\n\nBased on this step-by-step analysis, the correct answer is:\n\nB. Sunlight is reduced.\n\nThis is because reduced sunlight would limit the trees' ability to produce new leaves, leading to changes on the forest floor.",
+      "answer_ids": {
+        "Rainfall increases.": 362,
+        "Sunlight is reduced.": 426,
+        "Wind speed increases.": 356,
+        "Animal migration is stopped.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Rainfall increases.": 0.0045166015625,
+        "Sunlight is reduced.": 0.9765625,
+        "Wind speed increases.": 0.0004215240478515625,
+        "Animal migration is stopped.": 0.00089263916015625
+      },
+      "processing_time": 7.965893268585205,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "Sunlight is reduced.",
+      "correct": true,
+      "elapsed_ms": 7645.811319351196,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7166145",
+      "sentence": "The circulatory system and the endocrine system work together in the human body. Which describes one way in which these systems interact?",
+      "options": [
+        "taking in oxygen and transporting it to cells of the body",
+        "releasing hormones and transporting them to cells of the body",
+        "absorbing nutrients from food and transporting them to cells in the body",
+        "collecting waste products from the cells and transporting it out of the body"
+      ],
+      "correct_answer": "releasing hormones and transporting them to cells of the body",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is B. releasing hormones and transporting them to cells of the body.\n\nThe circulatory system and the endocrine system are two separate systems in the human body that work together to perform different functions. The circulatory system is responsible for transporting oxygen, nutrients, and hormones throughout the body, while the endocrine system is responsible for producing and releasing hormones that regulate various bodily functions, such as growth and development.\n\nHere's a step-by-step explanation of how these systems interact:\n\n1. The endocrine system produces hormones that are released into the bloodstream.\n2. The bloodstream carries the hormones to the cells of the body, where they can exert their effects.\n3. The circulatory system transports the hormones to the cells, where they can be used by the cells to perform their functions.\n\nSo, the correct answer is B. releasing hormones and transporting them to cells of the body.",
+      "answer_ids": {
+        "taking in oxygen and transporting it to cells of the body": 362,
+        "releasing hormones and transporting them to cells of the body": 426,
+        "absorbing nutrients from food and transporting them to cells in the body": 356,
+        "collecting waste products from the cells and transporting it out of the body": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "taking in oxygen and transporting it to cells of the body": 0.0004863739013671875,
+        "releasing hormones and transporting them to cells of the body": 0.99609375,
+        "absorbing nutrients from food and transporting them to cells in the body": 0.00020313262939453125,
+        "collecting waste products from the cells and transporting it out of the body": 0.0002613067626953125
+      },
+      "processing_time": 3.7468597888946533,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "releasing hormones and transporting them to cells of the body",
+      "correct": true,
+      "elapsed_ms": 11513.27657699585,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7166145",
+      "sentence": "The circulatory system and the endocrine system work together in the human body. Which describes one way in which these systems interact?",
+      "options": [
+        "taking in oxygen and transporting it to cells of the body",
+        "releasing hormones and transporting them to cells of the body",
+        "absorbing nutrients from food and transporting them to cells in the body",
+        "collecting waste products from the cells and transporting it out of the body"
+      ],
+      "correct_answer": "releasing hormones and transporting them to cells of the body",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is B. releasing hormones and transporting them to cells of the body.\n\nThe circulatory system and the endocrine system are two separate systems in the human body that work together to perform different functions. The circulatory system is responsible for transporting oxygen, nutrients, and hormones throughout the body, while the endocrine system is responsible for producing and releasing hormones that regulate various bodily functions, such as growth and development.\n\nHere's a step-by-step explanation of how these systems interact:\n\n1. The endocrine system produces hormones that are released into the bloodstream.\n2. The bloodstream carries the hormones to the cells of the body, where they can exert their effects.\n3. The circulatory system transports the hormones to the cells, where they can be used by the cells to perform their functions.\n\nSo, the correct answer is B. releasing hormones and transporting them to cells of the body.",
+      "answer_ids": {
+        "taking in oxygen and transporting it to cells of the body": 362,
+        "releasing hormones and transporting them to cells of the body": 426,
+        "absorbing nutrients from food and transporting them to cells in the body": 356,
+        "collecting waste products from the cells and transporting it out of the body": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "taking in oxygen and transporting it to cells of the body": 0.0004863739013671875,
+        "releasing hormones and transporting them to cells of the body": 0.99609375,
+        "absorbing nutrients from food and transporting them to cells in the body": 0.00020313262939453125,
+        "collecting waste products from the cells and transporting it out of the body": 0.0002613067626953125
+      },
+      "processing_time": 3.7468597888946533,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "releasing hormones and transporting them to cells of the body",
+      "correct": true,
+      "elapsed_ms": 3906.5866470336914,
+      "cluster_info": null
+    },
+    {
+      "id": "MSA_2013_5_6",
+      "sentence": "A student throws a ball into the air. While the ball travels up, the speed of the ball decreases. What force causes the ball to slow while traveling up?",
+      "options": [
+        "electricity",
+        "gravity",
+        "magnetism",
+        "tension"
+      ],
+      "correct_answer": "gravity",
+      "correct_option": "2",
+      "cot_reasoning": "To solve this problem, let's analyze the situation step by step:\n\n1. The ball is thrown upwards, which means it is under the influence of gravity.\n2. As the ball travels upwards, its speed decreases due to gravity.\n3. The force that causes the ball to slow down is not related to electricity, magnetism, or tension. These forces are not relevant to the situation.\n4. Gravity is the only force that can cause an object to accelerate downwards due to gravity, which is why the ball slows down as it travels up.\n\nTherefore, the correct answer is gravity.",
+      "answer_ids": {
+        "electricity": 362,
+        "gravity": 426,
+        "magnetism": 356,
+        "tension": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "electricity": 0.017578125,
+        "gravity": 0.9609375,
+        "magnetism": 0.0030670166015625,
+        "tension": 0.0120849609375
+      },
+      "processing_time": 2.583360195159912,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "gravity",
+      "correct": true,
+      "elapsed_ms": 11537.416696548462,
+      "cluster_info": null
+    },
+    {
+      "id": "MSA_2013_5_6",
+      "sentence": "A student throws a ball into the air. While the ball travels up, the speed of the ball decreases. What force causes the ball to slow while traveling up?",
+      "options": [
+        "electricity",
+        "gravity",
+        "magnetism",
+        "tension"
+      ],
+      "correct_answer": "gravity",
+      "correct_option": "2",
+      "cot_reasoning": "To solve this problem, let's analyze the situation step by step:\n\n1. The ball is thrown upwards, which means it is under the influence of gravity.\n2. As the ball travels upwards, its speed decreases due to gravity.\n3. The force that causes the ball to slow down is not related to electricity, magnetism, or tension. These forces are not relevant to the situation.\n4. Gravity is the only force that can cause an object to accelerate downwards due to gravity, which is why the ball slows down as it travels up.\n\nTherefore, the correct answer is gravity.",
+      "answer_ids": {
+        "electricity": 362,
+        "gravity": 426,
+        "magnetism": 356,
+        "tension": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "electricity": 0.017578125,
+        "gravity": 0.9609375,
+        "magnetism": 0.0030670166015625,
+        "tension": 0.0120849609375
+      },
+      "processing_time": 2.583360195159912,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "gravity",
+      "correct": true,
+      "elapsed_ms": 2669.0425872802734,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_SC_405199",
+      "sentence": "Which of these will most likely harm a habitat?",
+      "options": [
+        "planting trees",
+        "water pollution",
+        "rainfall",
+        "sunlight"
+      ],
+      "correct_answer": "water pollution",
+      "correct_option": "2",
+      "cot_reasoning": "To determine which option is most likely to harm a habitat, we need to consider the potential impacts of each option on the environment and ecosystems.\n\nA. Planting trees - Trees are known to be beneficial for habitats, as they provide shade, improve air quality, and help to absorb carbon dioxide. They also help to stabilize soil and prevent erosion, which can lead to soil degradation and loss of biodiversity.\n\nB. Water pollution - Water pollution can have devastating effects on habitats, including the destruction of aquatic life, the decline of fish populations, and the contamination of water sources. It can also lead to the spread of diseases and the disruption of ecosystems.\n\nC. Rainfall - Rainfall is essential for many ecosystems, including forests, grasslands, and wetlands. While excessive rainfall can lead to flooding and soil erosion, it can also help to support plant growth and maintain soil health.\n\nD. Sunlight - Sunlight is essential for photosynthesis, which is the process by which plants produce energy. While excessive sunlight can be harmful to plants, it is not typically considered a major threat to habitats.\n\nBased on these considerations, water pollution is the most likely to harm a habitat.",
+      "answer_ids": {
+        "planting trees": 362,
+        "water pollution": 426,
+        "rainfall": 356,
+        "sunlight": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "planting trees": 0.00457763671875,
+        "water pollution": 0.9921875,
+        "rainfall": 0.00054931640625,
+        "sunlight": 0.0031585693359375
+      },
+      "processing_time": 5.079122066497803,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "water pollution",
+      "correct": true,
+      "elapsed_ms": 11037.217378616333,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_SC_405199",
+      "sentence": "Which of these will most likely harm a habitat?",
+      "options": [
+        "planting trees",
+        "water pollution",
+        "rainfall",
+        "sunlight"
+      ],
+      "correct_answer": "water pollution",
+      "correct_option": "2",
+      "cot_reasoning": "To determine which option is most likely to harm a habitat, we need to consider the potential impacts of each option on the environment and ecosystems.\n\nA. Planting trees - Trees are known to be beneficial for habitats, as they provide shade, improve air quality, and help to absorb carbon dioxide. They also help to stabilize soil and prevent erosion, which can lead to soil degradation and loss of biodiversity.\n\nB. Water pollution - Water pollution can have devastating effects on habitats, including the destruction of aquatic life, the decline of fish populations, and the contamination of water sources. It can also lead to the spread of diseases and the disruption of ecosystems.\n\nC. Rainfall - Rainfall is essential for many ecosystems, including forests, grasslands, and wetlands. While excessive rainfall can lead to flooding and soil erosion, it can also help to support plant growth and maintain soil health.\n\nD. Sunlight - Sunlight is essential for photosynthesis, which is the process by which plants produce energy. While excessive sunlight can be harmful to plants, it is not typically considered a major threat to habitats.\n\nBased on these considerations, water pollution is the most likely to harm a habitat.",
+      "answer_ids": {
+        "planting trees": 362,
+        "water pollution": 426,
+        "rainfall": 356,
+        "sunlight": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "planting trees": 0.00457763671875,
+        "water pollution": 0.9921875,
+        "rainfall": 0.00054931640625,
+        "sunlight": 0.0031585693359375
+      },
+      "processing_time": 5.079122066497803,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "water pollution",
+      "correct": true,
+      "elapsed_ms": 5219.0117835998535,
+      "cluster_info": null
+    },
+    {
+      "id": "NYSEDREGENTS_2015_8_28",
+      "sentence": "All living and nonliving material is composed of",
+      "options": [
+        "air",
+        "elements",
+        "water",
+        "soil"
+      ],
+      "correct_answer": "elements",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is B. elements.\n\nAll living and nonliving materials are composed of elements, which are the basic building blocks of matter. Elements are the smallest units of matter that still retain the properties of a substance. For example, air is composed of nitrogen and oxygen, water is composed of hydrogen and oxygen, and soil is composed of various minerals and organic matter.",
+      "answer_ids": {
+        "air": 362,
+        "elements": 426,
+        "water": 356,
+        "soil": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "air": 0.00579833984375,
+        "elements": 0.97265625,
+        "water": 0.0045166015625,
+        "soil": 0.01226806640625
+      },
+      "processing_time": 1.643519401550293,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "elements",
+      "correct": true,
+      "elapsed_ms": 2728.306770324707,
+      "cluster_info": null
+    },
+    {
+      "id": "NYSEDREGENTS_2015_8_28",
+      "sentence": "All living and nonliving material is composed of",
+      "options": [
+        "air",
+        "elements",
+        "water",
+        "soil"
+      ],
+      "correct_answer": "elements",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is B. elements.\n\nAll living and nonliving materials are composed of elements, which are the basic building blocks of matter. Elements are the smallest units of matter that still retain the properties of a substance. For example, air is composed of nitrogen and oxygen, water is composed of hydrogen and oxygen, and soil is composed of various minerals and organic matter.",
+      "answer_ids": {
+        "air": 362,
+        "elements": 426,
+        "water": 356,
+        "soil": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "air": 0.00579833984375,
+        "elements": 0.97265625,
+        "water": 0.0045166015625,
+        "soil": 0.01226806640625
+      },
+      "processing_time": 1.643519401550293,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "elements",
+      "correct": true,
+      "elapsed_ms": 1648.62060546875,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_SC_401777",
+      "sentence": "Which process best explains how the Grand Canyon became so wide?",
+      "options": [
+        "folding",
+        "erosion",
+        "deposition",
+        "sedimentation"
+      ],
+      "correct_answer": "erosion",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Folding: Folding refers to the process of faulting, where the Earth's crust is forced into a fold, causing the rock layers to be compressed and deformed. While folding can lead to the formation of mountains and canals, it is not the primary process that led to the formation of the Grand Canyon.\n\nB. Erosion: Erosion is the process of wearing away or breaking down rock and soil particles through natural forces like wind, water, and ice. The Colorado River, which flows through the Grand Canyon, is a significant example of erosion. Over millions of years, the river has carved out the canyon through a combination of meandering and braiding, gradually widening the canyon.\n\nC. Deposition: Deposition refers to the process of sediment being deposited or settled at the bottom of a river or ocean. While deposition is an important process in shaping the landscape, it is not the primary process that led to the formation of the Grand Canyon.\n\nD. Sedimentation: Sedimentation refers to the process of sediment being deposited or settled at the bottom of a body of water. Like deposition, sedimentation is an important process in shaping the landscape, but it is not the primary process that led to the formation of the Grand Canyon.\n\nConsidering the evidence and the processes involved, the most accurate answer is B. Erosion. The Colorado River has played a significant role in shaping the Grand Canyon through its erosive power, carving out the canyon over millions of years.",
+      "answer_ids": {
+        "folding": 362,
+        "erosion": 426,
+        "deposition": 356,
+        "sedimentation": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "folding": 0.003570556640625,
+        "erosion": 0.98828125,
+        "deposition": 0.000797271728515625,
+        "sedimentation": 0.000545501708984375
+      },
+      "processing_time": 7.193041563034058,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "erosion",
+      "correct": true,
+      "elapsed_ms": 16767.579317092896,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_SC_401777",
+      "sentence": "Which process best explains how the Grand Canyon became so wide?",
+      "options": [
+        "folding",
+        "erosion",
+        "deposition",
+        "sedimentation"
+      ],
+      "correct_answer": "erosion",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Folding: Folding refers to the process of faulting, where the Earth's crust is forced into a fold, causing the rock layers to be compressed and deformed. While folding can lead to the formation of mountains and canals, it is not the primary process that led to the formation of the Grand Canyon.\n\nB. Erosion: Erosion is the process of wearing away or breaking down rock and soil particles through natural forces like wind, water, and ice. The Colorado River, which flows through the Grand Canyon, is a significant example of erosion. Over millions of years, the river has carved out the canyon through a combination of meandering and braiding, gradually widening the canyon.\n\nC. Deposition: Deposition refers to the process of sediment being deposited or settled at the bottom of a river or ocean. While deposition is an important process in shaping the landscape, it is not the primary process that led to the formation of the Grand Canyon.\n\nD. Sedimentation: Sedimentation refers to the process of sediment being deposited or settled at the bottom of a body of water. Like deposition, sedimentation is an important process in shaping the landscape, but it is not the primary process that led to the formation of the Grand Canyon.\n\nConsidering the evidence and the processes involved, the most accurate answer is B. Erosion. The Colorado River has played a significant role in shaping the Grand Canyon through its erosive power, carving out the canyon over millions of years.",
+      "answer_ids": {
+        "folding": 362,
+        "erosion": 426,
+        "deposition": 356,
+        "sedimentation": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "folding": 0.003570556640625,
+        "erosion": 0.98828125,
+        "deposition": 0.000797271728515625,
+        "sedimentation": 0.000545501708984375
+      },
+      "processing_time": 7.193041563034058,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "erosion",
+      "correct": true,
+      "elapsed_ms": 9012.412548065186,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7198188",
+      "sentence": "As global temperatures increase, certain organisms will be more affected than others. The changes associated with global warming may result in an increase in sea level. Which organisms will be affected most as a result of the change in sea level?",
+      "options": [
+        "birds that eat fish from shallow waters",
+        "fish that live in coral reefs in shallow waters",
+        "mammals that swim in cold, deep ocean waters",
+        "crustaceans at the bottom of deep sea ocean waters"
+      ],
+      "correct_answer": "fish that live in coral reefs in shallow waters",
+      "correct_option": "2",
+      "cot_reasoning": "To answer this question, let's analyze the relationship between global warming and sea level changes.\n\nFirstly, global warming is a natural process that occurs when the Earth's atmosphere traps more heat from the sun, leading to an increase in the average temperature of the planet. This can have various effects on different organisms.\n\nSecondly, sea level changes can be caused by several factors, including melting glaciers, rising sea levels due to climate change, and changes in ocean currents.\n\nNow, let's examine the options:\n\nA. Birds that eat fish from shallow waters: Birds that eat fish from shallow waters are likely to be affected by changes in sea level, as they are more likely to be found in shallow waters. However, the impact of sea level changes on birds is likely to be minimal, as they are not directly dependent on sea level.\n\nB. Fish that live in coral reefs in shallow waters: Fish that live in coral reefs in shallow waters are likely to be affected by changes in sea level, as they are more likely to be found in shallow waters. Coral reefs are often located in shallow waters, and changes in sea level could potentially affect the distribution and abundance of these fish.\n\nC. Mammals that swim in cold, deep ocean waters: Mammals that swim in cold, deep ocean waters are unlikely to be affected by changes in sea level, as they are not directly dependent on sea level.\n\nD. Crustaceans at the bottom of deep sea ocean waters: Crustaceans that live at the bottom of deep sea ocean waters are unlikely to be affected by changes in sea level, as they are not directly dependent on sea level.\n\nBased on the analysis, the organisms that are most likely to be affected by changes in sea level are the fish that live in coral reefs in shallow waters.",
+      "answer_ids": {
+        "birds that eat fish from shallow waters": 362,
+        "fish that live in coral reefs in shallow waters": 426,
+        "mammals that swim in cold, deep ocean waters": 356,
+        "crustaceans at the bottom of deep sea ocean waters": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "birds that eat fish from shallow waters": 0.000545501708984375,
+        "fish that live in coral reefs in shallow waters": 0.984375,
+        "mammals that swim in cold, deep ocean waters": 0.00010728836059570312,
+        "crustaceans at the bottom of deep sea ocean waters": 0.000545501708984375
+      },
+      "processing_time": 8.574971199035645,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "fish that live in coral reefs in shallow waters",
+      "correct": true,
+      "elapsed_ms": 14088.496685028076,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7198188",
+      "sentence": "As global temperatures increase, certain organisms will be more affected than others. The changes associated with global warming may result in an increase in sea level. Which organisms will be affected most as a result of the change in sea level?",
+      "options": [
+        "birds that eat fish from shallow waters",
+        "fish that live in coral reefs in shallow waters",
+        "mammals that swim in cold, deep ocean waters",
+        "crustaceans at the bottom of deep sea ocean waters"
+      ],
+      "correct_answer": "fish that live in coral reefs in shallow waters",
+      "correct_option": "2",
+      "cot_reasoning": "To answer this question, let's analyze the relationship between global warming and sea level changes.\n\nFirstly, global warming is a natural process that occurs when the Earth's atmosphere traps more heat from the sun, leading to an increase in the average temperature of the planet. This can have various effects on different organisms.\n\nSecondly, sea level changes can be caused by several factors, including melting glaciers, rising sea levels due to climate change, and changes in ocean currents.\n\nNow, let's examine the options:\n\nA. Birds that eat fish from shallow waters: Birds that eat fish from shallow waters are likely to be affected by changes in sea level, as they are more likely to be found in shallow waters. However, the impact of sea level changes on birds is likely to be minimal, as they are not directly dependent on sea level.\n\nB. Fish that live in coral reefs in shallow waters: Fish that live in coral reefs in shallow waters are likely to be affected by changes in sea level, as they are more likely to be found in shallow waters. Coral reefs are often located in shallow waters, and changes in sea level could potentially affect the distribution and abundance of these fish.\n\nC. Mammals that swim in cold, deep ocean waters: Mammals that swim in cold, deep ocean waters are unlikely to be affected by changes in sea level, as they are not directly dependent on sea level.\n\nD. Crustaceans at the bottom of deep sea ocean waters: Crustaceans that live at the bottom of deep sea ocean waters are unlikely to be affected by changes in sea level, as they are not directly dependent on sea level.\n\nBased on the analysis, the organisms that are most likely to be affected by changes in sea level are the fish that live in coral reefs in shallow waters.",
+      "answer_ids": {
+        "birds that eat fish from shallow waters": 362,
+        "fish that live in coral reefs in shallow waters": 426,
+        "mammals that swim in cold, deep ocean waters": 356,
+        "crustaceans at the bottom of deep sea ocean waters": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "birds that eat fish from shallow waters": 0.000545501708984375,
+        "fish that live in coral reefs in shallow waters": 0.984375,
+        "mammals that swim in cold, deep ocean waters": 0.00010728836059570312,
+        "crustaceans at the bottom of deep sea ocean waters": 0.000545501708984375
+      },
+      "processing_time": 8.574971199035645,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "fish that live in coral reefs in shallow waters",
+      "correct": true,
+      "elapsed_ms": 8023.927211761475,
+      "cluster_info": null
+    },
+    {
+      "id": "MCAS_1998_4_11",
+      "sentence": "A dish of sugar water was left on a window sill. One week later, there were only sugar crystals left in the dish. The water was gone. The best explanation for the appearance of sugar crystals is",
+      "options": [
+        "some of the water was absorbed by the dish.",
+        "the air condensed.",
+        "the light shining on the window sill produced more sugar.",
+        "the water evaporated."
+      ],
+      "correct_answer": "the water evaporated.",
+      "correct_option": "4",
+      "cot_reasoning": "To determine the best explanation for the appearance of sugar crystals, let's analyze the situation step by step:\n\n1. **Initial Condition**: The sugar water was left on a window sill.\n2. **Condition after 1 week**: There were only sugar crystals left in the dish.\n3. **Condition after 1 week**: The water was gone.\n\nFrom the given information, we can deduce the following:\n\n- The sugar water was left on the window sill, which means it was exposed to air.\n- The window sill is likely to be a relatively dry surface, as it is not a humid environment.\n- The air on the window sill is likely to be dry, as it is not a humid environment.\n\nNow, let's consider the possible explanations:\n\nA. **some of the water was absorbed by the dish**: This is not a likely explanation. If the water was absorbed by the dish, it would not leave sugar crystals.\n\nB. **the air condensed**: This is a plausible explanation. When the air on the window sill is dry, it can condense into water vapor. This process is called evaporation. As the air is heated by the sun or other sources, it can evaporate the water from the dish, leaving behind sugar crystals.\n\nC. **the light shining on the window sill produced more sugar**: This is not a likely explanation. The light shining on the window sill is not a source of sugar, and it's unlikely that it would produce sugar crystals.\n\nD. **the water evaporated**: This is not a likely explanation. The water was left on the dish, and it was not evaporated, as it was likely to be dry.\n\nBased on the analysis, the best explanation for the appearance of sugar crystals is that the air on the window sill condensed into water vapor, which then evaporated, leaving behind sugar crystals.",
+      "answer_ids": {
+        "some of the water was absorbed by the dish.": 362,
+        "the air condensed.": 426,
+        "the light shining on the window sill produced more sugar.": 356,
+        "the water evaporated.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 423,
+      "answer_probs": {
+        "some of the water was absorbed by the dish.": 0.003021240234375,
+        "the air condensed.": 0.94921875,
+        "the light shining on the window sill produced more sugar.": 0.003875732421875,
+        "the water evaporated.": 0.011962890625
+      },
+      "processing_time": 8.291826248168945,
+      "sampler": "dcbs",
+      "pred_id": 423,
+      "predicted_answer": "the water evaporated.",
+      "correct": true,
+      "elapsed_ms": 15723.858118057251,
+      "cluster_info": null
+    },
+    {
+      "id": "MCAS_1998_4_11",
+      "sentence": "A dish of sugar water was left on a window sill. One week later, there were only sugar crystals left in the dish. The water was gone. The best explanation for the appearance of sugar crystals is",
+      "options": [
+        "some of the water was absorbed by the dish.",
+        "the air condensed.",
+        "the light shining on the window sill produced more sugar.",
+        "the water evaporated."
+      ],
+      "correct_answer": "the water evaporated.",
+      "correct_option": "4",
+      "cot_reasoning": "To determine the best explanation for the appearance of sugar crystals, let's analyze the situation step by step:\n\n1. **Initial Condition**: The sugar water was left on a window sill.\n2. **Condition after 1 week**: There were only sugar crystals left in the dish.\n3. **Condition after 1 week**: The water was gone.\n\nFrom the given information, we can deduce the following:\n\n- The sugar water was left on the window sill, which means it was exposed to air.\n- The window sill is likely to be a relatively dry surface, as it is not a humid environment.\n- The air on the window sill is likely to be dry, as it is not a humid environment.\n\nNow, let's consider the possible explanations:\n\nA. **some of the water was absorbed by the dish**: This is not a likely explanation. If the water was absorbed by the dish, it would not leave sugar crystals.\n\nB. **the air condensed**: This is a plausible explanation. When the air on the window sill is dry, it can condense into water vapor. This process is called evaporation. As the air is heated by the sun or other sources, it can evaporate the water from the dish, leaving behind sugar crystals.\n\nC. **the light shining on the window sill produced more sugar**: This is not a likely explanation. The light shining on the window sill is not a source of sugar, and it's unlikely that it would produce sugar crystals.\n\nD. **the water evaporated**: This is not a likely explanation. The water was left on the dish, and it was not evaporated, as it was likely to be dry.\n\nBased on the analysis, the best explanation for the appearance of sugar crystals is that the air on the window sill condensed into water vapor, which then evaporated, leaving behind sugar crystals.",
+      "answer_ids": {
+        "some of the water was absorbed by the dish.": 362,
+        "the air condensed.": 426,
+        "the light shining on the window sill produced more sugar.": 356,
+        "the water evaporated.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 423,
+      "answer_probs": {
+        "some of the water was absorbed by the dish.": 0.003021240234375,
+        "the air condensed.": 0.94921875,
+        "the light shining on the window sill produced more sugar.": 0.003875732421875,
+        "the water evaporated.": 0.011962890625
+      },
+      "processing_time": 8.291826248168945,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "the air condensed.",
+      "correct": false,
+      "elapsed_ms": 8153.759956359863,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_SC_LBS10784",
+      "sentence": "Using a softball bat to hit a softball is an example of using which simple machine?",
+      "options": [
+        "pulley",
+        "lever",
+        "inclined plane",
+        "wheel and axle"
+      ],
+      "correct_answer": "lever",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is B. lever.\n\nA lever is a simple machine that uses a rigid bar to change the direction of force or motion. In the context of hitting a softball with a softball bat, the lever is used to generate force and motion. The bat is used as the fulcrum, and the softball is used as the load, which is then lifted and swung by the batter.\n\nThe other options are not correct because:\n\n* A pulley is a device that changes the direction of force or motion, but it is not used in this scenario.\n* An inclined plane is a surface that is angled at a 90-degree angle to the horizontal, which is not relevant to hitting a softball with a softball bat.\n* A wheel and axle is a device that uses a wheel and axle to change the direction of force or motion, but it is not used in this scenario.\n\nTherefore, the correct answer is lever.",
+      "answer_ids": {
+        "pulley": 362,
+        "lever": 426,
+        "inclined plane": 356,
+        "wheel and axle": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "pulley": 0.001495361328125,
+        "lever": 0.9921875,
+        "inclined plane": 0.000377655029296875,
+        "wheel and axle": 0.00131988525390625
+      },
+      "processing_time": 4.07435417175293,
+      "sampler": "dcbs",
+      "pred_id": 356,
+      "predicted_answer": "inclined plane",
+      "correct": false,
+      "elapsed_ms": 10656.415939331055,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_SC_LBS10784",
+      "sentence": "Using a softball bat to hit a softball is an example of using which simple machine?",
+      "options": [
+        "pulley",
+        "lever",
+        "inclined plane",
+        "wheel and axle"
+      ],
+      "correct_answer": "lever",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is B. lever.\n\nA lever is a simple machine that uses a rigid bar to change the direction of force or motion. In the context of hitting a softball with a softball bat, the lever is used to generate force and motion. The bat is used as the fulcrum, and the softball is used as the load, which is then lifted and swung by the batter.\n\nThe other options are not correct because:\n\n* A pulley is a device that changes the direction of force or motion, but it is not used in this scenario.\n* An inclined plane is a surface that is angled at a 90-degree angle to the horizontal, which is not relevant to hitting a softball with a softball bat.\n* A wheel and axle is a device that uses a wheel and axle to change the direction of force or motion, but it is not used in this scenario.\n\nTherefore, the correct answer is lever.",
+      "answer_ids": {
+        "pulley": 362,
+        "lever": 426,
+        "inclined plane": 356,
+        "wheel and axle": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "pulley": 0.001495361328125,
+        "lever": 0.9921875,
+        "inclined plane": 0.000377655029296875,
+        "wheel and axle": 0.00131988525390625
+      },
+      "processing_time": 4.07435417175293,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "lever",
+      "correct": true,
+      "elapsed_ms": 3968.6574935913086,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7033548",
+      "sentence": "When an igneous intrusion comes into contact with surrounding rock, the surrounding rock will",
+      "options": [
+        "erode.",
+        "foliate.",
+        "precipitate.",
+        "recrystallize."
+      ],
+      "correct_answer": "recrystallize.",
+      "correct_option": "4",
+      "cot_reasoning": "To answer this question, let's consider the process of an igneous intrusion.\n\nAn igneous intrusion is a process where magma or molten rock from beneath the Earth's surface is forced upward through a crack or fissure in the Earth's crust, often resulting in the formation of new rocks or the alteration of existing ones. This process typically occurs when there is a significant increase in pressure or temperature within the rock.\n\nWhen an igneous intrusion comes into contact with surrounding rock, the most likely outcome is that the surrounding rock will be subjected to increased pressure and temperature, leading to several possible outcomes:\n\n1. **Erosion**: The increased pressure and temperature could cause the surrounding rock to be eroded, leading to the removal of the rock from the intrusion.\n\n2. **Foliation**: The high pressure and temperature could cause the surrounding rock to undergo foliation, where the rock grains are aligned in a specific direction due to the stress and pressure.\n\n3. **Precipitation of minerals**: The high pressure and temperature could also lead to the precipitation of minerals from the magma or molten rock, resulting in the formation of new minerals within the surrounding rock.\n\n4. **Recrystallization**: The rapid cooling of the magma or molten rock could cause the surrounding rock to recrystallize, where the minerals are rearranged and reformed into a new crystal structure.\n\nConsidering these possible outcomes, the most accurate answer is:\n\nD. recrystallize.\n\nThis is because the rapid cooling of the magma or molten rock is likely to cause the surrounding rock to recrystallize, leading to changes in its mineral composition and structure.",
+      "answer_ids": {
+        "erode.": 362,
+        "foliate.": 426,
+        "precipitate.": 356,
+        "recrystallize.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 423,
+      "answer_probs": {
+        "erode.": 0.0047607421875,
+        "foliate.": 0.0089111328125,
+        "precipitate.": 0.0047607421875,
+        "recrystallize.": 0.90625
+      },
+      "processing_time": 7.088576793670654,
+      "sampler": "dcbs",
+      "pred_id": 423,
+      "predicted_answer": "recrystallize.",
+      "correct": true,
+      "elapsed_ms": 15966.283082962036,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7033548",
+      "sentence": "When an igneous intrusion comes into contact with surrounding rock, the surrounding rock will",
+      "options": [
+        "erode.",
+        "foliate.",
+        "precipitate.",
+        "recrystallize."
+      ],
+      "correct_answer": "recrystallize.",
+      "correct_option": "4",
+      "cot_reasoning": "To answer this question, let's consider the process of an igneous intrusion.\n\nAn igneous intrusion is a process where magma or molten rock from beneath the Earth's surface is forced upward through a crack or fissure in the Earth's crust, often resulting in the formation of new rocks or the alteration of existing ones. This process typically occurs when there is a significant increase in pressure or temperature within the rock.\n\nWhen an igneous intrusion comes into contact with surrounding rock, the most likely outcome is that the surrounding rock will be subjected to increased pressure and temperature, leading to several possible outcomes:\n\n1. **Erosion**: The increased pressure and temperature could cause the surrounding rock to be eroded, leading to the removal of the rock from the intrusion.\n\n2. **Foliation**: The high pressure and temperature could cause the surrounding rock to undergo foliation, where the rock grains are aligned in a specific direction due to the stress and pressure.\n\n3. **Precipitation of minerals**: The high pressure and temperature could also lead to the precipitation of minerals from the magma or molten rock, resulting in the formation of new minerals within the surrounding rock.\n\n4. **Recrystallization**: The rapid cooling of the magma or molten rock could cause the surrounding rock to recrystallize, where the minerals are rearranged and reformed into a new crystal structure.\n\nConsidering these possible outcomes, the most accurate answer is:\n\nD. recrystallize.\n\nThis is because the rapid cooling of the magma or molten rock is likely to cause the surrounding rock to recrystallize, leading to changes in its mineral composition and structure.",
+      "answer_ids": {
+        "erode.": 362,
+        "foliate.": 426,
+        "precipitate.": 356,
+        "recrystallize.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 423,
+      "answer_probs": {
+        "erode.": 0.0047607421875,
+        "foliate.": 0.0089111328125,
+        "precipitate.": 0.0047607421875,
+        "recrystallize.": 0.90625
+      },
+      "processing_time": 7.088576793670654,
+      "sampler": "greedy",
+      "pred_id": 423,
+      "predicted_answer": "recrystallize.",
+      "correct": true,
+      "elapsed_ms": 7421.732425689697,
+      "cluster_info": null
+    }
+  ],
+  "prediction_differences": [
+    {
+      "id": "MCAS_2001_5_19",
+      "sentence": "Plants use sunlight to make",
+      "dcbs_answer": "water.",
+      "greedy_answer": "food.",
+      "cluster_info": null,
+      "answer_probs": {
+        "soil.": 0.010009765625,
+        "minerals.": 0.0078125,
+        "food.": 0.90234375,
+        "water.": 0.0654296875
+      }
+    },
+    {
+      "id": "MCAS_1998_4_11",
+      "sentence": "A dish of sugar water was left on a window sill. One week later, there were only sugar crystals left in the dish. The water was gone. The best explanation for the appearance of sugar crystals is",
+      "dcbs_answer": "the water evaporated.",
+      "greedy_answer": "the air condensed.",
+      "cluster_info": null,
+      "answer_probs": {
+        "some of the water was absorbed by the dish.": 0.003021240234375,
+        "the air condensed.": 0.94921875,
+        "the light shining on the window sill produced more sugar.": 0.003875732421875,
+        "the water evaporated.": 0.011962890625
+      }
+    },
+    {
+      "id": "Mercury_SC_LBS10784",
+      "sentence": "Using a softball bat to hit a softball is an example of using which simple machine?",
+      "dcbs_answer": "inclined plane",
+      "greedy_answer": "lever",
+      "cluster_info": null,
+      "answer_probs": {
+        "pulley": 0.001495361328125,
+        "lever": 0.9921875,
+        "inclined plane": 0.000377655029296875,
+        "wheel and axle": 0.00131988525390625
+      }
+    }
+  ],
+  "evaluation_completed_at": "2025-06-08 17:56:29"
+}

@@ -1,0 +1,2101 @@
+{
+  "statistics": {
+    "dcbs": {
+      "accuracy": 93.33333333333333,
+      "correct": 14,
+      "total": 15,
+      "avg_time_ms": 8269.325256347656,
+      "confidence_interval": [
+        70.18292244757602,
+        98.81334113938051
+      ]
+    },
+    "greedy": {
+      "accuracy": 93.33333333333333,
+      "correct": 14,
+      "total": 15,
+      "avg_time_ms": 3761.7249965667725,
+      "confidence_interval": [
+        70.18292244757602,
+        98.81334113938051
+      ]
+    },
+    "top_p": {
+      "accuracy": 80.0,
+      "correct": 12,
+      "total": 15,
+      "avg_time_ms": 4091.3214842478433,
+      "confidence_interval": [
+        54.81406466534955,
+        92.95257935638959
+      ]
+    },
+    "random": {
+      "accuracy": 20.0,
+      "correct": 3,
+      "total": 15,
+      "avg_time_ms": 10164.303541183472,
+      "confidence_interval": [
+        7.047420643610411,
+        45.18593533465045
+      ]
+    }
+  },
+  "config": {
+    "model": "meta-llama/Llama-3.2-1B-Instruct",
+    "total_examples": 15,
+    "methods": [
+      "dcbs",
+      "greedy",
+      "top_p",
+      "random"
+    ],
+    "include_cot": true,
+    "enable_caching": true,
+    "clustering_method": "dbscan"
+  },
+  "detailed_results": [
+    {
+      "id": "arc_easy_1",
+      "sentence": "A student wants to know how much space a cube takes up. Which unit should the student use?",
+      "options": [
+        "square inches",
+        "cubic inches",
+        "inches",
+        "ounces"
+      ],
+      "correct_answer": "cubic inches",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct unit to use, let's analyze the situation:\n\nA cube has 6 equal square faces, and each face has an area of 1 square inch (since each side is a square with a side length of 1 inch).\n\nTo find the volume of the cube, we need to multiply the area of one face by the number of faces. Since there are 6 faces, we multiply the area of one face by 6:\n\n6 square inches * 1 square inch = 6 cubic inches\n\nTherefore, the cube takes up 6 cubic inches of space.",
+      "answer_ids": {
+        "square inches": 362,
+        "cubic inches": 426,
+        "inches": 356,
+        "ounces": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "square inches": 0.0262451171875,
+        "cubic inches": 0.87109375,
+        "inches": 0.02978515625,
+        "ounces": 0.0262451171875
+      },
+      "processing_time": 3.078094482421875,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "cubic inches",
+      "correct": true,
+      "elapsed_ms": 7450.52170753479,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_1",
+      "sentence": "A student wants to know how much space a cube takes up. Which unit should the student use?",
+      "options": [
+        "square inches",
+        "cubic inches",
+        "inches",
+        "ounces"
+      ],
+      "correct_answer": "cubic inches",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct unit to use, let's analyze the situation:\n\nA cube has 6 equal square faces, and each face has an area of 1 square inch (since each side is a square with a side length of 1 inch).\n\nTo find the volume of the cube, we need to multiply the area of one face by the number of faces. Since there are 6 faces, we multiply the area of one face by 6:\n\n6 square inches * 1 square inch = 6 cubic inches\n\nTherefore, the cube takes up 6 cubic inches of space.",
+      "answer_ids": {
+        "square inches": 362,
+        "cubic inches": 426,
+        "inches": 356,
+        "ounces": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "square inches": 0.0262451171875,
+        "cubic inches": 0.87109375,
+        "inches": 0.02978515625,
+        "ounces": 0.0262451171875
+      },
+      "processing_time": 3.078094482421875,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "cubic inches",
+      "correct": true,
+      "elapsed_ms": 2661.795139312744,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_1",
+      "sentence": "A student wants to know how much space a cube takes up. Which unit should the student use?",
+      "options": [
+        "square inches",
+        "cubic inches",
+        "inches",
+        "ounces"
+      ],
+      "correct_answer": "cubic inches",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct unit to use, let's analyze the situation:\n\nA cube has 6 equal square faces, and each face has an area of 1 square inch (since each side is a square with a side length of 1 inch).\n\nTo find the volume of the cube, we need to multiply the area of one face by the number of faces. Since there are 6 faces, we multiply the area of one face by 6:\n\n6 square inches * 1 square inch = 6 cubic inches\n\nTherefore, the cube takes up 6 cubic inches of space.",
+      "answer_ids": {
+        "square inches": 362,
+        "cubic inches": 426,
+        "inches": 356,
+        "ounces": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "square inches": 0.0262451171875,
+        "cubic inches": 0.87109375,
+        "inches": 0.02978515625,
+        "ounces": 0.0262451171875
+      },
+      "processing_time": 3.078094482421875,
+      "sampler": "top_p",
+      "pred_id": 362,
+      "predicted_answer": "square inches",
+      "correct": false,
+      "elapsed_ms": 7153.140306472778,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_1",
+      "sentence": "A student wants to know how much space a cube takes up. Which unit should the student use?",
+      "options": [
+        "square inches",
+        "cubic inches",
+        "inches",
+        "ounces"
+      ],
+      "correct_answer": "cubic inches",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct unit to use, let's analyze the situation:\n\nA cube has 6 equal square faces, and each face has an area of 1 square inch (since each side is a square with a side length of 1 inch).\n\nTo find the volume of the cube, we need to multiply the area of one face by the number of faces. Since there are 6 faces, we multiply the area of one face by 6:\n\n6 square inches * 1 square inch = 6 cubic inches\n\nTherefore, the cube takes up 6 cubic inches of space.",
+      "answer_ids": {
+        "square inches": 362,
+        "cubic inches": 426,
+        "inches": 356,
+        "ounces": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "square inches": 0.0262451171875,
+        "cubic inches": 0.87109375,
+        "inches": 0.02978515625,
+        "ounces": 0.0262451171875
+      },
+      "processing_time": 3.078094482421875,
+      "sampler": "random",
+      "pred_id": 356,
+      "predicted_answer": "square inches",
+      "correct": false,
+      "elapsed_ms": 10929.877758026123,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_2",
+      "sentence": "Which characteristic do all living organisms share?",
+      "options": [
+        "They reproduce",
+        "They move",
+        "They make sounds",
+        "They eat meat"
+      ],
+      "correct_answer": "They reproduce",
+      "correct_option": "1",
+      "cot_reasoning": "To answer this question, let's analyze each option step by step:\n\nA. They reproduce - This is a fundamental characteristic of living organisms. All living organisms, whether plants, animals, or microorganisms, reproduce to propagate their genetic material and ensure the continuation of their species. This is a basic biological process that is essential for the survival and diversity of life.\n\nB. They move - While some living organisms can move, this is not a universal characteristic among all living organisms. For example, many animals are stationary, while others are able to move, such as insects, fish, and some types of bacteria.\n\nC. They make sounds - While some living organisms, like animals and some bacteria, can produce sounds, this is not a universal characteristic among all living organisms. For example, plants do not produce sounds, and some microorganisms do not produce sounds.\n\nD. They eat meat - This is not a characteristic that all living organisms share. While some animals, like carnivores, eat meat, many others, like plants and some microorganisms, do not.\n\nTherefore, the correct answer is A. They reproduce.",
+      "answer_ids": {
+        "They reproduce": 362,
+        "They move": 426,
+        "They make sounds": 356,
+        "They eat meat": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "They reproduce": 0.99609375,
+        "They move": 0.00070953369140625,
+        "They make sounds": 0.000179290771484375,
+        "They eat meat": 0.0002956390380859375
+      },
+      "processing_time": 5.238805294036865,
+      "sampler": "dcbs",
+      "pred_id": 362,
+      "predicted_answer": "They reproduce",
+      "correct": true,
+      "elapsed_ms": 9109.533071517944,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_2",
+      "sentence": "Which characteristic do all living organisms share?",
+      "options": [
+        "They reproduce",
+        "They move",
+        "They make sounds",
+        "They eat meat"
+      ],
+      "correct_answer": "They reproduce",
+      "correct_option": "1",
+      "cot_reasoning": "To answer this question, let's analyze each option step by step:\n\nA. They reproduce - This is a fundamental characteristic of living organisms. All living organisms, whether plants, animals, or microorganisms, reproduce to propagate their genetic material and ensure the continuation of their species. This is a basic biological process that is essential for the survival and diversity of life.\n\nB. They move - While some living organisms can move, this is not a universal characteristic among all living organisms. For example, many animals are stationary, while others are able to move, such as insects, fish, and some types of bacteria.\n\nC. They make sounds - While some living organisms, like animals and some bacteria, can produce sounds, this is not a universal characteristic among all living organisms. For example, plants do not produce sounds, and some microorganisms do not produce sounds.\n\nD. They eat meat - This is not a characteristic that all living organisms share. While some animals, like carnivores, eat meat, many others, like plants and some microorganisms, do not.\n\nTherefore, the correct answer is A. They reproduce.",
+      "answer_ids": {
+        "They reproduce": 362,
+        "They move": 426,
+        "They make sounds": 356,
+        "They eat meat": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "They reproduce": 0.99609375,
+        "They move": 0.00070953369140625,
+        "They make sounds": 0.000179290771484375,
+        "They eat meat": 0.0002956390380859375
+      },
+      "processing_time": 5.238805294036865,
+      "sampler": "greedy",
+      "pred_id": 362,
+      "predicted_answer": "They reproduce",
+      "correct": true,
+      "elapsed_ms": 4711.731195449829,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_2",
+      "sentence": "Which characteristic do all living organisms share?",
+      "options": [
+        "They reproduce",
+        "They move",
+        "They make sounds",
+        "They eat meat"
+      ],
+      "correct_answer": "They reproduce",
+      "correct_option": "1",
+      "cot_reasoning": "To answer this question, let's analyze each option step by step:\n\nA. They reproduce - This is a fundamental characteristic of living organisms. All living organisms, whether plants, animals, or microorganisms, reproduce to propagate their genetic material and ensure the continuation of their species. This is a basic biological process that is essential for the survival and diversity of life.\n\nB. They move - While some living organisms can move, this is not a universal characteristic among all living organisms. For example, many animals are stationary, while others are able to move, such as insects, fish, and some types of bacteria.\n\nC. They make sounds - While some living organisms, like animals and some bacteria, can produce sounds, this is not a universal characteristic among all living organisms. For example, plants do not produce sounds, and some microorganisms do not produce sounds.\n\nD. They eat meat - This is not a characteristic that all living organisms share. While some animals, like carnivores, eat meat, many others, like plants and some microorganisms, do not.\n\nTherefore, the correct answer is A. They reproduce.",
+      "answer_ids": {
+        "They reproduce": 362,
+        "They move": 426,
+        "They make sounds": 356,
+        "They eat meat": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "They reproduce": 0.99609375,
+        "They move": 0.00070953369140625,
+        "They make sounds": 0.000179290771484375,
+        "They eat meat": 0.0002956390380859375
+      },
+      "processing_time": 5.238805294036865,
+      "sampler": "top_p",
+      "pred_id": 362,
+      "predicted_answer": "They reproduce",
+      "correct": true,
+      "elapsed_ms": 2122.2259998321533,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_2",
+      "sentence": "Which characteristic do all living organisms share?",
+      "options": [
+        "They reproduce",
+        "They move",
+        "They make sounds",
+        "They eat meat"
+      ],
+      "correct_answer": "They reproduce",
+      "correct_option": "1",
+      "cot_reasoning": "To answer this question, let's analyze each option step by step:\n\nA. They reproduce - This is a fundamental characteristic of living organisms. All living organisms, whether plants, animals, or microorganisms, reproduce to propagate their genetic material and ensure the continuation of their species. This is a basic biological process that is essential for the survival and diversity of life.\n\nB. They move - While some living organisms can move, this is not a universal characteristic among all living organisms. For example, many animals are stationary, while others are able to move, such as insects, fish, and some types of bacteria.\n\nC. They make sounds - While some living organisms, like animals and some bacteria, can produce sounds, this is not a universal characteristic among all living organisms. For example, plants do not produce sounds, and some microorganisms do not produce sounds.\n\nD. They eat meat - This is not a characteristic that all living organisms share. While some animals, like carnivores, eat meat, many others, like plants and some microorganisms, do not.\n\nTherefore, the correct answer is A. They reproduce.",
+      "answer_ids": {
+        "They reproduce": 362,
+        "They move": 426,
+        "They make sounds": 356,
+        "They eat meat": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "They reproduce": 0.99609375,
+        "They move": 0.00070953369140625,
+        "They make sounds": 0.000179290771484375,
+        "They eat meat": 0.0002956390380859375
+      },
+      "processing_time": 5.238805294036865,
+      "sampler": "random",
+      "pred_id": 356,
+      "predicted_answer": "They eat meat",
+      "correct": false,
+      "elapsed_ms": 10826.974153518677,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_3",
+      "sentence": "What happens when a solid is heated?",
+      "options": [
+        "It becomes a gas",
+        "It melts",
+        "It freezes",
+        "It evaporates"
+      ],
+      "correct_answer": "It melts",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct answer, let's consider the process of heating a solid.\n\nWhen a solid is heated, the molecules gain kinetic energy and start moving faster. This increased motion causes the molecules to vibrate more vigorously. As the molecules gain energy, they begin to break free from their fixed positions and move freely, resulting in a change from a solid to a liquid.\n\nThe correct answer is B. It melts.",
+      "answer_ids": {
+        "It becomes a gas": 362,
+        "It melts": 426,
+        "It freezes": 356,
+        "It evaporates": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "It becomes a gas": 0.019775390625,
+        "It melts": 0.953125,
+        "It freezes": 0.00567626953125,
+        "It evaporates": 0.004425048828125
+      },
+      "processing_time": 3.529245376586914,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "It melts",
+      "correct": true,
+      "elapsed_ms": 5566.770792007446,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_3",
+      "sentence": "What happens when a solid is heated?",
+      "options": [
+        "It becomes a gas",
+        "It melts",
+        "It freezes",
+        "It evaporates"
+      ],
+      "correct_answer": "It melts",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct answer, let's consider the process of heating a solid.\n\nWhen a solid is heated, the molecules gain kinetic energy and start moving faster. This increased motion causes the molecules to vibrate more vigorously. As the molecules gain energy, they begin to break free from their fixed positions and move freely, resulting in a change from a solid to a liquid.\n\nThe correct answer is B. It melts.",
+      "answer_ids": {
+        "It becomes a gas": 362,
+        "It melts": 426,
+        "It freezes": 356,
+        "It evaporates": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "It becomes a gas": 0.019775390625,
+        "It melts": 0.953125,
+        "It freezes": 0.00567626953125,
+        "It evaporates": 0.004425048828125
+      },
+      "processing_time": 3.529245376586914,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "It melts",
+      "correct": true,
+      "elapsed_ms": 1939.1770362854004,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_3",
+      "sentence": "What happens when a solid is heated?",
+      "options": [
+        "It becomes a gas",
+        "It melts",
+        "It freezes",
+        "It evaporates"
+      ],
+      "correct_answer": "It melts",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct answer, let's consider the process of heating a solid.\n\nWhen a solid is heated, the molecules gain kinetic energy and start moving faster. This increased motion causes the molecules to vibrate more vigorously. As the molecules gain energy, they begin to break free from their fixed positions and move freely, resulting in a change from a solid to a liquid.\n\nThe correct answer is B. It melts.",
+      "answer_ids": {
+        "It becomes a gas": 362,
+        "It melts": 426,
+        "It freezes": 356,
+        "It evaporates": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "It becomes a gas": 0.019775390625,
+        "It melts": 0.953125,
+        "It freezes": 0.00567626953125,
+        "It evaporates": 0.004425048828125
+      },
+      "processing_time": 3.529245376586914,
+      "sampler": "top_p",
+      "pred_id": 423,
+      "predicted_answer": "It evaporates",
+      "correct": false,
+      "elapsed_ms": 5560.782670974731,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_3",
+      "sentence": "What happens when a solid is heated?",
+      "options": [
+        "It becomes a gas",
+        "It melts",
+        "It freezes",
+        "It evaporates"
+      ],
+      "correct_answer": "It melts",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct answer, let's consider the process of heating a solid.\n\nWhen a solid is heated, the molecules gain kinetic energy and start moving faster. This increased motion causes the molecules to vibrate more vigorously. As the molecules gain energy, they begin to break free from their fixed positions and move freely, resulting in a change from a solid to a liquid.\n\nThe correct answer is B. It melts.",
+      "answer_ids": {
+        "It becomes a gas": 362,
+        "It melts": 426,
+        "It freezes": 356,
+        "It evaporates": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "It becomes a gas": 0.019775390625,
+        "It melts": 0.953125,
+        "It freezes": 0.00567626953125,
+        "It evaporates": 0.004425048828125
+      },
+      "processing_time": 3.529245376586914,
+      "sampler": "random",
+      "pred_id": 362,
+      "predicted_answer": "It melts",
+      "correct": false,
+      "elapsed_ms": 10235.07046699524,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_4",
+      "sentence": "Which of these is a renewable energy source?",
+      "options": [
+        "Coal",
+        "Oil",
+        "Solar",
+        "Natural gas"
+      ],
+      "correct_answer": "Solar",
+      "correct_option": "3",
+      "cot_reasoning": "To determine which of these is a renewable energy source, let's analyze each option step by step:\n\nA. Coal - Coal is a fossil fuel that is not renewable. It is formed from the remains of ancient plants and is not replenished in a short period of time. It is a finite resource that will eventually run out.\n\nB. Oil - Oil is also a fossil fuel that is not renewable. It is formed from the remains of ancient plants and animals and is not replenished in a short period of time.\n\nC. Solar - Solar energy is a renewable energy source. It is generated from the sun's rays and can be harnessed using solar panels. The sun's energy is abundant and available for thousands of years, making solar energy a sustainable option.\n\nD. Natural gas - Natural gas is a fossil fuel that is not renewable. It is formed from the remains of ancient plants and animals and is not replenished in a short period of time.\n\nTherefore, the correct answer is C. Solar.",
+      "answer_ids": {
+        "Coal": 362,
+        "Oil": 426,
+        "Solar": 356,
+        "Natural gas": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "Coal": 0.0002002716064453125,
+        "Oil": 0.0002918243408203125,
+        "Solar": 0.984375,
+        "Natural gas": 0.00079345703125
+      },
+      "processing_time": 4.6499183177948,
+      "sampler": "dcbs",
+      "pred_id": 356,
+      "predicted_answer": "Solar",
+      "correct": true,
+      "elapsed_ms": 11566.716194152832,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_4",
+      "sentence": "Which of these is a renewable energy source?",
+      "options": [
+        "Coal",
+        "Oil",
+        "Solar",
+        "Natural gas"
+      ],
+      "correct_answer": "Solar",
+      "correct_option": "3",
+      "cot_reasoning": "To determine which of these is a renewable energy source, let's analyze each option step by step:\n\nA. Coal - Coal is a fossil fuel that is not renewable. It is formed from the remains of ancient plants and is not replenished in a short period of time. It is a finite resource that will eventually run out.\n\nB. Oil - Oil is also a fossil fuel that is not renewable. It is formed from the remains of ancient plants and animals and is not replenished in a short period of time.\n\nC. Solar - Solar energy is a renewable energy source. It is generated from the sun's rays and can be harnessed using solar panels. The sun's energy is abundant and available for thousands of years, making solar energy a sustainable option.\n\nD. Natural gas - Natural gas is a fossil fuel that is not renewable. It is formed from the remains of ancient plants and animals and is not replenished in a short period of time.\n\nTherefore, the correct answer is C. Solar.",
+      "answer_ids": {
+        "Coal": 362,
+        "Oil": 426,
+        "Solar": 356,
+        "Natural gas": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "Coal": 0.0002002716064453125,
+        "Oil": 0.0002918243408203125,
+        "Solar": 0.984375,
+        "Natural gas": 0.00079345703125
+      },
+      "processing_time": 4.6499183177948,
+      "sampler": "greedy",
+      "pred_id": 356,
+      "predicted_answer": "Solar",
+      "correct": true,
+      "elapsed_ms": 6067.674875259399,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_4",
+      "sentence": "Which of these is a renewable energy source?",
+      "options": [
+        "Coal",
+        "Oil",
+        "Solar",
+        "Natural gas"
+      ],
+      "correct_answer": "Solar",
+      "correct_option": "3",
+      "cot_reasoning": "To determine which of these is a renewable energy source, let's analyze each option step by step:\n\nA. Coal - Coal is a fossil fuel that is not renewable. It is formed from the remains of ancient plants and is not replenished in a short period of time. It is a finite resource that will eventually run out.\n\nB. Oil - Oil is also a fossil fuel that is not renewable. It is formed from the remains of ancient plants and animals and is not replenished in a short period of time.\n\nC. Solar - Solar energy is a renewable energy source. It is generated from the sun's rays and can be harnessed using solar panels. The sun's energy is abundant and available for thousands of years, making solar energy a sustainable option.\n\nD. Natural gas - Natural gas is a fossil fuel that is not renewable. It is formed from the remains of ancient plants and animals and is not replenished in a short period of time.\n\nTherefore, the correct answer is C. Solar.",
+      "answer_ids": {
+        "Coal": 362,
+        "Oil": 426,
+        "Solar": 356,
+        "Natural gas": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "Coal": 0.0002002716064453125,
+        "Oil": 0.0002918243408203125,
+        "Solar": 0.984375,
+        "Natural gas": 0.00079345703125
+      },
+      "processing_time": 4.6499183177948,
+      "sampler": "top_p",
+      "pred_id": 356,
+      "predicted_answer": "Solar",
+      "correct": true,
+      "elapsed_ms": 5975.516796112061,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_4",
+      "sentence": "Which of these is a renewable energy source?",
+      "options": [
+        "Coal",
+        "Oil",
+        "Solar",
+        "Natural gas"
+      ],
+      "correct_answer": "Solar",
+      "correct_option": "3",
+      "cot_reasoning": "To determine which of these is a renewable energy source, let's analyze each option step by step:\n\nA. Coal - Coal is a fossil fuel that is not renewable. It is formed from the remains of ancient plants and is not replenished in a short period of time. It is a finite resource that will eventually run out.\n\nB. Oil - Oil is also a fossil fuel that is not renewable. It is formed from the remains of ancient plants and animals and is not replenished in a short period of time.\n\nC. Solar - Solar energy is a renewable energy source. It is generated from the sun's rays and can be harnessed using solar panels. The sun's energy is abundant and available for thousands of years, making solar energy a sustainable option.\n\nD. Natural gas - Natural gas is a fossil fuel that is not renewable. It is formed from the remains of ancient plants and animals and is not replenished in a short period of time.\n\nTherefore, the correct answer is C. Solar.",
+      "answer_ids": {
+        "Coal": 362,
+        "Oil": 426,
+        "Solar": 356,
+        "Natural gas": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "Coal": 0.0002002716064453125,
+        "Oil": 0.0002918243408203125,
+        "Solar": 0.984375,
+        "Natural gas": 0.00079345703125
+      },
+      "processing_time": 4.6499183177948,
+      "sampler": "random",
+      "pred_id": 362,
+      "predicted_answer": "Solar",
+      "correct": false,
+      "elapsed_ms": 10386.936664581299,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_5",
+      "sentence": "What is the main function of roots in plants?",
+      "options": [
+        "To make food",
+        "To absorb water",
+        "To produce flowers",
+        "To release oxygen"
+      ],
+      "correct_answer": "To absorb water",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is B. To absorb water.\n\nRoots are the underground parts of plants that play a crucial role in their survival. They have several functions, but the main one is to absorb water and nutrients from the soil. This process is essential for the plant's growth and development. Roots absorb water and nutrients through their roots, which are surrounded by a network of specialized cells called root hairs. This process is called root uptake, and it's necessary for the plant to carry out its daily activities, such as photosynthesis, respiration, and growth.\n\nThe other options are not correct:\n\nA. Making food is a function of leaves, not roots. Leaves are responsible for photosynthesis, which is the process by which plants convert sunlight into energy.\n\nC. Producing flowers is a function of flowers, not roots. Flowers are the reproductive structures of plants, and they produce seeds, but they are not the primary function of roots.\n\nD. Releasing oxygen is not a function of roots. While roots do absorb oxygen from the soil, they do not release oxygen into the air as a byproduct of their function.",
+      "answer_ids": {
+        "To make food": 362,
+        "To absorb water": 426,
+        "To produce flowers": 356,
+        "To release oxygen": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "To make food": 0.007568359375,
+        "To absorb water": 0.9921875,
+        "To produce flowers": 0.0002593994140625,
+        "To release oxygen": 0.000797271728515625
+      },
+      "processing_time": 4.404088020324707,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "To absorb water",
+      "correct": true,
+      "elapsed_ms": 9969.381332397461,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_5",
+      "sentence": "What is the main function of roots in plants?",
+      "options": [
+        "To make food",
+        "To absorb water",
+        "To produce flowers",
+        "To release oxygen"
+      ],
+      "correct_answer": "To absorb water",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is B. To absorb water.\n\nRoots are the underground parts of plants that play a crucial role in their survival. They have several functions, but the main one is to absorb water and nutrients from the soil. This process is essential for the plant's growth and development. Roots absorb water and nutrients through their roots, which are surrounded by a network of specialized cells called root hairs. This process is called root uptake, and it's necessary for the plant to carry out its daily activities, such as photosynthesis, respiration, and growth.\n\nThe other options are not correct:\n\nA. Making food is a function of leaves, not roots. Leaves are responsible for photosynthesis, which is the process by which plants convert sunlight into energy.\n\nC. Producing flowers is a function of flowers, not roots. Flowers are the reproductive structures of plants, and they produce seeds, but they are not the primary function of roots.\n\nD. Releasing oxygen is not a function of roots. While roots do absorb oxygen from the soil, they do not release oxygen into the air as a byproduct of their function.",
+      "answer_ids": {
+        "To make food": 362,
+        "To absorb water": 426,
+        "To produce flowers": 356,
+        "To release oxygen": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "To make food": 0.007568359375,
+        "To absorb water": 0.9921875,
+        "To produce flowers": 0.0002593994140625,
+        "To release oxygen": 0.000797271728515625
+      },
+      "processing_time": 4.404088020324707,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "To absorb water",
+      "correct": true,
+      "elapsed_ms": 4447.854280471802,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_5",
+      "sentence": "What is the main function of roots in plants?",
+      "options": [
+        "To make food",
+        "To absorb water",
+        "To produce flowers",
+        "To release oxygen"
+      ],
+      "correct_answer": "To absorb water",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is B. To absorb water.\n\nRoots are the underground parts of plants that play a crucial role in their survival. They have several functions, but the main one is to absorb water and nutrients from the soil. This process is essential for the plant's growth and development. Roots absorb water and nutrients through their roots, which are surrounded by a network of specialized cells called root hairs. This process is called root uptake, and it's necessary for the plant to carry out its daily activities, such as photosynthesis, respiration, and growth.\n\nThe other options are not correct:\n\nA. Making food is a function of leaves, not roots. Leaves are responsible for photosynthesis, which is the process by which plants convert sunlight into energy.\n\nC. Producing flowers is a function of flowers, not roots. Flowers are the reproductive structures of plants, and they produce seeds, but they are not the primary function of roots.\n\nD. Releasing oxygen is not a function of roots. While roots do absorb oxygen from the soil, they do not release oxygen into the air as a byproduct of their function.",
+      "answer_ids": {
+        "To make food": 362,
+        "To absorb water": 426,
+        "To produce flowers": 356,
+        "To release oxygen": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "To make food": 0.007568359375,
+        "To absorb water": 0.9921875,
+        "To produce flowers": 0.0002593994140625,
+        "To release oxygen": 0.000797271728515625
+      },
+      "processing_time": 4.404088020324707,
+      "sampler": "top_p",
+      "pred_id": 426,
+      "predicted_answer": "To absorb water",
+      "correct": true,
+      "elapsed_ms": 1904.6392440795898,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_5",
+      "sentence": "What is the main function of roots in plants?",
+      "options": [
+        "To make food",
+        "To absorb water",
+        "To produce flowers",
+        "To release oxygen"
+      ],
+      "correct_answer": "To absorb water",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is B. To absorb water.\n\nRoots are the underground parts of plants that play a crucial role in their survival. They have several functions, but the main one is to absorb water and nutrients from the soil. This process is essential for the plant's growth and development. Roots absorb water and nutrients through their roots, which are surrounded by a network of specialized cells called root hairs. This process is called root uptake, and it's necessary for the plant to carry out its daily activities, such as photosynthesis, respiration, and growth.\n\nThe other options are not correct:\n\nA. Making food is a function of leaves, not roots. Leaves are responsible for photosynthesis, which is the process by which plants convert sunlight into energy.\n\nC. Producing flowers is a function of flowers, not roots. Flowers are the reproductive structures of plants, and they produce seeds, but they are not the primary function of roots.\n\nD. Releasing oxygen is not a function of roots. While roots do absorb oxygen from the soil, they do not release oxygen into the air as a byproduct of their function.",
+      "answer_ids": {
+        "To make food": 362,
+        "To absorb water": 426,
+        "To produce flowers": 356,
+        "To release oxygen": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "To make food": 0.007568359375,
+        "To absorb water": 0.9921875,
+        "To produce flowers": 0.0002593994140625,
+        "To release oxygen": 0.000797271728515625
+      },
+      "processing_time": 4.404088020324707,
+      "sampler": "random",
+      "pred_id": 356,
+      "predicted_answer": "To make food",
+      "correct": false,
+      "elapsed_ms": 9698.655843734741,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_6",
+      "sentence": "What is the primary source of energy for most ecosystems?",
+      "options": [
+        "The sun",
+        "Water",
+        "Soil",
+        "Air"
+      ],
+      "correct_answer": "The sun",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the primary source of energy for most ecosystems, let's consider the role of each option:\n\nA. The sun: The sun is the primary source of energy for most ecosystems. Photosynthesis, the process by which plants produce energy, is a direct result of sunlight. All living organisms, from bacteria to humans, rely on sunlight for energy.\n\nB. Water: While water is essential for life, it is not the primary source of energy for most ecosystems. Water is a necessary component for many biological processes, but it is not the primary source of energy.\n\nC. Soil: Soil is a crucial component of ecosystems, but it is not the primary source of energy. Soil provides nutrients and organic matter for plants, but it is not the source of energy.\n\nD. Air: Air is not a primary source of energy for most ecosystems. While some organisms, like certain types of bacteria, can convert air into energy through chemosynthesis, this process is not the primary source of energy for most ecosystems.\n\nTherefore, the correct answer is A. The sun.",
+      "answer_ids": {
+        "The sun": 362,
+        "Water": 426,
+        "Soil": 356,
+        "Air": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "The sun": 0.99609375,
+        "Water": 0.00070953369140625,
+        "Soil": 0.00022983551025390625,
+        "Air": 0.00012302398681640625
+      },
+      "processing_time": 4.316281080245972,
+      "sampler": "dcbs",
+      "pred_id": 362,
+      "predicted_answer": "The sun",
+      "correct": true,
+      "elapsed_ms": 11998.315334320068,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_6",
+      "sentence": "What is the primary source of energy for most ecosystems?",
+      "options": [
+        "The sun",
+        "Water",
+        "Soil",
+        "Air"
+      ],
+      "correct_answer": "The sun",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the primary source of energy for most ecosystems, let's consider the role of each option:\n\nA. The sun: The sun is the primary source of energy for most ecosystems. Photosynthesis, the process by which plants produce energy, is a direct result of sunlight. All living organisms, from bacteria to humans, rely on sunlight for energy.\n\nB. Water: While water is essential for life, it is not the primary source of energy for most ecosystems. Water is a necessary component for many biological processes, but it is not the primary source of energy.\n\nC. Soil: Soil is a crucial component of ecosystems, but it is not the primary source of energy. Soil provides nutrients and organic matter for plants, but it is not the source of energy.\n\nD. Air: Air is not a primary source of energy for most ecosystems. While some organisms, like certain types of bacteria, can convert air into energy through chemosynthesis, this process is not the primary source of energy for most ecosystems.\n\nTherefore, the correct answer is A. The sun.",
+      "answer_ids": {
+        "The sun": 362,
+        "Water": 426,
+        "Soil": 356,
+        "Air": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "The sun": 0.99609375,
+        "Water": 0.00070953369140625,
+        "Soil": 0.00022983551025390625,
+        "Air": 0.00012302398681640625
+      },
+      "processing_time": 4.316281080245972,
+      "sampler": "greedy",
+      "pred_id": 362,
+      "predicted_answer": "The sun",
+      "correct": true,
+      "elapsed_ms": 4208.348035812378,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_6",
+      "sentence": "What is the primary source of energy for most ecosystems?",
+      "options": [
+        "The sun",
+        "Water",
+        "Soil",
+        "Air"
+      ],
+      "correct_answer": "The sun",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the primary source of energy for most ecosystems, let's consider the role of each option:\n\nA. The sun: The sun is the primary source of energy for most ecosystems. Photosynthesis, the process by which plants produce energy, is a direct result of sunlight. All living organisms, from bacteria to humans, rely on sunlight for energy.\n\nB. Water: While water is essential for life, it is not the primary source of energy for most ecosystems. Water is a necessary component for many biological processes, but it is not the primary source of energy.\n\nC. Soil: Soil is a crucial component of ecosystems, but it is not the primary source of energy. Soil provides nutrients and organic matter for plants, but it is not the source of energy.\n\nD. Air: Air is not a primary source of energy for most ecosystems. While some organisms, like certain types of bacteria, can convert air into energy through chemosynthesis, this process is not the primary source of energy for most ecosystems.\n\nTherefore, the correct answer is A. The sun.",
+      "answer_ids": {
+        "The sun": 362,
+        "Water": 426,
+        "Soil": 356,
+        "Air": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "The sun": 0.99609375,
+        "Water": 0.00070953369140625,
+        "Soil": 0.00022983551025390625,
+        "Air": 0.00012302398681640625
+      },
+      "processing_time": 4.316281080245972,
+      "sampler": "top_p",
+      "pred_id": 362,
+      "predicted_answer": "The sun",
+      "correct": true,
+      "elapsed_ms": 4869.640350341797,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_6",
+      "sentence": "What is the primary source of energy for most ecosystems?",
+      "options": [
+        "The sun",
+        "Water",
+        "Soil",
+        "Air"
+      ],
+      "correct_answer": "The sun",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the primary source of energy for most ecosystems, let's consider the role of each option:\n\nA. The sun: The sun is the primary source of energy for most ecosystems. Photosynthesis, the process by which plants produce energy, is a direct result of sunlight. All living organisms, from bacteria to humans, rely on sunlight for energy.\n\nB. Water: While water is essential for life, it is not the primary source of energy for most ecosystems. Water is a necessary component for many biological processes, but it is not the primary source of energy.\n\nC. Soil: Soil is a crucial component of ecosystems, but it is not the primary source of energy. Soil provides nutrients and organic matter for plants, but it is not the source of energy.\n\nD. Air: Air is not a primary source of energy for most ecosystems. While some organisms, like certain types of bacteria, can convert air into energy through chemosynthesis, this process is not the primary source of energy for most ecosystems.\n\nTherefore, the correct answer is A. The sun.",
+      "answer_ids": {
+        "The sun": 362,
+        "Water": 426,
+        "Soil": 356,
+        "Air": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "The sun": 0.99609375,
+        "Water": 0.00070953369140625,
+        "Soil": 0.00022983551025390625,
+        "Air": 0.00012302398681640625
+      },
+      "processing_time": 4.316281080245972,
+      "sampler": "random",
+      "pred_id": 362,
+      "predicted_answer": "The sun",
+      "correct": true,
+      "elapsed_ms": 12767.821311950684,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_7",
+      "sentence": "Which of these is an example of a chemical change?",
+      "options": [
+        "Ice melting",
+        "Wood burning",
+        "Glass breaking",
+        "Water boiling"
+      ],
+      "correct_answer": "Wood burning",
+      "correct_option": "2",
+      "cot_reasoning": "To determine which option is an example of a chemical change, let's analyze each option step by step:\n\nA. Ice melting: When ice melts, the solid ice turns into water. This is a physical change because the substance (ice) changes from a solid to a liquid, but it still retains its chemical composition. The chemical composition of ice remains the same, and no new substance is formed.\n\nB. Wood burning: Wood burning is a process where wood is burned to produce ash and smoke. This is a chemical change because the wood reacts with oxygen to produce ash and smoke, which are not the same as the original wood. The wood is transformed into a different substance (ash and smoke), indicating a chemical reaction.\n\nC. Glass breaking: When glass breaks, it breaks into pieces. This is a physical change because the glass is still made of the same material (silica) but is now in a different state (broken). The chemical composition of the glass remains the same.\n\nD. Water boiling: When water boils, it turns into steam. This is a physical change because the water changes from a liquid to a gas, but it still retains its chemical composition. The chemical composition of water remains the same.\n\nTherefore, the only option that is an example of a chemical change is B. Wood burning.",
+      "answer_ids": {
+        "Ice melting": 362,
+        "Wood burning": 426,
+        "Glass breaking": 356,
+        "Water boiling": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Ice melting": 0.0004291534423828125,
+        "Wood burning": 0.99609375,
+        "Glass breaking": 0.0004863739013671875,
+        "Water boiling": 0.00131988525390625
+      },
+      "processing_time": 5.938791275024414,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "Wood burning",
+      "correct": true,
+      "elapsed_ms": 11355.990409851074,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_7",
+      "sentence": "Which of these is an example of a chemical change?",
+      "options": [
+        "Ice melting",
+        "Wood burning",
+        "Glass breaking",
+        "Water boiling"
+      ],
+      "correct_answer": "Wood burning",
+      "correct_option": "2",
+      "cot_reasoning": "To determine which option is an example of a chemical change, let's analyze each option step by step:\n\nA. Ice melting: When ice melts, the solid ice turns into water. This is a physical change because the substance (ice) changes from a solid to a liquid, but it still retains its chemical composition. The chemical composition of ice remains the same, and no new substance is formed.\n\nB. Wood burning: Wood burning is a process where wood is burned to produce ash and smoke. This is a chemical change because the wood reacts with oxygen to produce ash and smoke, which are not the same as the original wood. The wood is transformed into a different substance (ash and smoke), indicating a chemical reaction.\n\nC. Glass breaking: When glass breaks, it breaks into pieces. This is a physical change because the glass is still made of the same material (silica) but is now in a different state (broken). The chemical composition of the glass remains the same.\n\nD. Water boiling: When water boils, it turns into steam. This is a physical change because the water changes from a liquid to a gas, but it still retains its chemical composition. The chemical composition of water remains the same.\n\nTherefore, the only option that is an example of a chemical change is B. Wood burning.",
+      "answer_ids": {
+        "Ice melting": 362,
+        "Wood burning": 426,
+        "Glass breaking": 356,
+        "Water boiling": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Ice melting": 0.0004291534423828125,
+        "Wood burning": 0.99609375,
+        "Glass breaking": 0.0004863739013671875,
+        "Water boiling": 0.00131988525390625
+      },
+      "processing_time": 5.938791275024414,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "Wood burning",
+      "correct": true,
+      "elapsed_ms": 5416.553735733032,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_7",
+      "sentence": "Which of these is an example of a chemical change?",
+      "options": [
+        "Ice melting",
+        "Wood burning",
+        "Glass breaking",
+        "Water boiling"
+      ],
+      "correct_answer": "Wood burning",
+      "correct_option": "2",
+      "cot_reasoning": "To determine which option is an example of a chemical change, let's analyze each option step by step:\n\nA. Ice melting: When ice melts, the solid ice turns into water. This is a physical change because the substance (ice) changes from a solid to a liquid, but it still retains its chemical composition. The chemical composition of ice remains the same, and no new substance is formed.\n\nB. Wood burning: Wood burning is a process where wood is burned to produce ash and smoke. This is a chemical change because the wood reacts with oxygen to produce ash and smoke, which are not the same as the original wood. The wood is transformed into a different substance (ash and smoke), indicating a chemical reaction.\n\nC. Glass breaking: When glass breaks, it breaks into pieces. This is a physical change because the glass is still made of the same material (silica) but is now in a different state (broken). The chemical composition of the glass remains the same.\n\nD. Water boiling: When water boils, it turns into steam. This is a physical change because the water changes from a liquid to a gas, but it still retains its chemical composition. The chemical composition of water remains the same.\n\nTherefore, the only option that is an example of a chemical change is B. Wood burning.",
+      "answer_ids": {
+        "Ice melting": 362,
+        "Wood burning": 426,
+        "Glass breaking": 356,
+        "Water boiling": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Ice melting": 0.0004291534423828125,
+        "Wood burning": 0.99609375,
+        "Glass breaking": 0.0004863739013671875,
+        "Water boiling": 0.00131988525390625
+      },
+      "processing_time": 5.938791275024414,
+      "sampler": "top_p",
+      "pred_id": 426,
+      "predicted_answer": "Wood burning",
+      "correct": true,
+      "elapsed_ms": 5839.646100997925,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_7",
+      "sentence": "Which of these is an example of a chemical change?",
+      "options": [
+        "Ice melting",
+        "Wood burning",
+        "Glass breaking",
+        "Water boiling"
+      ],
+      "correct_answer": "Wood burning",
+      "correct_option": "2",
+      "cot_reasoning": "To determine which option is an example of a chemical change, let's analyze each option step by step:\n\nA. Ice melting: When ice melts, the solid ice turns into water. This is a physical change because the substance (ice) changes from a solid to a liquid, but it still retains its chemical composition. The chemical composition of ice remains the same, and no new substance is formed.\n\nB. Wood burning: Wood burning is a process where wood is burned to produce ash and smoke. This is a chemical change because the wood reacts with oxygen to produce ash and smoke, which are not the same as the original wood. The wood is transformed into a different substance (ash and smoke), indicating a chemical reaction.\n\nC. Glass breaking: When glass breaks, it breaks into pieces. This is a physical change because the glass is still made of the same material (silica) but is now in a different state (broken). The chemical composition of the glass remains the same.\n\nD. Water boiling: When water boils, it turns into steam. This is a physical change because the water changes from a liquid to a gas, but it still retains its chemical composition. The chemical composition of water remains the same.\n\nTherefore, the only option that is an example of a chemical change is B. Wood burning.",
+      "answer_ids": {
+        "Ice melting": 362,
+        "Wood burning": 426,
+        "Glass breaking": 356,
+        "Water boiling": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Ice melting": 0.0004291534423828125,
+        "Wood burning": 0.99609375,
+        "Glass breaking": 0.0004863739013671875,
+        "Water boiling": 0.00131988525390625
+      },
+      "processing_time": 5.938791275024414,
+      "sampler": "random",
+      "pred_id": 426,
+      "predicted_answer": "Ice melting",
+      "correct": true,
+      "elapsed_ms": 10144.768953323364,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_8",
+      "sentence": "What force pulls objects toward Earth?",
+      "options": [
+        "Magnetism",
+        "Gravity",
+        "Friction",
+        "Electricity"
+      ],
+      "correct_answer": "Gravity",
+      "correct_option": "2",
+      "cot_reasoning": "To answer this question, let's consider the options step by step:\n\n1. **Magnetism**: Magnetism is a force that arises from the interaction between magnetic fields. While it plays a crucial role in many natural phenomena, it is not the primary force that pulls objects toward Earth.\n\n2. **Gravity**: Gravity is a fundamental force of nature that causes objects with mass to attract each other. It is the weakest of the four fundamental forces of nature and is responsible for the force that keeps planets in orbit around stars and the objects on the surface of the Earth.\n\n3. **Friction**: Friction is a force that opposes motion between two surfaces that are in contact. It is not the primary force that pulls objects toward Earth.\n\n4. **Electricity**: Electricity is a form of energy that is generated by the movement of charged particles. While it can be harnessed to generate electricity, it is not the primary force that pulls objects toward Earth.\n\nConsidering these options, the correct answer is clearly **B. Gravity**. Gravity is the force that pulls objects toward each other, including the Earth, and is the primary reason why objects with mass are attracted to the Earth.",
+      "answer_ids": {
+        "Magnetism": 362,
+        "Gravity": 426,
+        "Friction": 356,
+        "Electricity": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Magnetism": 0.0012359619140625,
+        "Gravity": 0.63671875,
+        "Friction": 0.000274658203125,
+        "Electricity": 0.000514984130859375
+      },
+      "processing_time": 5.123928785324097,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "Gravity",
+      "correct": true,
+      "elapsed_ms": 10125.41389465332,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_8",
+      "sentence": "What force pulls objects toward Earth?",
+      "options": [
+        "Magnetism",
+        "Gravity",
+        "Friction",
+        "Electricity"
+      ],
+      "correct_answer": "Gravity",
+      "correct_option": "2",
+      "cot_reasoning": "To answer this question, let's consider the options step by step:\n\n1. **Magnetism**: Magnetism is a force that arises from the interaction between magnetic fields. While it plays a crucial role in many natural phenomena, it is not the primary force that pulls objects toward Earth.\n\n2. **Gravity**: Gravity is a fundamental force of nature that causes objects with mass to attract each other. It is the weakest of the four fundamental forces of nature and is responsible for the force that keeps planets in orbit around stars and the objects on the surface of the Earth.\n\n3. **Friction**: Friction is a force that opposes motion between two surfaces that are in contact. It is not the primary force that pulls objects toward Earth.\n\n4. **Electricity**: Electricity is a form of energy that is generated by the movement of charged particles. While it can be harnessed to generate electricity, it is not the primary force that pulls objects toward Earth.\n\nConsidering these options, the correct answer is clearly **B. Gravity**. Gravity is the force that pulls objects toward each other, including the Earth, and is the primary reason why objects with mass are attracted to the Earth.",
+      "answer_ids": {
+        "Magnetism": 362,
+        "Gravity": 426,
+        "Friction": 356,
+        "Electricity": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Magnetism": 0.0012359619140625,
+        "Gravity": 0.63671875,
+        "Friction": 0.000274658203125,
+        "Electricity": 0.000514984130859375
+      },
+      "processing_time": 5.123928785324097,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "Gravity",
+      "correct": true,
+      "elapsed_ms": 4711.164951324463,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_8",
+      "sentence": "What force pulls objects toward Earth?",
+      "options": [
+        "Magnetism",
+        "Gravity",
+        "Friction",
+        "Electricity"
+      ],
+      "correct_answer": "Gravity",
+      "correct_option": "2",
+      "cot_reasoning": "To answer this question, let's consider the options step by step:\n\n1. **Magnetism**: Magnetism is a force that arises from the interaction between magnetic fields. While it plays a crucial role in many natural phenomena, it is not the primary force that pulls objects toward Earth.\n\n2. **Gravity**: Gravity is a fundamental force of nature that causes objects with mass to attract each other. It is the weakest of the four fundamental forces of nature and is responsible for the force that keeps planets in orbit around stars and the objects on the surface of the Earth.\n\n3. **Friction**: Friction is a force that opposes motion between two surfaces that are in contact. It is not the primary force that pulls objects toward Earth.\n\n4. **Electricity**: Electricity is a form of energy that is generated by the movement of charged particles. While it can be harnessed to generate electricity, it is not the primary force that pulls objects toward Earth.\n\nConsidering these options, the correct answer is clearly **B. Gravity**. Gravity is the force that pulls objects toward each other, including the Earth, and is the primary reason why objects with mass are attracted to the Earth.",
+      "answer_ids": {
+        "Magnetism": 362,
+        "Gravity": 426,
+        "Friction": 356,
+        "Electricity": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Magnetism": 0.0012359619140625,
+        "Gravity": 0.63671875,
+        "Friction": 0.000274658203125,
+        "Electricity": 0.000514984130859375
+      },
+      "processing_time": 5.123928785324097,
+      "sampler": "top_p",
+      "pred_id": 426,
+      "predicted_answer": "Gravity",
+      "correct": true,
+      "elapsed_ms": 3916.210889816284,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_8",
+      "sentence": "What force pulls objects toward Earth?",
+      "options": [
+        "Magnetism",
+        "Gravity",
+        "Friction",
+        "Electricity"
+      ],
+      "correct_answer": "Gravity",
+      "correct_option": "2",
+      "cot_reasoning": "To answer this question, let's consider the options step by step:\n\n1. **Magnetism**: Magnetism is a force that arises from the interaction between magnetic fields. While it plays a crucial role in many natural phenomena, it is not the primary force that pulls objects toward Earth.\n\n2. **Gravity**: Gravity is a fundamental force of nature that causes objects with mass to attract each other. It is the weakest of the four fundamental forces of nature and is responsible for the force that keeps planets in orbit around stars and the objects on the surface of the Earth.\n\n3. **Friction**: Friction is a force that opposes motion between two surfaces that are in contact. It is not the primary force that pulls objects toward Earth.\n\n4. **Electricity**: Electricity is a form of energy that is generated by the movement of charged particles. While it can be harnessed to generate electricity, it is not the primary force that pulls objects toward Earth.\n\nConsidering these options, the correct answer is clearly **B. Gravity**. Gravity is the force that pulls objects toward each other, including the Earth, and is the primary reason why objects with mass are attracted to the Earth.",
+      "answer_ids": {
+        "Magnetism": 362,
+        "Gravity": 426,
+        "Friction": 356,
+        "Electricity": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Magnetism": 0.0012359619140625,
+        "Gravity": 0.63671875,
+        "Friction": 0.000274658203125,
+        "Electricity": 0.000514984130859375
+      },
+      "processing_time": 5.123928785324097,
+      "sampler": "random",
+      "pred_id": 356,
+      "predicted_answer": "Friction",
+      "correct": false,
+      "elapsed_ms": 10277.735233306885,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_9",
+      "sentence": "Which layer of Earth is the thickest?",
+      "options": [
+        "Crust",
+        "Mantle",
+        "Outer core",
+        "Inner core"
+      ],
+      "correct_answer": "Mantle",
+      "correct_option": "2",
+      "cot_reasoning": "To determine which layer of Earth is the thickest, we need to consider the properties of each layer.\n\nThe Earth's layers are: \n- Crust: The outermost solid layer, ranging in thickness from about 5-70 km (3-44 miles) thick.\n- Mantle: The layer beneath the crust, extending from about -2 to 2,900 km (1,100 miles) thick.\n- Outer core: A liquid layer surrounding the core, with a thickness of about 1,220 km (760 miles) thick.\n- Inner core: The densest part of the Earth, with a thickness of about 1,220 km (760 miles) thick.\n\nThe outer core is the thickest of the Earth's layers.",
+      "answer_ids": {
+        "Crust": 362,
+        "Mantle": 426,
+        "Outer core": 356,
+        "Inner core": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Crust": 0.095703125,
+        "Mantle": 0.158203125,
+        "Outer core": 0.4296875,
+        "Inner core": 0.294921875
+      },
+      "processing_time": 3.146672010421753,
+      "sampler": "dcbs",
+      "pred_id": 356,
+      "predicted_answer": "Outer core",
+      "correct": false,
+      "elapsed_ms": 6757.811069488525,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_9",
+      "sentence": "Which layer of Earth is the thickest?",
+      "options": [
+        "Crust",
+        "Mantle",
+        "Outer core",
+        "Inner core"
+      ],
+      "correct_answer": "Mantle",
+      "correct_option": "2",
+      "cot_reasoning": "To determine which layer of Earth is the thickest, we need to consider the properties of each layer.\n\nThe Earth's layers are: \n- Crust: The outermost solid layer, ranging in thickness from about 5-70 km (3-44 miles) thick.\n- Mantle: The layer beneath the crust, extending from about -2 to 2,900 km (1,100 miles) thick.\n- Outer core: A liquid layer surrounding the core, with a thickness of about 1,220 km (760 miles) thick.\n- Inner core: The densest part of the Earth, with a thickness of about 1,220 km (760 miles) thick.\n\nThe outer core is the thickest of the Earth's layers.",
+      "answer_ids": {
+        "Crust": 362,
+        "Mantle": 426,
+        "Outer core": 356,
+        "Inner core": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Crust": 0.095703125,
+        "Mantle": 0.158203125,
+        "Outer core": 0.4296875,
+        "Inner core": 0.294921875
+      },
+      "processing_time": 3.146672010421753,
+      "sampler": "greedy",
+      "pred_id": 356,
+      "predicted_answer": "Outer core",
+      "correct": false,
+      "elapsed_ms": 3198.9612579345703,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_9",
+      "sentence": "Which layer of Earth is the thickest?",
+      "options": [
+        "Crust",
+        "Mantle",
+        "Outer core",
+        "Inner core"
+      ],
+      "correct_answer": "Mantle",
+      "correct_option": "2",
+      "cot_reasoning": "To determine which layer of Earth is the thickest, we need to consider the properties of each layer.\n\nThe Earth's layers are: \n- Crust: The outermost solid layer, ranging in thickness from about 5-70 km (3-44 miles) thick.\n- Mantle: The layer beneath the crust, extending from about -2 to 2,900 km (1,100 miles) thick.\n- Outer core: A liquid layer surrounding the core, with a thickness of about 1,220 km (760 miles) thick.\n- Inner core: The densest part of the Earth, with a thickness of about 1,220 km (760 miles) thick.\n\nThe outer core is the thickest of the Earth's layers.",
+      "answer_ids": {
+        "Crust": 362,
+        "Mantle": 426,
+        "Outer core": 356,
+        "Inner core": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Crust": 0.095703125,
+        "Mantle": 0.158203125,
+        "Outer core": 0.4296875,
+        "Inner core": 0.294921875
+      },
+      "processing_time": 3.146672010421753,
+      "sampler": "top_p",
+      "pred_id": 426,
+      "predicted_answer": "Mantle",
+      "correct": true,
+      "elapsed_ms": 1577.6426792144775,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_9",
+      "sentence": "Which layer of Earth is the thickest?",
+      "options": [
+        "Crust",
+        "Mantle",
+        "Outer core",
+        "Inner core"
+      ],
+      "correct_answer": "Mantle",
+      "correct_option": "2",
+      "cot_reasoning": "To determine which layer of Earth is the thickest, we need to consider the properties of each layer.\n\nThe Earth's layers are: \n- Crust: The outermost solid layer, ranging in thickness from about 5-70 km (3-44 miles) thick.\n- Mantle: The layer beneath the crust, extending from about -2 to 2,900 km (1,100 miles) thick.\n- Outer core: A liquid layer surrounding the core, with a thickness of about 1,220 km (760 miles) thick.\n- Inner core: The densest part of the Earth, with a thickness of about 1,220 km (760 miles) thick.\n\nThe outer core is the thickest of the Earth's layers.",
+      "answer_ids": {
+        "Crust": 362,
+        "Mantle": 426,
+        "Outer core": 356,
+        "Inner core": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Crust": 0.095703125,
+        "Mantle": 0.158203125,
+        "Outer core": 0.4296875,
+        "Inner core": 0.294921875
+      },
+      "processing_time": 3.146672010421753,
+      "sampler": "random",
+      "pred_id": 356,
+      "predicted_answer": "Crust",
+      "correct": false,
+      "elapsed_ms": 9655.138969421387,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_10",
+      "sentence": "What do plants need to make their own food?",
+      "options": [
+        "Soil and water",
+        "Sunlight and carbon dioxide",
+        "Oxygen and nitrogen",
+        "Heat and minerals"
+      ],
+      "correct_answer": "Sunlight and carbon dioxide",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is B. Sunlight and carbon dioxide.\n\nPlants are autotrophs, which means they produce their own food through a process called photosynthesis. This process requires two main inputs:\n\n1. Carbon dioxide (CO2), which is a gas in the atmosphere.\n2. Water (H2O), which is absorbed from the soil.\n\nWhen plants absorb CO2 through their leaves, they convert it into glucose (a type of sugar) and oxygen (O2) through a series of chemical reactions. The oxygen is released into the air as a byproduct of photosynthesis.\n\nThe other options are not correct because:\n\n* Soil and water are necessary for plant growth, but they are not the primary inputs for photosynthesis.\n* Oxygen is not a necessary input for photosynthesis, as it is released as a byproduct.\n* Heat and minerals are not directly related to the process of photosynthesis.\n\nTherefore, the correct answer is B. Sunlight and carbon dioxide.",
+      "answer_ids": {
+        "Soil and water": 362,
+        "Sunlight and carbon dioxide": 426,
+        "Oxygen and nitrogen": 356,
+        "Heat and minerals": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Soil and water": 0.020263671875,
+        "Sunlight and carbon dioxide": 0.97265625,
+        "Oxygen and nitrogen": 0.00113677978515625,
+        "Heat and minerals": 0.00213623046875
+      },
+      "processing_time": 3.8998141288757324,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "Sunlight and carbon dioxide",
+      "correct": true,
+      "elapsed_ms": 8203.628540039062,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_10",
+      "sentence": "What do plants need to make their own food?",
+      "options": [
+        "Soil and water",
+        "Sunlight and carbon dioxide",
+        "Oxygen and nitrogen",
+        "Heat and minerals"
+      ],
+      "correct_answer": "Sunlight and carbon dioxide",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is B. Sunlight and carbon dioxide.\n\nPlants are autotrophs, which means they produce their own food through a process called photosynthesis. This process requires two main inputs:\n\n1. Carbon dioxide (CO2), which is a gas in the atmosphere.\n2. Water (H2O), which is absorbed from the soil.\n\nWhen plants absorb CO2 through their leaves, they convert it into glucose (a type of sugar) and oxygen (O2) through a series of chemical reactions. The oxygen is released into the air as a byproduct of photosynthesis.\n\nThe other options are not correct because:\n\n* Soil and water are necessary for plant growth, but they are not the primary inputs for photosynthesis.\n* Oxygen is not a necessary input for photosynthesis, as it is released as a byproduct.\n* Heat and minerals are not directly related to the process of photosynthesis.\n\nTherefore, the correct answer is B. Sunlight and carbon dioxide.",
+      "answer_ids": {
+        "Soil and water": 362,
+        "Sunlight and carbon dioxide": 426,
+        "Oxygen and nitrogen": 356,
+        "Heat and minerals": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Soil and water": 0.020263671875,
+        "Sunlight and carbon dioxide": 0.97265625,
+        "Oxygen and nitrogen": 0.00113677978515625,
+        "Heat and minerals": 0.00213623046875
+      },
+      "processing_time": 3.8998141288757324,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "Sunlight and carbon dioxide",
+      "correct": true,
+      "elapsed_ms": 3967.3233032226562,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_10",
+      "sentence": "What do plants need to make their own food?",
+      "options": [
+        "Soil and water",
+        "Sunlight and carbon dioxide",
+        "Oxygen and nitrogen",
+        "Heat and minerals"
+      ],
+      "correct_answer": "Sunlight and carbon dioxide",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is B. Sunlight and carbon dioxide.\n\nPlants are autotrophs, which means they produce their own food through a process called photosynthesis. This process requires two main inputs:\n\n1. Carbon dioxide (CO2), which is a gas in the atmosphere.\n2. Water (H2O), which is absorbed from the soil.\n\nWhen plants absorb CO2 through their leaves, they convert it into glucose (a type of sugar) and oxygen (O2) through a series of chemical reactions. The oxygen is released into the air as a byproduct of photosynthesis.\n\nThe other options are not correct because:\n\n* Soil and water are necessary for plant growth, but they are not the primary inputs for photosynthesis.\n* Oxygen is not a necessary input for photosynthesis, as it is released as a byproduct.\n* Heat and minerals are not directly related to the process of photosynthesis.\n\nTherefore, the correct answer is B. Sunlight and carbon dioxide.",
+      "answer_ids": {
+        "Soil and water": 362,
+        "Sunlight and carbon dioxide": 426,
+        "Oxygen and nitrogen": 356,
+        "Heat and minerals": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Soil and water": 0.020263671875,
+        "Sunlight and carbon dioxide": 0.97265625,
+        "Oxygen and nitrogen": 0.00113677978515625,
+        "Heat and minerals": 0.00213623046875
+      },
+      "processing_time": 3.8998141288757324,
+      "sampler": "top_p",
+      "pred_id": 426,
+      "predicted_answer": "Sunlight and carbon dioxide",
+      "correct": true,
+      "elapsed_ms": 3211.1668586730957,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_10",
+      "sentence": "What do plants need to make their own food?",
+      "options": [
+        "Soil and water",
+        "Sunlight and carbon dioxide",
+        "Oxygen and nitrogen",
+        "Heat and minerals"
+      ],
+      "correct_answer": "Sunlight and carbon dioxide",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is B. Sunlight and carbon dioxide.\n\nPlants are autotrophs, which means they produce their own food through a process called photosynthesis. This process requires two main inputs:\n\n1. Carbon dioxide (CO2), which is a gas in the atmosphere.\n2. Water (H2O), which is absorbed from the soil.\n\nWhen plants absorb CO2 through their leaves, they convert it into glucose (a type of sugar) and oxygen (O2) through a series of chemical reactions. The oxygen is released into the air as a byproduct of photosynthesis.\n\nThe other options are not correct because:\n\n* Soil and water are necessary for plant growth, but they are not the primary inputs for photosynthesis.\n* Oxygen is not a necessary input for photosynthesis, as it is released as a byproduct.\n* Heat and minerals are not directly related to the process of photosynthesis.\n\nTherefore, the correct answer is B. Sunlight and carbon dioxide.",
+      "answer_ids": {
+        "Soil and water": 362,
+        "Sunlight and carbon dioxide": 426,
+        "Oxygen and nitrogen": 356,
+        "Heat and minerals": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Soil and water": 0.020263671875,
+        "Sunlight and carbon dioxide": 0.97265625,
+        "Oxygen and nitrogen": 0.00113677978515625,
+        "Heat and minerals": 0.00213623046875
+      },
+      "processing_time": 3.8998141288757324,
+      "sampler": "random",
+      "pred_id": 356,
+      "predicted_answer": "Oxygen and nitrogen",
+      "correct": false,
+      "elapsed_ms": 9534.250736236572,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_11",
+      "sentence": "Which gas do plants absorb from the air?",
+      "options": [
+        "Oxygen",
+        "Carbon dioxide",
+        "Nitrogen",
+        "Hydrogen"
+      ],
+      "correct_answer": "Carbon dioxide",
+      "correct_option": "2",
+      "cot_reasoning": "To answer this question, let's consider the process of photosynthesis, which is how plants produce energy from sunlight.\n\nPhotosynthesis is the process by which plants, algae, and some bacteria convert light energy from the sun into chemical energy in the form of glucose. This process involves the absorption of carbon dioxide (CO2) from the air, along with water (H2O) and light energy.\n\nThe correct answer is B. Carbon dioxide. Plants absorb carbon dioxide from the air through their leaves, which are specially adapted to capture this gas. This process is essential for plant growth and is a critical part of the carbon cycle.\n\nThe other options are incorrect because:\n\nA. Oxygen is released into the air during photosynthesis, not absorbed.\n\nC. Nitrogen is a major component of the air, but it is not absorbed by plants.\n\nD. Hydrogen is not a significant component of the air and is not directly involved in photosynthesis.\n\nTherefore, the correct answer is B. Carbon dioxide.",
+      "answer_ids": {
+        "Oxygen": 362,
+        "Carbon dioxide": 426,
+        "Nitrogen": 356,
+        "Hydrogen": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Oxygen": 0.00131988525390625,
+        "Carbon dioxide": 0.9921875,
+        "Nitrogen": 0.000293731689453125,
+        "Hydrogen": 0.0002288818359375
+      },
+      "processing_time": 3.883202075958252,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "Carbon dioxide",
+      "correct": true,
+      "elapsed_ms": 8336.098432540894,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_11",
+      "sentence": "Which gas do plants absorb from the air?",
+      "options": [
+        "Oxygen",
+        "Carbon dioxide",
+        "Nitrogen",
+        "Hydrogen"
+      ],
+      "correct_answer": "Carbon dioxide",
+      "correct_option": "2",
+      "cot_reasoning": "To answer this question, let's consider the process of photosynthesis, which is how plants produce energy from sunlight.\n\nPhotosynthesis is the process by which plants, algae, and some bacteria convert light energy from the sun into chemical energy in the form of glucose. This process involves the absorption of carbon dioxide (CO2) from the air, along with water (H2O) and light energy.\n\nThe correct answer is B. Carbon dioxide. Plants absorb carbon dioxide from the air through their leaves, which are specially adapted to capture this gas. This process is essential for plant growth and is a critical part of the carbon cycle.\n\nThe other options are incorrect because:\n\nA. Oxygen is released into the air during photosynthesis, not absorbed.\n\nC. Nitrogen is a major component of the air, but it is not absorbed by plants.\n\nD. Hydrogen is not a significant component of the air and is not directly involved in photosynthesis.\n\nTherefore, the correct answer is B. Carbon dioxide.",
+      "answer_ids": {
+        "Oxygen": 362,
+        "Carbon dioxide": 426,
+        "Nitrogen": 356,
+        "Hydrogen": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Oxygen": 0.00131988525390625,
+        "Carbon dioxide": 0.9921875,
+        "Nitrogen": 0.000293731689453125,
+        "Hydrogen": 0.0002288818359375
+      },
+      "processing_time": 3.883202075958252,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "Carbon dioxide",
+      "correct": true,
+      "elapsed_ms": 3954.5087814331055,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_11",
+      "sentence": "Which gas do plants absorb from the air?",
+      "options": [
+        "Oxygen",
+        "Carbon dioxide",
+        "Nitrogen",
+        "Hydrogen"
+      ],
+      "correct_answer": "Carbon dioxide",
+      "correct_option": "2",
+      "cot_reasoning": "To answer this question, let's consider the process of photosynthesis, which is how plants produce energy from sunlight.\n\nPhotosynthesis is the process by which plants, algae, and some bacteria convert light energy from the sun into chemical energy in the form of glucose. This process involves the absorption of carbon dioxide (CO2) from the air, along with water (H2O) and light energy.\n\nThe correct answer is B. Carbon dioxide. Plants absorb carbon dioxide from the air through their leaves, which are specially adapted to capture this gas. This process is essential for plant growth and is a critical part of the carbon cycle.\n\nThe other options are incorrect because:\n\nA. Oxygen is released into the air during photosynthesis, not absorbed.\n\nC. Nitrogen is a major component of the air, but it is not absorbed by plants.\n\nD. Hydrogen is not a significant component of the air and is not directly involved in photosynthesis.\n\nTherefore, the correct answer is B. Carbon dioxide.",
+      "answer_ids": {
+        "Oxygen": 362,
+        "Carbon dioxide": 426,
+        "Nitrogen": 356,
+        "Hydrogen": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Oxygen": 0.00131988525390625,
+        "Carbon dioxide": 0.9921875,
+        "Nitrogen": 0.000293731689453125,
+        "Hydrogen": 0.0002288818359375
+      },
+      "processing_time": 3.883202075958252,
+      "sampler": "top_p",
+      "pred_id": 426,
+      "predicted_answer": "Carbon dioxide",
+      "correct": true,
+      "elapsed_ms": 3682.938575744629,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_11",
+      "sentence": "Which gas do plants absorb from the air?",
+      "options": [
+        "Oxygen",
+        "Carbon dioxide",
+        "Nitrogen",
+        "Hydrogen"
+      ],
+      "correct_answer": "Carbon dioxide",
+      "correct_option": "2",
+      "cot_reasoning": "To answer this question, let's consider the process of photosynthesis, which is how plants produce energy from sunlight.\n\nPhotosynthesis is the process by which plants, algae, and some bacteria convert light energy from the sun into chemical energy in the form of glucose. This process involves the absorption of carbon dioxide (CO2) from the air, along with water (H2O) and light energy.\n\nThe correct answer is B. Carbon dioxide. Plants absorb carbon dioxide from the air through their leaves, which are specially adapted to capture this gas. This process is essential for plant growth and is a critical part of the carbon cycle.\n\nThe other options are incorrect because:\n\nA. Oxygen is released into the air during photosynthesis, not absorbed.\n\nC. Nitrogen is a major component of the air, but it is not absorbed by plants.\n\nD. Hydrogen is not a significant component of the air and is not directly involved in photosynthesis.\n\nTherefore, the correct answer is B. Carbon dioxide.",
+      "answer_ids": {
+        "Oxygen": 362,
+        "Carbon dioxide": 426,
+        "Nitrogen": 356,
+        "Hydrogen": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Oxygen": 0.00131988525390625,
+        "Carbon dioxide": 0.9921875,
+        "Nitrogen": 0.000293731689453125,
+        "Hydrogen": 0.0002288818359375
+      },
+      "processing_time": 3.883202075958252,
+      "sampler": "random",
+      "pred_id": 426,
+      "predicted_answer": "Carbon dioxide",
+      "correct": true,
+      "elapsed_ms": 9658.491373062134,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_12",
+      "sentence": "What happens to water when it freezes?",
+      "options": [
+        "It becomes a gas",
+        "It becomes a solid",
+        "It disappears",
+        "It becomes warmer"
+      ],
+      "correct_answer": "It becomes a solid",
+      "correct_option": "2",
+      "cot_reasoning": "To solve this problem, let's analyze the options step by step:\n\nA. \"It becomes a gas\" - This is incorrect because when water freezes, it doesn't turn into a gas. Water turns into a solid (ice) when it freezes.\n\nB. \"It becomes a solid\" - This is the correct answer. When water freezes, it changes from a liquid state to a solid state, forming ice.\n\nC. \"It disappears\" - This is incorrect because water doesn't disappear when it freezes. It simply changes state from a liquid to a solid.\n\nD. \"It becomes warmer\" - This is also incorrect because freezing water doesn't make it warmer. It's a change of state, not a change in temperature.\n\nTherefore, the correct answer is B. It becomes a solid.",
+      "answer_ids": {
+        "It becomes a gas": 362,
+        "It becomes a solid": 426,
+        "It disappears": 356,
+        "It becomes warmer": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "It becomes a gas": 0.001495361328125,
+        "It becomes a solid": 0.9921875,
+        "It disappears": 0.000293731689453125,
+        "It becomes warmer": 0.0002593994140625
+      },
+      "processing_time": 3.2048797607421875,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "It becomes a solid",
+      "correct": true,
+      "elapsed_ms": 6881.834506988525,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_12",
+      "sentence": "What happens to water when it freezes?",
+      "options": [
+        "It becomes a gas",
+        "It becomes a solid",
+        "It disappears",
+        "It becomes warmer"
+      ],
+      "correct_answer": "It becomes a solid",
+      "correct_option": "2",
+      "cot_reasoning": "To solve this problem, let's analyze the options step by step:\n\nA. \"It becomes a gas\" - This is incorrect because when water freezes, it doesn't turn into a gas. Water turns into a solid (ice) when it freezes.\n\nB. \"It becomes a solid\" - This is the correct answer. When water freezes, it changes from a liquid state to a solid state, forming ice.\n\nC. \"It disappears\" - This is incorrect because water doesn't disappear when it freezes. It simply changes state from a liquid to a solid.\n\nD. \"It becomes warmer\" - This is also incorrect because freezing water doesn't make it warmer. It's a change of state, not a change in temperature.\n\nTherefore, the correct answer is B. It becomes a solid.",
+      "answer_ids": {
+        "It becomes a gas": 362,
+        "It becomes a solid": 426,
+        "It disappears": 356,
+        "It becomes warmer": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "It becomes a gas": 0.001495361328125,
+        "It becomes a solid": 0.9921875,
+        "It disappears": 0.000293731689453125,
+        "It becomes warmer": 0.0002593994140625
+      },
+      "processing_time": 3.2048797607421875,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "It becomes a solid",
+      "correct": true,
+      "elapsed_ms": 3263.2880210876465,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_12",
+      "sentence": "What happens to water when it freezes?",
+      "options": [
+        "It becomes a gas",
+        "It becomes a solid",
+        "It disappears",
+        "It becomes warmer"
+      ],
+      "correct_answer": "It becomes a solid",
+      "correct_option": "2",
+      "cot_reasoning": "To solve this problem, let's analyze the options step by step:\n\nA. \"It becomes a gas\" - This is incorrect because when water freezes, it doesn't turn into a gas. Water turns into a solid (ice) when it freezes.\n\nB. \"It becomes a solid\" - This is the correct answer. When water freezes, it changes from a liquid state to a solid state, forming ice.\n\nC. \"It disappears\" - This is incorrect because water doesn't disappear when it freezes. It simply changes state from a liquid to a solid.\n\nD. \"It becomes warmer\" - This is also incorrect because freezing water doesn't make it warmer. It's a change of state, not a change in temperature.\n\nTherefore, the correct answer is B. It becomes a solid.",
+      "answer_ids": {
+        "It becomes a gas": 362,
+        "It becomes a solid": 426,
+        "It disappears": 356,
+        "It becomes warmer": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "It becomes a gas": 0.001495361328125,
+        "It becomes a solid": 0.9921875,
+        "It disappears": 0.000293731689453125,
+        "It becomes warmer": 0.0002593994140625
+      },
+      "processing_time": 3.2048797607421875,
+      "sampler": "top_p",
+      "pred_id": 426,
+      "predicted_answer": "It becomes a solid",
+      "correct": true,
+      "elapsed_ms": 5088.123083114624,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_12",
+      "sentence": "What happens to water when it freezes?",
+      "options": [
+        "It becomes a gas",
+        "It becomes a solid",
+        "It disappears",
+        "It becomes warmer"
+      ],
+      "correct_answer": "It becomes a solid",
+      "correct_option": "2",
+      "cot_reasoning": "To solve this problem, let's analyze the options step by step:\n\nA. \"It becomes a gas\" - This is incorrect because when water freezes, it doesn't turn into a gas. Water turns into a solid (ice) when it freezes.\n\nB. \"It becomes a solid\" - This is the correct answer. When water freezes, it changes from a liquid state to a solid state, forming ice.\n\nC. \"It disappears\" - This is incorrect because water doesn't disappear when it freezes. It simply changes state from a liquid to a solid.\n\nD. \"It becomes warmer\" - This is also incorrect because freezing water doesn't make it warmer. It's a change of state, not a change in temperature.\n\nTherefore, the correct answer is B. It becomes a solid.",
+      "answer_ids": {
+        "It becomes a gas": 362,
+        "It becomes a solid": 426,
+        "It disappears": 356,
+        "It becomes warmer": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "It becomes a gas": 0.001495361328125,
+        "It becomes a solid": 0.9921875,
+        "It disappears": 0.000293731689453125,
+        "It becomes warmer": 0.0002593994140625
+      },
+      "processing_time": 3.2048797607421875,
+      "sampler": "random",
+      "pred_id": 423,
+      "predicted_answer": "It becomes a solid",
+      "correct": false,
+      "elapsed_ms": 9419.63267326355,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_13",
+      "sentence": "Which tool would best measure the temperature of water?",
+      "options": [
+        "Ruler",
+        "Thermometer",
+        "Scale",
+        "Timer"
+      ],
+      "correct_answer": "Thermometer",
+      "correct_option": "2",
+      "cot_reasoning": "To measure the temperature of water, the most suitable tool would be a thermometer. A thermometer is specifically designed to measure temperature, and it is the most accurate and reliable method for doing so.",
+      "answer_ids": {
+        "Ruler": 362,
+        "Thermometer": 426,
+        "Scale": 356,
+        "Timer": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Ruler": 0.0016937255859375,
+        "Thermometer": 0.99609375,
+        "Scale": 7.43865966796875e-05,
+        "Timer": 0.00015735626220703125
+      },
+      "processing_time": 0.8247661590576172,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "Thermometer",
+      "correct": true,
+      "elapsed_ms": 1636.8706226348877,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_13",
+      "sentence": "Which tool would best measure the temperature of water?",
+      "options": [
+        "Ruler",
+        "Thermometer",
+        "Scale",
+        "Timer"
+      ],
+      "correct_answer": "Thermometer",
+      "correct_option": "2",
+      "cot_reasoning": "To measure the temperature of water, the most suitable tool would be a thermometer. A thermometer is specifically designed to measure temperature, and it is the most accurate and reliable method for doing so.",
+      "answer_ids": {
+        "Ruler": 362,
+        "Thermometer": 426,
+        "Scale": 356,
+        "Timer": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Ruler": 0.0016937255859375,
+        "Thermometer": 0.99609375,
+        "Scale": 7.43865966796875e-05,
+        "Timer": 0.00015735626220703125
+      },
+      "processing_time": 0.8247661590576172,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "Thermometer",
+      "correct": true,
+      "elapsed_ms": 787.4300479888916,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_13",
+      "sentence": "Which tool would best measure the temperature of water?",
+      "options": [
+        "Ruler",
+        "Thermometer",
+        "Scale",
+        "Timer"
+      ],
+      "correct_answer": "Thermometer",
+      "correct_option": "2",
+      "cot_reasoning": "To measure the temperature of water, the most suitable tool would be a thermometer. A thermometer is specifically designed to measure temperature, and it is the most accurate and reliable method for doing so.",
+      "answer_ids": {
+        "Ruler": 362,
+        "Thermometer": 426,
+        "Scale": 356,
+        "Timer": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Ruler": 0.0016937255859375,
+        "Thermometer": 0.99609375,
+        "Scale": 7.43865966796875e-05,
+        "Timer": 0.00015735626220703125
+      },
+      "processing_time": 0.8247661590576172,
+      "sampler": "top_p",
+      "pred_id": 426,
+      "predicted_answer": "Thermometer",
+      "correct": true,
+      "elapsed_ms": 4659.63888168335,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_13",
+      "sentence": "Which tool would best measure the temperature of water?",
+      "options": [
+        "Ruler",
+        "Thermometer",
+        "Scale",
+        "Timer"
+      ],
+      "correct_answer": "Thermometer",
+      "correct_option": "2",
+      "cot_reasoning": "To measure the temperature of water, the most suitable tool would be a thermometer. A thermometer is specifically designed to measure temperature, and it is the most accurate and reliable method for doing so.",
+      "answer_ids": {
+        "Ruler": 362,
+        "Thermometer": 426,
+        "Scale": 356,
+        "Timer": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Ruler": 0.0016937255859375,
+        "Thermometer": 0.99609375,
+        "Scale": 7.43865966796875e-05,
+        "Timer": 0.00015735626220703125
+      },
+      "processing_time": 0.8247661590576172,
+      "sampler": "random",
+      "pred_id": 423,
+      "predicted_answer": "Scale",
+      "correct": false,
+      "elapsed_ms": 9548.266887664795,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_14",
+      "sentence": "What type of energy does a battery store?",
+      "options": [
+        "Heat energy",
+        "Chemical energy",
+        "Light energy",
+        "Sound energy"
+      ],
+      "correct_answer": "Chemical energy",
+      "correct_option": "2",
+      "cot_reasoning": "To answer this question, let's consider the properties of batteries.\n\nBatteries are devices that store energy in the form of chemical energy, which is released when the battery is connected to a circuit. This chemical energy is then converted into electrical energy, which can be used to power devices or perform work.\n\nNow, let's evaluate the options:\n\nA. Heat energy - Batteries do not store heat energy. While batteries can generate heat as a byproduct of chemical reactions, this is not their primary purpose.\n\nB. Chemical energy - This is the correct answer. Batteries store chemical energy in the form of chemical bonds between atoms, which can be converted into electrical energy when the battery is connected to a circuit.\n\nC. Light energy - Batteries do not store light energy. Light energy is a form of electromagnetic radiation, which is not directly related to the primary function of batteries.\n\nD. Sound energy - Batteries do not store sound energy. Sound energy is a form of mechanical energy, which is not present in batteries.\n\nTherefore, the correct answer is B. Chemical energy.",
+      "answer_ids": {
+        "Heat energy": 362,
+        "Chemical energy": 426,
+        "Light energy": 356,
+        "Sound energy": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Heat energy": 0.00131988525390625,
+        "Chemical energy": 0.99609375,
+        "Light energy": 0.000179290771484375,
+        "Sound energy": 0.0001392364501953125
+      },
+      "processing_time": 4.164375305175781,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "Chemical energy",
+      "correct": true,
+      "elapsed_ms": 9153.111696243286,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_14",
+      "sentence": "What type of energy does a battery store?",
+      "options": [
+        "Heat energy",
+        "Chemical energy",
+        "Light energy",
+        "Sound energy"
+      ],
+      "correct_answer": "Chemical energy",
+      "correct_option": "2",
+      "cot_reasoning": "To answer this question, let's consider the properties of batteries.\n\nBatteries are devices that store energy in the form of chemical energy, which is released when the battery is connected to a circuit. This chemical energy is then converted into electrical energy, which can be used to power devices or perform work.\n\nNow, let's evaluate the options:\n\nA. Heat energy - Batteries do not store heat energy. While batteries can generate heat as a byproduct of chemical reactions, this is not their primary purpose.\n\nB. Chemical energy - This is the correct answer. Batteries store chemical energy in the form of chemical bonds between atoms, which can be converted into electrical energy when the battery is connected to a circuit.\n\nC. Light energy - Batteries do not store light energy. Light energy is a form of electromagnetic radiation, which is not directly related to the primary function of batteries.\n\nD. Sound energy - Batteries do not store sound energy. Sound energy is a form of mechanical energy, which is not present in batteries.\n\nTherefore, the correct answer is B. Chemical energy.",
+      "answer_ids": {
+        "Heat energy": 362,
+        "Chemical energy": 426,
+        "Light energy": 356,
+        "Sound energy": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Heat energy": 0.00131988525390625,
+        "Chemical energy": 0.99609375,
+        "Light energy": 0.000179290771484375,
+        "Sound energy": 0.0001392364501953125
+      },
+      "processing_time": 4.164375305175781,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "Chemical energy",
+      "correct": true,
+      "elapsed_ms": 4242.324352264404,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_14",
+      "sentence": "What type of energy does a battery store?",
+      "options": [
+        "Heat energy",
+        "Chemical energy",
+        "Light energy",
+        "Sound energy"
+      ],
+      "correct_answer": "Chemical energy",
+      "correct_option": "2",
+      "cot_reasoning": "To answer this question, let's consider the properties of batteries.\n\nBatteries are devices that store energy in the form of chemical energy, which is released when the battery is connected to a circuit. This chemical energy is then converted into electrical energy, which can be used to power devices or perform work.\n\nNow, let's evaluate the options:\n\nA. Heat energy - Batteries do not store heat energy. While batteries can generate heat as a byproduct of chemical reactions, this is not their primary purpose.\n\nB. Chemical energy - This is the correct answer. Batteries store chemical energy in the form of chemical bonds between atoms, which can be converted into electrical energy when the battery is connected to a circuit.\n\nC. Light energy - Batteries do not store light energy. Light energy is a form of electromagnetic radiation, which is not directly related to the primary function of batteries.\n\nD. Sound energy - Batteries do not store sound energy. Sound energy is a form of mechanical energy, which is not present in batteries.\n\nTherefore, the correct answer is B. Chemical energy.",
+      "answer_ids": {
+        "Heat energy": 362,
+        "Chemical energy": 426,
+        "Light energy": 356,
+        "Sound energy": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Heat energy": 0.00131988525390625,
+        "Chemical energy": 0.99609375,
+        "Light energy": 0.000179290771484375,
+        "Sound energy": 0.0001392364501953125
+      },
+      "processing_time": 4.164375305175781,
+      "sampler": "top_p",
+      "pred_id": 362,
+      "predicted_answer": "Heat energy",
+      "correct": false,
+      "elapsed_ms": 3072.8719234466553,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_14",
+      "sentence": "What type of energy does a battery store?",
+      "options": [
+        "Heat energy",
+        "Chemical energy",
+        "Light energy",
+        "Sound energy"
+      ],
+      "correct_answer": "Chemical energy",
+      "correct_option": "2",
+      "cot_reasoning": "To answer this question, let's consider the properties of batteries.\n\nBatteries are devices that store energy in the form of chemical energy, which is released when the battery is connected to a circuit. This chemical energy is then converted into electrical energy, which can be used to power devices or perform work.\n\nNow, let's evaluate the options:\n\nA. Heat energy - Batteries do not store heat energy. While batteries can generate heat as a byproduct of chemical reactions, this is not their primary purpose.\n\nB. Chemical energy - This is the correct answer. Batteries store chemical energy in the form of chemical bonds between atoms, which can be converted into electrical energy when the battery is connected to a circuit.\n\nC. Light energy - Batteries do not store light energy. Light energy is a form of electromagnetic radiation, which is not directly related to the primary function of batteries.\n\nD. Sound energy - Batteries do not store sound energy. Sound energy is a form of mechanical energy, which is not present in batteries.\n\nTherefore, the correct answer is B. Chemical energy.",
+      "answer_ids": {
+        "Heat energy": 362,
+        "Chemical energy": 426,
+        "Light energy": 356,
+        "Sound energy": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Heat energy": 0.00131988525390625,
+        "Chemical energy": 0.99609375,
+        "Light energy": 0.000179290771484375,
+        "Sound energy": 0.0001392364501953125
+      },
+      "processing_time": 4.164375305175781,
+      "sampler": "random",
+      "pred_id": 362,
+      "predicted_answer": "Heat energy",
+      "correct": false,
+      "elapsed_ms": 9340.193510055542,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_15",
+      "sentence": "Which of these animals is a mammal?",
+      "options": [
+        "Shark",
+        "Whale",
+        "Turtle",
+        "Fish"
+      ],
+      "correct_answer": "Whale",
+      "correct_option": "2",
+      "cot_reasoning": "To determine which animal is a mammal, let's analyze each option step by step:\n\nA. Shark - Sharks are fish, not mammals. They are a type of fish that live in the ocean.\n\nB. Whale - Whales are mammals. They are a type of marine mammal that breathe air and give birth to live young.\n\nC. Turtle - Turtles are reptiles, not mammals. They are a type of slow-moving animal that lay eggs.\n\nD. Fish - Fish are aquatic animals that live in water, but they are not mammals. They do not breathe air and do not give birth to live young.\n\nSo, the correct answer is B. Whale.",
+      "answer_ids": {
+        "Shark": 362,
+        "Whale": 426,
+        "Turtle": 356,
+        "Fish": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Shark": 0.000202178955078125,
+        "Whale": 0.9921875,
+        "Turtle": 8.440017700195312e-05,
+        "Fish": 0.000377655029296875
+      },
+      "processing_time": 2.6660966873168945,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "Whale",
+      "correct": true,
+      "elapsed_ms": 5927.881240844727,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_15",
+      "sentence": "Which of these animals is a mammal?",
+      "options": [
+        "Shark",
+        "Whale",
+        "Turtle",
+        "Fish"
+      ],
+      "correct_answer": "Whale",
+      "correct_option": "2",
+      "cot_reasoning": "To determine which animal is a mammal, let's analyze each option step by step:\n\nA. Shark - Sharks are fish, not mammals. They are a type of fish that live in the ocean.\n\nB. Whale - Whales are mammals. They are a type of marine mammal that breathe air and give birth to live young.\n\nC. Turtle - Turtles are reptiles, not mammals. They are a type of slow-moving animal that lay eggs.\n\nD. Fish - Fish are aquatic animals that live in water, but they are not mammals. They do not breathe air and do not give birth to live young.\n\nSo, the correct answer is B. Whale.",
+      "answer_ids": {
+        "Shark": 362,
+        "Whale": 426,
+        "Turtle": 356,
+        "Fish": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Shark": 0.000202178955078125,
+        "Whale": 0.9921875,
+        "Turtle": 8.440017700195312e-05,
+        "Fish": 0.000377655029296875
+      },
+      "processing_time": 2.6660966873168945,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "Whale",
+      "correct": true,
+      "elapsed_ms": 2847.7399349212646,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_15",
+      "sentence": "Which of these animals is a mammal?",
+      "options": [
+        "Shark",
+        "Whale",
+        "Turtle",
+        "Fish"
+      ],
+      "correct_answer": "Whale",
+      "correct_option": "2",
+      "cot_reasoning": "To determine which animal is a mammal, let's analyze each option step by step:\n\nA. Shark - Sharks are fish, not mammals. They are a type of fish that live in the ocean.\n\nB. Whale - Whales are mammals. They are a type of marine mammal that breathe air and give birth to live young.\n\nC. Turtle - Turtles are reptiles, not mammals. They are a type of slow-moving animal that lay eggs.\n\nD. Fish - Fish are aquatic animals that live in water, but they are not mammals. They do not breathe air and do not give birth to live young.\n\nSo, the correct answer is B. Whale.",
+      "answer_ids": {
+        "Shark": 362,
+        "Whale": 426,
+        "Turtle": 356,
+        "Fish": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Shark": 0.000202178955078125,
+        "Whale": 0.9921875,
+        "Turtle": 8.440017700195312e-05,
+        "Fish": 0.000377655029296875
+      },
+      "processing_time": 2.6660966873168945,
+      "sampler": "top_p",
+      "pred_id": 426,
+      "predicted_answer": "Whale",
+      "correct": true,
+      "elapsed_ms": 2735.637903213501,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_15",
+      "sentence": "Which of these animals is a mammal?",
+      "options": [
+        "Shark",
+        "Whale",
+        "Turtle",
+        "Fish"
+      ],
+      "correct_answer": "Whale",
+      "correct_option": "2",
+      "cot_reasoning": "To determine which animal is a mammal, let's analyze each option step by step:\n\nA. Shark - Sharks are fish, not mammals. They are a type of fish that live in the ocean.\n\nB. Whale - Whales are mammals. They are a type of marine mammal that breathe air and give birth to live young.\n\nC. Turtle - Turtles are reptiles, not mammals. They are a type of slow-moving animal that lay eggs.\n\nD. Fish - Fish are aquatic animals that live in water, but they are not mammals. They do not breathe air and do not give birth to live young.\n\nSo, the correct answer is B. Whale.",
+      "answer_ids": {
+        "Shark": 362,
+        "Whale": 426,
+        "Turtle": 356,
+        "Fish": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "Shark": 0.000202178955078125,
+        "Whale": 0.9921875,
+        "Turtle": 8.440017700195312e-05,
+        "Fish": 0.000377655029296875
+      },
+      "processing_time": 2.6660966873168945,
+      "sampler": "random",
+      "pred_id": 356,
+      "predicted_answer": "Shark",
+      "correct": false,
+      "elapsed_ms": 10040.738582611084,
+      "cluster_info": null
+    }
+  ],
+  "prediction_differences": [],
+  "evaluation_completed_at": "2025-06-08 16:24:14"
+}

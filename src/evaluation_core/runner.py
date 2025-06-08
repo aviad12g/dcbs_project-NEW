@@ -38,8 +38,9 @@ def calculate_confidence_interval(correct: int, total: int) -> tuple:
 class EvaluationRunner:
     """Evaluation runner with proper conversation flow."""
 
-    def __init__(self, config: EvaluationConfig):
+    def __init__(self, config: EvaluationConfig, requested_samplers: list = None):
         self.config = config
+        self.requested_samplers = requested_samplers
         self.model_manager = ModelManager(config.model_name, config.load_in_4bit)
         
     def run_evaluation(self, benchmark_data: List[Dict]) -> Dict:
@@ -57,6 +58,7 @@ class EvaluationRunner:
             hierarchical_linkage=self.config.hierarchical_linkage,
             debug_mode=self.config.debug_mode,
             enable_cluster_history=self.config.enable_cluster_history,
+            requested_samplers=self.requested_samplers,
         )
         
         # Create processor

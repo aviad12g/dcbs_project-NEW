@@ -337,15 +337,13 @@ class EvaluationFramework:
     def _run_single_evaluation(self, benchmark_data: List[dict]) -> Dict:
         """Run single configuration evaluation."""
         logger.info("Running single configuration evaluation...")
-        runner = EvaluationRunner(self.config)
-
-        if self.args.samplers:
-            available_samplers = {
-                k: v for k, v in runner.samplers.items() if k in self.args.samplers
-            }
-            runner.samplers = available_samplers
-            logger.info(f"Using samplers: {list(available_samplers.keys())}")
-
+        
+        # Pass requested samplers to the runner
+        requested_samplers = self.args.samplers if self.args.samplers else None
+        if requested_samplers:
+            logger.info(f"Requested samplers: {requested_samplers}")
+        
+        runner = EvaluationRunner(self.config, requested_samplers=requested_samplers)
         return runner.run_evaluation(benchmark_data)
 
     def _save_and_display_results(self, results: Dict, is_sweep: bool):

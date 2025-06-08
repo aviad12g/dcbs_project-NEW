@@ -1,0 +1,733 @@
+{
+  "statistics": {
+    "dcbs": {
+      "accuracy": 80.0,
+      "correct": 8,
+      "total": 10,
+      "avg_time_ms": 9477.794408798218,
+      "confidence_interval": [
+        49.01568467207233,
+        94.33190520193067
+      ]
+    },
+    "greedy": {
+      "accuracy": 70.0,
+      "correct": 7,
+      "total": 10,
+      "avg_time_ms": 5987.751221656799,
+      "confidence_interval": [
+        39.67732199795652,
+        89.2210712513788
+      ]
+    }
+  },
+  "config": {
+    "model": "meta-llama/Llama-3.2-1B-Instruct",
+    "total_examples": 10,
+    "methods": [
+      "dcbs",
+      "greedy"
+    ],
+    "include_cot": true,
+    "enable_caching": true,
+    "clustering_method": "dbscan"
+  },
+  "detailed_results": [
+    {
+      "id": "Mercury_417466",
+      "sentence": "Which statement best explains why photosynthesis is the foundation of most food webs?",
+      "options": [
+        "Sunlight is the source of energy for nearly all ecosystems.",
+        "Most ecosystems are found on land instead of in water.",
+        "Carbon dioxide is more available than other gases.",
+        "The producers in all ecosystems are plants."
+      ],
+      "correct_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Sunlight is the source of energy for nearly all ecosystems. - This statement is true, as sunlight is the primary source of energy for photosynthesis, which is the process by which plants, algae, and some bacteria convert carbon dioxide and water into glucose and oxygen.\n\nB. Most ecosystems are found on land instead of in water. - This statement is false. While it is true that most ecosystems are found on land, photosynthesis occurs in aquatic ecosystems, such as oceans, lakes, and rivers, as well as in the soil and on land.\n\nC. Carbon dioxide is more available than other gases. - This statement is false. While carbon dioxide is a critical component of the carbon cycle, it is not more available than other gases in the atmosphere. In fact, the atmosphere is mostly composed of nitrogen (about 78%) and oxygen (about 21%), with trace amounts of other gases like carbon dioxide, methane, and nitrous oxide.\n\nD. The producers in all ecosystems are plants. - This statement is false. While plants are the primary producers in most ecosystems, they are not the only producers. Other organisms, such as phytoplankton in aquatic ecosystems and certain types of bacteria and fungi, also play a crucial role in the food web.\n\nTherefore, the correct answer is A. Sunlight is the source of energy for nearly all ecosystems.",
+      "answer_ids": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 362,
+        "Most ecosystems are found on land instead of in water.": 426,
+        "Carbon dioxide is more available than other gases.": 356,
+        "The producers in all ecosystems are plants.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 0.99609375,
+        "Most ecosystems are found on land instead of in water.": 0.0003337860107421875,
+        "Carbon dioxide is more available than other gases.": 0.0002613067626953125,
+        "The producers in all ecosystems are plants.": 0.00020313262939453125
+      },
+      "processing_time": 9.53690242767334,
+      "sampler": "dcbs",
+      "pred_id": 362,
+      "predicted_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct": true,
+      "elapsed_ms": 12575.239181518555,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_417466",
+      "sentence": "Which statement best explains why photosynthesis is the foundation of most food webs?",
+      "options": [
+        "Sunlight is the source of energy for nearly all ecosystems.",
+        "Most ecosystems are found on land instead of in water.",
+        "Carbon dioxide is more available than other gases.",
+        "The producers in all ecosystems are plants."
+      ],
+      "correct_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Sunlight is the source of energy for nearly all ecosystems. - This statement is true, as sunlight is the primary source of energy for photosynthesis, which is the process by which plants, algae, and some bacteria convert carbon dioxide and water into glucose and oxygen.\n\nB. Most ecosystems are found on land instead of in water. - This statement is false. While it is true that most ecosystems are found on land, photosynthesis occurs in aquatic ecosystems, such as oceans, lakes, and rivers, as well as in the soil and on land.\n\nC. Carbon dioxide is more available than other gases. - This statement is false. While carbon dioxide is a critical component of the carbon cycle, it is not more available than other gases in the atmosphere. In fact, the atmosphere is mostly composed of nitrogen (about 78%) and oxygen (about 21%), with trace amounts of other gases like carbon dioxide, methane, and nitrous oxide.\n\nD. The producers in all ecosystems are plants. - This statement is false. While plants are the primary producers in most ecosystems, they are not the only producers. Other organisms, such as phytoplankton in aquatic ecosystems and certain types of bacteria and fungi, also play a crucial role in the food web.\n\nTherefore, the correct answer is A. Sunlight is the source of energy for nearly all ecosystems.",
+      "answer_ids": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 362,
+        "Most ecosystems are found on land instead of in water.": 426,
+        "Carbon dioxide is more available than other gases.": 356,
+        "The producers in all ecosystems are plants.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 0.99609375,
+        "Most ecosystems are found on land instead of in water.": 0.0003337860107421875,
+        "Carbon dioxide is more available than other gases.": 0.0002613067626953125,
+        "The producers in all ecosystems are plants.": 0.00020313262939453125
+      },
+      "processing_time": 9.53690242767334,
+      "sampler": "greedy",
+      "pred_id": 362,
+      "predicted_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct": true,
+      "elapsed_ms": 8771.892070770264,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7081673",
+      "sentence": "Which piece of safety equipment is used to keep mold spores from entering the respiratory system?",
+      "options": [
+        "safety goggles",
+        "breathing mask",
+        "rubber gloves",
+        "lead apron"
+      ],
+      "correct_answer": "breathing mask",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Safety goggles - While safety goggles can protect the eyes from debris, they do not specifically prevent mold spores from entering the respiratory system.\n\nB. Breathing mask - A breathing mask is designed to filter out airborne particles, including mold spores, from the air we breathe. It fits over the nose and mouth, trapping the spores inside, preventing them from entering the lungs.\n\nC. Rubber gloves - Rubber gloves are used to protect the hands from physical harm, but they do not prevent mold spores from entering the respiratory system.\n\nD. Lead apron - A lead apron is used to protect against chemical splashes or spills, not mold spores.\n\nTherefore, the correct answer is B. Breathing mask.",
+      "answer_ids": {
+        "safety goggles": 362,
+        "breathing mask": 426,
+        "rubber gloves": 356,
+        "lead apron": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "safety goggles": 0.0002574920654296875,
+        "breathing mask": 0.98828125,
+        "rubber gloves": 0.0002574920654296875,
+        "lead apron": 0.0003757476806640625
+      },
+      "processing_time": 5.11802077293396,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "breathing mask",
+      "correct": true,
+      "elapsed_ms": 8104.653596878052,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7081673",
+      "sentence": "Which piece of safety equipment is used to keep mold spores from entering the respiratory system?",
+      "options": [
+        "safety goggles",
+        "breathing mask",
+        "rubber gloves",
+        "lead apron"
+      ],
+      "correct_answer": "breathing mask",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Safety goggles - While safety goggles can protect the eyes from debris, they do not specifically prevent mold spores from entering the respiratory system.\n\nB. Breathing mask - A breathing mask is designed to filter out airborne particles, including mold spores, from the air we breathe. It fits over the nose and mouth, trapping the spores inside, preventing them from entering the lungs.\n\nC. Rubber gloves - Rubber gloves are used to protect the hands from physical harm, but they do not prevent mold spores from entering the respiratory system.\n\nD. Lead apron - A lead apron is used to protect against chemical splashes or spills, not mold spores.\n\nTherefore, the correct answer is B. Breathing mask.",
+      "answer_ids": {
+        "safety goggles": 362,
+        "breathing mask": 426,
+        "rubber gloves": 356,
+        "lead apron": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "safety goggles": 0.0002574920654296875,
+        "breathing mask": 0.98828125,
+        "rubber gloves": 0.0002574920654296875,
+        "lead apron": 0.0003757476806640625
+      },
+      "processing_time": 5.11802077293396,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "breathing mask",
+      "correct": true,
+      "elapsed_ms": 5005.478620529175,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7239733",
+      "sentence": "Meiosis is a type of cell division in which germ cells divide to produce haploid cells. Where does meiosis occur?",
+      "options": [
+        "brain cells",
+        "bone cells",
+        "muscle cells",
+        "ovary cells"
+      ],
+      "correct_answer": "ovary cells",
+      "correct_option": "4",
+      "cot_reasoning": "To answer this question, let's break it down step by step:\n\n1. **Identify the type of cell division**: Meiosis is a type of cell division.\n2. **Understand the purpose of meiosis**: The purpose of meiosis is to produce haploid cells, which is a key characteristic of gametes (sperm and egg cells).\n3. **Consider the options**: We have four options - brain cells, bone cells, muscle cells, and ovary cells.\n4. **Eliminate irrelevant options**: Brain cells, bone cells, and muscle cells are all types of somatic cells, which are non-reproductive cells that make up the majority of the body's cells. They are not involved in the production of gametes.\n5. **Identify the correct option**: Ovary cells are the cells in the female reproductive system that produce eggs (oocytes). Meiosis occurs in the ovaries, specifically in the oocytes, to produce haploid cells that will eventually become eggs.\n\nThe correct answer is D. ovary cells.",
+      "answer_ids": {
+        "brain cells": 362,
+        "bone cells": 426,
+        "muscle cells": 356,
+        "ovary cells": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 423,
+      "answer_probs": {
+        "brain cells": 0.005035400390625,
+        "bone cells": 0.005035400390625,
+        "muscle cells": 0.0064697265625,
+        "ovary cells": 0.9609375
+      },
+      "processing_time": 6.552677392959595,
+      "sampler": "dcbs",
+      "pred_id": 423,
+      "predicted_answer": "ovary cells",
+      "correct": true,
+      "elapsed_ms": 9913.957595825195,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7239733",
+      "sentence": "Meiosis is a type of cell division in which germ cells divide to produce haploid cells. Where does meiosis occur?",
+      "options": [
+        "brain cells",
+        "bone cells",
+        "muscle cells",
+        "ovary cells"
+      ],
+      "correct_answer": "ovary cells",
+      "correct_option": "4",
+      "cot_reasoning": "To answer this question, let's break it down step by step:\n\n1. **Identify the type of cell division**: Meiosis is a type of cell division.\n2. **Understand the purpose of meiosis**: The purpose of meiosis is to produce haploid cells, which is a key characteristic of gametes (sperm and egg cells).\n3. **Consider the options**: We have four options - brain cells, bone cells, muscle cells, and ovary cells.\n4. **Eliminate irrelevant options**: Brain cells, bone cells, and muscle cells are all types of somatic cells, which are non-reproductive cells that make up the majority of the body's cells. They are not involved in the production of gametes.\n5. **Identify the correct option**: Ovary cells are the cells in the female reproductive system that produce eggs (oocytes). Meiosis occurs in the ovaries, specifically in the oocytes, to produce haploid cells that will eventually become eggs.\n\nThe correct answer is D. ovary cells.",
+      "answer_ids": {
+        "brain cells": 362,
+        "bone cells": 426,
+        "muscle cells": 356,
+        "ovary cells": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 423,
+      "answer_probs": {
+        "brain cells": 0.005035400390625,
+        "bone cells": 0.005035400390625,
+        "muscle cells": 0.0064697265625,
+        "ovary cells": 0.9609375
+      },
+      "processing_time": 6.552677392959595,
+      "sampler": "greedy",
+      "pred_id": 423,
+      "predicted_answer": "ovary cells",
+      "correct": true,
+      "elapsed_ms": 6578.38773727417,
+      "cluster_info": null
+    },
+    {
+      "id": "NYSEDREGENTS_2015_4_8",
+      "sentence": "Which characteristic describes the texture of a kitten's fur?",
+      "options": [
+        "gray",
+        "warm",
+        "long",
+        "soft"
+      ],
+      "correct_answer": "soft",
+      "correct_option": "4",
+      "cot_reasoning": "To answer this question, I'll follow the step-by-step process:\n\n1. **Identify the subject**: The subject is a kitten's fur.\n2. **Consider the characteristics of kittens**: Kittens are known for their soft and fluffy fur.\n3. **Eliminate incorrect options**: \n   - A. Gray is not a characteristic of kittens' fur; it's more common in adult cats.\n   - B. Warm is a general term that doesn't specifically describe the texture of kittens' fur.\n   - C. Long is not a characteristic of kittens' fur; it's more common in adult cats.\n4. **Choose the correct option**: \n   - D. Soft is the correct answer, as kittens are known for their soft and fluffy fur.\n\nThe final answer is D.",
+      "answer_ids": {
+        "gray": 362,
+        "warm": 426,
+        "long": 356,
+        "soft": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 423,
+      "answer_probs": {
+        "gray": 0.00089263916015625,
+        "warm": 0.00147247314453125,
+        "long": 0.00054168701171875,
+        "soft": 0.98046875
+      },
+      "processing_time": 4.874591827392578,
+      "sampler": "dcbs",
+      "pred_id": 423,
+      "predicted_answer": "soft",
+      "correct": true,
+      "elapsed_ms": 7927.708387374878,
+      "cluster_info": null
+    },
+    {
+      "id": "NYSEDREGENTS_2015_4_8",
+      "sentence": "Which characteristic describes the texture of a kitten's fur?",
+      "options": [
+        "gray",
+        "warm",
+        "long",
+        "soft"
+      ],
+      "correct_answer": "soft",
+      "correct_option": "4",
+      "cot_reasoning": "To answer this question, I'll follow the step-by-step process:\n\n1. **Identify the subject**: The subject is a kitten's fur.\n2. **Consider the characteristics of kittens**: Kittens are known for their soft and fluffy fur.\n3. **Eliminate incorrect options**: \n   - A. Gray is not a characteristic of kittens' fur; it's more common in adult cats.\n   - B. Warm is a general term that doesn't specifically describe the texture of kittens' fur.\n   - C. Long is not a characteristic of kittens' fur; it's more common in adult cats.\n4. **Choose the correct option**: \n   - D. Soft is the correct answer, as kittens are known for their soft and fluffy fur.\n\nThe final answer is D.",
+      "answer_ids": {
+        "gray": 362,
+        "warm": 426,
+        "long": 356,
+        "soft": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 423,
+      "answer_probs": {
+        "gray": 0.00089263916015625,
+        "warm": 0.00147247314453125,
+        "long": 0.00054168701171875,
+        "soft": 0.98046875
+      },
+      "processing_time": 4.874591827392578,
+      "sampler": "greedy",
+      "pred_id": 423,
+      "predicted_answer": "soft",
+      "correct": true,
+      "elapsed_ms": 4861.771106719971,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7037258",
+      "sentence": "Which best describes the structure of an atom?",
+      "options": [
+        "a lightweight core surrounded by neutral particles",
+        "a massive core surrounded by negatively-charged particles",
+        "a network of interacting positive and negative particles",
+        "overlapping layers of neutral, positive, and negative particles"
+      ],
+      "correct_answer": "a massive core surrounded by negatively-charged particles",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. A lightweight core surrounded by neutral particles - This option describes a nucleus, which is the central part of an atom that contains the protons and neutrons. However, the term \"lightweight\" is not a characteristic typically associated with the nucleus.\n\nB. A massive core surrounded by negatively-charged particles - This option describes an electron cloud, which is the region around the nucleus where electrons orbit. Electrons are negatively charged, but the term \"massive core\" does not accurately describe the nucleus.\n\nC. A network of interacting positive and negative particles - This option describes an ionic bond, which is a type of chemical bond that forms between atoms with opposite charges. While atoms do have positive and negative charges, the term \"network\" does not accurately describe the structure of an atom.\n\nD. Overlapping layers of neutral, positive, and negative particles - This option describes the structure of an atom, specifically the arrangement of electrons, protons, and neutrons in the nucleus, which is often referred to as the electron cloud. This is the correct description of the structure of an atom.\n\nThe best answer is D.",
+      "answer_ids": {
+        "a lightweight core surrounded by neutral particles": 362,
+        "a massive core surrounded by negatively-charged particles": 426,
+        "a network of interacting positive and negative particles": 356,
+        "overlapping layers of neutral, positive, and negative particles": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "a lightweight core surrounded by neutral particles": 0.0035400390625,
+        "a massive core surrounded by negatively-charged particles": 0.00189971923828125,
+        "a network of interacting positive and negative particles": 0.0040283203125,
+        "overlapping layers of neutral, positive, and negative particles": 0.984375
+      },
+      "processing_time": 7.413713693618774,
+      "sampler": "dcbs",
+      "pred_id": 423,
+      "predicted_answer": "overlapping layers of neutral, positive, and negative particles",
+      "correct": false,
+      "elapsed_ms": 11920.36247253418,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7037258",
+      "sentence": "Which best describes the structure of an atom?",
+      "options": [
+        "a lightweight core surrounded by neutral particles",
+        "a massive core surrounded by negatively-charged particles",
+        "a network of interacting positive and negative particles",
+        "overlapping layers of neutral, positive, and negative particles"
+      ],
+      "correct_answer": "a massive core surrounded by negatively-charged particles",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. A lightweight core surrounded by neutral particles - This option describes a nucleus, which is the central part of an atom that contains the protons and neutrons. However, the term \"lightweight\" is not a characteristic typically associated with the nucleus.\n\nB. A massive core surrounded by negatively-charged particles - This option describes an electron cloud, which is the region around the nucleus where electrons orbit. Electrons are negatively charged, but the term \"massive core\" does not accurately describe the nucleus.\n\nC. A network of interacting positive and negative particles - This option describes an ionic bond, which is a type of chemical bond that forms between atoms with opposite charges. While atoms do have positive and negative charges, the term \"network\" does not accurately describe the structure of an atom.\n\nD. Overlapping layers of neutral, positive, and negative particles - This option describes the structure of an atom, specifically the arrangement of electrons, protons, and neutrons in the nucleus, which is often referred to as the electron cloud. This is the correct description of the structure of an atom.\n\nThe best answer is D.",
+      "answer_ids": {
+        "a lightweight core surrounded by neutral particles": 362,
+        "a massive core surrounded by negatively-charged particles": 426,
+        "a network of interacting positive and negative particles": 356,
+        "overlapping layers of neutral, positive, and negative particles": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "a lightweight core surrounded by neutral particles": 0.0035400390625,
+        "a massive core surrounded by negatively-charged particles": 0.00189971923828125,
+        "a network of interacting positive and negative particles": 0.0040283203125,
+        "overlapping layers of neutral, positive, and negative particles": 0.984375
+      },
+      "processing_time": 7.413713693618774,
+      "sampler": "greedy",
+      "pred_id": 423,
+      "predicted_answer": "overlapping layers of neutral, positive, and negative particles",
+      "correct": false,
+      "elapsed_ms": 7311.708688735962,
+      "cluster_info": null
+    },
+    {
+      "id": "CSZ20679",
+      "sentence": "To express the distance between the Milky Way galaxy and other galaxies, the most appropriate unit of measurement is the",
+      "options": [
+        "meter.",
+        "kilometer.",
+        "light-year.",
+        "astronomical unit."
+      ],
+      "correct_answer": "light-year.",
+      "correct_option": "3",
+      "cot_reasoning": "To determine the most appropriate unit of measurement for the distance between the Milky Way galaxy and other galaxies, we need to consider the scale of the universe.\n\nThe Milky Way is a relatively small galaxy, and its distance from other galaxies is typically measured in light-years. A light-year is a unit of distance that is equal to the distance light travels in one year, which is about 9.461 billion kilometers (5.88 billion miles). This unit is commonly used to express the vast distances between galaxies, stars, and other celestial objects in our universe.\n\nA kilometer (option B) is a smaller unit of measurement, equivalent to 1,000 meters, which is more suitable for measuring smaller distances within our solar system or on Earth. A meter (option A) is a more general unit of length, but it is not specific to the scale of galaxy distances. An astronomical unit (option D) is a unit of length used in astronomy, but it is not a standard unit of measurement for galaxy distances.\n\nTherefore, the most appropriate unit of measurement for the distance between the Milky Way galaxy and other galaxies is the light-year.",
+      "answer_ids": {
+        "meter.": 362,
+        "kilometer.": 426,
+        "light-year.": 356,
+        "astronomical unit.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "meter.": 0.017578125,
+        "kilometer.": 0.0034637451171875,
+        "light-year.": 0.9609375,
+        "astronomical unit.": 0.0030517578125
+      },
+      "processing_time": 6.830563545227051,
+      "sampler": "dcbs",
+      "pred_id": 356,
+      "predicted_answer": "light-year.",
+      "correct": true,
+      "elapsed_ms": 11482.031106948853,
+      "cluster_info": null
+    },
+    {
+      "id": "CSZ20679",
+      "sentence": "To express the distance between the Milky Way galaxy and other galaxies, the most appropriate unit of measurement is the",
+      "options": [
+        "meter.",
+        "kilometer.",
+        "light-year.",
+        "astronomical unit."
+      ],
+      "correct_answer": "light-year.",
+      "correct_option": "3",
+      "cot_reasoning": "To determine the most appropriate unit of measurement for the distance between the Milky Way galaxy and other galaxies, we need to consider the scale of the universe.\n\nThe Milky Way is a relatively small galaxy, and its distance from other galaxies is typically measured in light-years. A light-year is a unit of distance that is equal to the distance light travels in one year, which is about 9.461 billion kilometers (5.88 billion miles). This unit is commonly used to express the vast distances between galaxies, stars, and other celestial objects in our universe.\n\nA kilometer (option B) is a smaller unit of measurement, equivalent to 1,000 meters, which is more suitable for measuring smaller distances within our solar system or on Earth. A meter (option A) is a more general unit of length, but it is not specific to the scale of galaxy distances. An astronomical unit (option D) is a unit of length used in astronomy, but it is not a standard unit of measurement for galaxy distances.\n\nTherefore, the most appropriate unit of measurement for the distance between the Milky Way galaxy and other galaxies is the light-year.",
+      "answer_ids": {
+        "meter.": 362,
+        "kilometer.": 426,
+        "light-year.": 356,
+        "astronomical unit.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "meter.": 0.017578125,
+        "kilometer.": 0.0034637451171875,
+        "light-year.": 0.9609375,
+        "astronomical unit.": 0.0030517578125
+      },
+      "processing_time": 6.830563545227051,
+      "sampler": "greedy",
+      "pred_id": 356,
+      "predicted_answer": "light-year.",
+      "correct": true,
+      "elapsed_ms": 7064.738750457764,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_182158",
+      "sentence": "A student has just completed a laboratory activity. What is the last action that the student should perform before leaving the lab area?",
+      "options": [
+        "wash hands",
+        "turn off all equipment",
+        "put away all glassware",
+        "wash instruments and table tops"
+      ],
+      "correct_answer": "wash hands",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the correct answer, let's analyze the situation step by step:\n\n1. **Safety first**: The student has just completed a laboratory activity, which involves working with potentially hazardous materials and equipment. It's essential to prioritize safety to avoid accidents.\n\n2. **Cleanliness and organization**: The student should also consider the cleanliness and organization of the lab area to prevent the spread of contamination and maintain a safe working environment.\n\n3. **Equipment maintenance**: Leaving equipment on or unattended can lead to accidents or damage. Turning off all equipment is a crucial step to ensure it's safely stored and not a hazard.\n\n4. **Personal hygiene**: Washing hands is a fundamental aspect of maintaining personal hygiene and preventing the spread of illnesses.\n\nConsidering these factors, the most appropriate action for the student to take before leaving the lab area is to **turn off all equipment**. This ensures the safety of themselves and others, maintains a clean and organized lab environment, and prevents potential accidents.\n\nThe best answer is B.",
+      "answer_ids": {
+        "wash hands": 362,
+        "turn off all equipment": 426,
+        "put away all glassware": 356,
+        "wash instruments and table tops": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "wash hands": 0.036865234375,
+        "turn off all equipment": 0.83984375,
+        "put away all glassware": 0.032470703125,
+        "wash instruments and table tops": 0.0252685546875
+      },
+      "processing_time": 6.1371965408325195,
+      "sampler": "dcbs",
+      "pred_id": 362,
+      "predicted_answer": "wash hands",
+      "correct": true,
+      "elapsed_ms": 11262.925863265991,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_182158",
+      "sentence": "A student has just completed a laboratory activity. What is the last action that the student should perform before leaving the lab area?",
+      "options": [
+        "wash hands",
+        "turn off all equipment",
+        "put away all glassware",
+        "wash instruments and table tops"
+      ],
+      "correct_answer": "wash hands",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the correct answer, let's analyze the situation step by step:\n\n1. **Safety first**: The student has just completed a laboratory activity, which involves working with potentially hazardous materials and equipment. It's essential to prioritize safety to avoid accidents.\n\n2. **Cleanliness and organization**: The student should also consider the cleanliness and organization of the lab area to prevent the spread of contamination and maintain a safe working environment.\n\n3. **Equipment maintenance**: Leaving equipment on or unattended can lead to accidents or damage. Turning off all equipment is a crucial step to ensure it's safely stored and not a hazard.\n\n4. **Personal hygiene**: Washing hands is a fundamental aspect of maintaining personal hygiene and preventing the spread of illnesses.\n\nConsidering these factors, the most appropriate action for the student to take before leaving the lab area is to **turn off all equipment**. This ensures the safety of themselves and others, maintains a clean and organized lab environment, and prevents potential accidents.\n\nThe best answer is B.",
+      "answer_ids": {
+        "wash hands": 362,
+        "turn off all equipment": 426,
+        "put away all glassware": 356,
+        "wash instruments and table tops": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "wash hands": 0.036865234375,
+        "turn off all equipment": 0.83984375,
+        "put away all glassware": 0.032470703125,
+        "wash instruments and table tops": 0.0252685546875
+      },
+      "processing_time": 6.1371965408325195,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "turn off all equipment",
+      "correct": false,
+      "elapsed_ms": 6135.607481002808,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7216668",
+      "sentence": "Students are investigating the effects of different fertilizers on plant growth. Which units would be best to measure the mass of the fertilizer used?",
+      "options": [
+        "meters",
+        "centimeters",
+        "grams",
+        "milligrams"
+      ],
+      "correct_answer": "grams",
+      "correct_option": "3",
+      "cot_reasoning": "To measure the mass of the fertilizer used, the most appropriate unit would be grams. This is because the mass of a substance is typically measured in units of grams, which is a more precise and commonly used unit in scientific measurements.",
+      "answer_ids": {
+        "meters": 362,
+        "centimeters": 426,
+        "grams": 356,
+        "milligrams": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "meters": 0.01068115234375,
+        "centimeters": 0.003936767578125,
+        "grams": 0.9609375,
+        "milligrams": 0.017578125
+      },
+      "processing_time": 1.3138086795806885,
+      "sampler": "dcbs",
+      "pred_id": 356,
+      "predicted_answer": "grams",
+      "correct": true,
+      "elapsed_ms": 2136.1825466156006,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7216668",
+      "sentence": "Students are investigating the effects of different fertilizers on plant growth. Which units would be best to measure the mass of the fertilizer used?",
+      "options": [
+        "meters",
+        "centimeters",
+        "grams",
+        "milligrams"
+      ],
+      "correct_answer": "grams",
+      "correct_option": "3",
+      "cot_reasoning": "To measure the mass of the fertilizer used, the most appropriate unit would be grams. This is because the mass of a substance is typically measured in units of grams, which is a more precise and commonly used unit in scientific measurements.",
+      "answer_ids": {
+        "meters": 362,
+        "centimeters": 426,
+        "grams": 356,
+        "milligrams": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "meters": 0.01068115234375,
+        "centimeters": 0.003936767578125,
+        "grams": 0.9609375,
+        "milligrams": 0.017578125
+      },
+      "processing_time": 1.3138086795806885,
+      "sampler": "greedy",
+      "pred_id": 356,
+      "predicted_answer": "grams",
+      "correct": true,
+      "elapsed_ms": 1359.389066696167,
+      "cluster_info": null
+    },
+    {
+      "id": "MCAS_2001_5_19",
+      "sentence": "Plants use sunlight to make",
+      "options": [
+        "soil.",
+        "minerals.",
+        "food.",
+        "water."
+      ],
+      "correct_answer": "food.",
+      "correct_option": "3",
+      "cot_reasoning": "To determine the correct answer, let's analyze the options step by step:\n\n1. Plants use sunlight to make food through a process called photosynthesis. This process involves converting light energy from the sun into chemical energy in the form of glucose, which is a type of sugar that serves as energy for the plant.\n\n2. Soils (A) are not directly involved in the process of making food for plants. Soils provide nutrients and support plant growth, but they do not produce food.\n\n3. Minerals (B) are inorganic substances that are not directly involved in the process of making food for plants. While plants may absorb minerals from the soil, they do not produce them.\n\n4. Water (D) is essential for plant growth, but it is not the direct product of sunlight. Plants use water to make food through photosynthesis, but the water is absorbed from the soil.\n\nTherefore, the correct answer is C. food.",
+      "answer_ids": {
+        "soil.": 362,
+        "minerals.": 426,
+        "food.": 356,
+        "water.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "soil.": 0.006500244140625,
+        "minerals.": 0.01214599609375,
+        "food.": 0.96484375,
+        "water.": 0.002105712890625
+      },
+      "processing_time": 5.485674142837524,
+      "sampler": "dcbs",
+      "pred_id": 356,
+      "predicted_answer": "food.",
+      "correct": true,
+      "elapsed_ms": 9196.245670318604,
+      "cluster_info": null
+    },
+    {
+      "id": "MCAS_2001_5_19",
+      "sentence": "Plants use sunlight to make",
+      "options": [
+        "soil.",
+        "minerals.",
+        "food.",
+        "water."
+      ],
+      "correct_answer": "food.",
+      "correct_option": "3",
+      "cot_reasoning": "To determine the correct answer, let's analyze the options step by step:\n\n1. Plants use sunlight to make food through a process called photosynthesis. This process involves converting light energy from the sun into chemical energy in the form of glucose, which is a type of sugar that serves as energy for the plant.\n\n2. Soils (A) are not directly involved in the process of making food for plants. Soils provide nutrients and support plant growth, but they do not produce food.\n\n3. Minerals (B) are inorganic substances that are not directly involved in the process of making food for plants. While plants may absorb minerals from the soil, they do not produce them.\n\n4. Water (D) is essential for plant growth, but it is not the direct product of sunlight. Plants use water to make food through photosynthesis, but the water is absorbed from the soil.\n\nTherefore, the correct answer is C. food.",
+      "answer_ids": {
+        "soil.": 362,
+        "minerals.": 426,
+        "food.": 356,
+        "water.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "soil.": 0.006500244140625,
+        "minerals.": 0.01214599609375,
+        "food.": 0.96484375,
+        "water.": 0.002105712890625
+      },
+      "processing_time": 5.485674142837524,
+      "sampler": "greedy",
+      "pred_id": 356,
+      "predicted_answer": "food.",
+      "correct": true,
+      "elapsed_ms": 6106.394529342651,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_SC_413631",
+      "sentence": "Which of these correctly identifies the way materials are transported in a plant?",
+      "options": [
+        "Xylem carries water from the roots to the leaves.",
+        "Phloem carries minerals from the roots to the leaves.",
+        "Xylem carries sugars from the flowers to the stems.",
+        "Phloem carries water from the flowers to the stems."
+      ],
+      "correct_answer": "Xylem carries water from the roots to the leaves.",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Xylem carries water from the roots to the leaves. - This is incorrect because Xylem is primarily involved in transporting water and minerals from the roots to the leaves, not the other way around.\n\nB. Phloem carries minerals from the roots to the leaves. - This is incorrect because Phloem is primarily involved in transporting sugars, amino acids, and other organic compounds from the leaves to the rest of the plant, not minerals.\n\nC. Xylem carries sugars from the flowers to the stems. - This is incorrect because Xylem is primarily involved in transporting water and minerals from the roots to the leaves, not sugars from flowers to stems.\n\nD. Phloem carries water from the flowers to the stems. - This is the correct answer. Phloem is a type of vascular tissue that transports sugars, amino acids, and other organic compounds produced by photosynthesis from the leaves to the rest of the plant, including the stems.\n\nTherefore, the correct answer is D. Phloem carries water from the flowers to the stems.",
+      "answer_ids": {
+        "Xylem carries water from the roots to the leaves.": 362,
+        "Phloem carries minerals from the roots to the leaves.": 426,
+        "Xylem carries sugars from the flowers to the stems.": 356,
+        "Phloem carries water from the flowers to the stems.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "Xylem carries water from the roots to the leaves.": 0.00147247314453125,
+        "Phloem carries minerals from the roots to the leaves.": 0.00579833984375,
+        "Xylem carries sugars from the flowers to the stems.": 0.00147247314453125,
+        "Phloem carries water from the flowers to the stems.": 0.9765625
+      },
+      "processing_time": 6.840563535690308,
+      "sampler": "dcbs",
+      "pred_id": 423,
+      "predicted_answer": "Phloem carries water from the flowers to the stems.",
+      "correct": false,
+      "elapsed_ms": 10258.63766670227,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_SC_413631",
+      "sentence": "Which of these correctly identifies the way materials are transported in a plant?",
+      "options": [
+        "Xylem carries water from the roots to the leaves.",
+        "Phloem carries minerals from the roots to the leaves.",
+        "Xylem carries sugars from the flowers to the stems.",
+        "Phloem carries water from the flowers to the stems."
+      ],
+      "correct_answer": "Xylem carries water from the roots to the leaves.",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Xylem carries water from the roots to the leaves. - This is incorrect because Xylem is primarily involved in transporting water and minerals from the roots to the leaves, not the other way around.\n\nB. Phloem carries minerals from the roots to the leaves. - This is incorrect because Phloem is primarily involved in transporting sugars, amino acids, and other organic compounds from the leaves to the rest of the plant, not minerals.\n\nC. Xylem carries sugars from the flowers to the stems. - This is incorrect because Xylem is primarily involved in transporting water and minerals from the roots to the leaves, not sugars from flowers to stems.\n\nD. Phloem carries water from the flowers to the stems. - This is the correct answer. Phloem is a type of vascular tissue that transports sugars, amino acids, and other organic compounds produced by photosynthesis from the leaves to the rest of the plant, including the stems.\n\nTherefore, the correct answer is D. Phloem carries water from the flowers to the stems.",
+      "answer_ids": {
+        "Xylem carries water from the roots to the leaves.": 362,
+        "Phloem carries minerals from the roots to the leaves.": 426,
+        "Xylem carries sugars from the flowers to the stems.": 356,
+        "Phloem carries water from the flowers to the stems.": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "Xylem carries water from the roots to the leaves.": 0.00147247314453125,
+        "Phloem carries minerals from the roots to the leaves.": 0.00579833984375,
+        "Xylem carries sugars from the flowers to the stems.": 0.00147247314453125,
+        "Phloem carries water from the flowers to the stems.": 0.9765625
+      },
+      "processing_time": 6.840563535690308,
+      "sampler": "greedy",
+      "pred_id": 423,
+      "predicted_answer": "Phloem carries water from the flowers to the stems.",
+      "correct": false,
+      "elapsed_ms": 6682.1441650390625,
+      "cluster_info": null
+    }
+  ],
+  "prediction_differences": [
+    {
+      "id": "Mercury_182158",
+      "sentence": "A student has just completed a laboratory activity. What is the last action that the student should perform before leaving the lab area?",
+      "dcbs_answer": "wash hands",
+      "greedy_answer": "turn off all equipment",
+      "cluster_info": null,
+      "answer_probs": {
+        "wash hands": 0.036865234375,
+        "turn off all equipment": 0.83984375,
+        "put away all glassware": 0.032470703125,
+        "wash instruments and table tops": 0.0252685546875
+      }
+    }
+  ],
+  "evaluation_completed_at": "2025-06-08 18:26:24"
+}

@@ -1,0 +1,379 @@
+{
+  "statistics": {
+    "dcbs": {
+      "accuracy": 80.0,
+      "correct": 4,
+      "total": 5,
+      "avg_time_ms": 10763.79599571228,
+      "confidence_interval": [
+        37.55282641185388,
+        96.37768390302125
+      ]
+    },
+    "greedy": {
+      "accuracy": 80.0,
+      "correct": 4,
+      "total": 5,
+      "avg_time_ms": 5901.358222961426,
+      "confidence_interval": [
+        37.55282641185388,
+        96.37768390302125
+      ]
+    }
+  },
+  "config": {
+    "model": "meta-llama/Llama-3.2-1B-Instruct",
+    "total_examples": 5,
+    "methods": [
+      "dcbs",
+      "greedy"
+    ],
+    "include_cot": true,
+    "enable_caching": true,
+    "clustering_method": "dbscan"
+  },
+  "detailed_results": [
+    {
+      "id": "arc_easy_1",
+      "sentence": "A student wants to know how much space a cube takes up. Which unit should the student use?",
+      "options": [
+        "square inches",
+        "cubic inches",
+        "inches",
+        "ounces"
+      ],
+      "correct_answer": "cubic inches",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the unit of space a cube takes up, we need to consider the dimensions of a cube. A cube has three dimensions: length, width, and height. \n\nSince a cube has equal length, width, and height, we can calculate the volume of the cube by multiplying the length, width, and height. \n\nVolume = length * width * height\nVolume = length^3\n\nSince we are not given the length, width, or height, we can't directly calculate the volume. However, we can express the volume in terms of the given dimensions.\n\nLet's assume the length, width, and height are all equal to 1 unit for simplicity. Then, the volume would be:\nVolume = 1^3 = 1 cubic unit\n\nSo, the correct unit to use is cubic inches.",
+      "answer_ids": {
+        "square inches": 362,
+        "cubic inches": 426,
+        "inches": 356,
+        "ounces": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "square inches": 0.01348876953125,
+        "cubic inches": 0.9453125,
+        "inches": 0.01348876953125,
+        "ounces": 0.00927734375
+      },
+      "processing_time": 10.169931173324585,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "cubic inches",
+      "correct": true,
+      "elapsed_ms": 14043.25270652771,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_1",
+      "sentence": "A student wants to know how much space a cube takes up. Which unit should the student use?",
+      "options": [
+        "square inches",
+        "cubic inches",
+        "inches",
+        "ounces"
+      ],
+      "correct_answer": "cubic inches",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the unit of space a cube takes up, we need to consider the dimensions of a cube. A cube has three dimensions: length, width, and height. \n\nSince a cube has equal length, width, and height, we can calculate the volume of the cube by multiplying the length, width, and height. \n\nVolume = length * width * height\nVolume = length^3\n\nSince we are not given the length, width, or height, we can't directly calculate the volume. However, we can express the volume in terms of the given dimensions.\n\nLet's assume the length, width, and height are all equal to 1 unit for simplicity. Then, the volume would be:\nVolume = 1^3 = 1 cubic unit\n\nSo, the correct unit to use is cubic inches.",
+      "answer_ids": {
+        "square inches": 362,
+        "cubic inches": 426,
+        "inches": 356,
+        "ounces": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "square inches": 0.01348876953125,
+        "cubic inches": 0.9453125,
+        "inches": 0.01348876953125,
+        "ounces": 0.00927734375
+      },
+      "processing_time": 10.169931173324585,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "cubic inches",
+      "correct": true,
+      "elapsed_ms": 6432.901620864868,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_2",
+      "sentence": "Which characteristic do all living organisms share?",
+      "options": [
+        "They reproduce",
+        "They move",
+        "They make sounds",
+        "They eat meat"
+      ],
+      "correct_answer": "They reproduce",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. They reproduce - This is a characteristic of living organisms, but it's not a universal characteristic. Some organisms, like plants, reproduce through seeds or spores, but not all living organisms reproduce in the same way.\n\nB. They move - This is a characteristic of living organisms, but it's not a universal characteristic. Some organisms, like plants, are stationary, while others, like insects, are mobile.\n\nC. They make sounds - This is a characteristic of living organisms, but it's not a universal characteristic. Some organisms, like plants, do not make sounds, while others, like animals, do.\n\nD. They eat meat - This is a characteristic of some living organisms, but not all. Many organisms, like plants, are herbivores, carnivores, or omnivores, and do not eat meat.\n\nConsidering the options, the most universal characteristic of all living organisms is that they reproduce. This is a fundamental aspect of life, and all living organisms, regardless of their type, have the ability to reproduce.\n\nThe best answer is A.",
+      "answer_ids": {
+        "They reproduce": 362,
+        "They move": 426,
+        "They make sounds": 356,
+        "They eat meat": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "They reproduce": 0.98828125,
+        "They move": 0.0035552978515625,
+        "They make sounds": 0.001678466796875,
+        "They eat meat": 0.002777099609375
+      },
+      "processing_time": 7.560783863067627,
+      "sampler": "dcbs",
+      "pred_id": 362,
+      "predicted_answer": "They reproduce",
+      "correct": true,
+      "elapsed_ms": 12104.251384735107,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_2",
+      "sentence": "Which characteristic do all living organisms share?",
+      "options": [
+        "They reproduce",
+        "They move",
+        "They make sounds",
+        "They eat meat"
+      ],
+      "correct_answer": "They reproduce",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. They reproduce - This is a characteristic of living organisms, but it's not a universal characteristic. Some organisms, like plants, reproduce through seeds or spores, but not all living organisms reproduce in the same way.\n\nB. They move - This is a characteristic of living organisms, but it's not a universal characteristic. Some organisms, like plants, are stationary, while others, like insects, are mobile.\n\nC. They make sounds - This is a characteristic of living organisms, but it's not a universal characteristic. Some organisms, like plants, do not make sounds, while others, like animals, do.\n\nD. They eat meat - This is a characteristic of some living organisms, but not all. Many organisms, like plants, are herbivores, carnivores, or omnivores, and do not eat meat.\n\nConsidering the options, the most universal characteristic of all living organisms is that they reproduce. This is a fundamental aspect of life, and all living organisms, regardless of their type, have the ability to reproduce.\n\nThe best answer is A.",
+      "answer_ids": {
+        "They reproduce": 362,
+        "They move": 426,
+        "They make sounds": 356,
+        "They eat meat": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 362,
+      "answer_probs": {
+        "They reproduce": 0.98828125,
+        "They move": 0.0035552978515625,
+        "They make sounds": 0.001678466796875,
+        "They eat meat": 0.002777099609375
+      },
+      "processing_time": 7.560783863067627,
+      "sampler": "greedy",
+      "pred_id": 362,
+      "predicted_answer": "They reproduce",
+      "correct": true,
+      "elapsed_ms": 8390.875339508057,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_3",
+      "sentence": "What happens when a solid is heated?",
+      "options": [
+        "It becomes a gas",
+        "It melts",
+        "It freezes",
+        "It evaporates"
+      ],
+      "correct_answer": "It melts",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct answer, let's analyze the process of heating a solid.\n\nWhen a solid is heated, the molecules gain energy and start moving more rapidly. This increased motion causes the solid's particles to vibrate more vigorously, which can lead to a change in the solid's state. \n\nThe correct process is that the solid's particles gain kinetic energy and start moving more rapidly, causing the solid to melt. This is a fundamental concept in physics and chemistry, and it's a key step in understanding the behavior of solids.\n\nSo, the correct answer is B. It melts.",
+      "answer_ids": {
+        "It becomes a gas": 362,
+        "It melts": 426,
+        "It freezes": 356,
+        "It evaporates": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "It becomes a gas": 0.00836181640625,
+        "It melts": 0.96875,
+        "It freezes": 0.01080322265625,
+        "It evaporates": 0.00145721435546875
+      },
+      "processing_time": 6.81352162361145,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "It melts",
+      "correct": true,
+      "elapsed_ms": 10006.935596466064,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_3",
+      "sentence": "What happens when a solid is heated?",
+      "options": [
+        "It becomes a gas",
+        "It melts",
+        "It freezes",
+        "It evaporates"
+      ],
+      "correct_answer": "It melts",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct answer, let's analyze the process of heating a solid.\n\nWhen a solid is heated, the molecules gain energy and start moving more rapidly. This increased motion causes the solid's particles to vibrate more vigorously, which can lead to a change in the solid's state. \n\nThe correct process is that the solid's particles gain kinetic energy and start moving more rapidly, causing the solid to melt. This is a fundamental concept in physics and chemistry, and it's a key step in understanding the behavior of solids.\n\nSo, the correct answer is B. It melts.",
+      "answer_ids": {
+        "It becomes a gas": 362,
+        "It melts": 426,
+        "It freezes": 356,
+        "It evaporates": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "It becomes a gas": 0.00836181640625,
+        "It melts": 0.96875,
+        "It freezes": 0.01080322265625,
+        "It evaporates": 0.00145721435546875
+      },
+      "processing_time": 6.81352162361145,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "It melts",
+      "correct": true,
+      "elapsed_ms": 3953.9244174957275,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_4",
+      "sentence": "Which of these is a renewable energy source?",
+      "options": [
+        "Coal",
+        "Oil",
+        "Solar",
+        "Natural gas"
+      ],
+      "correct_answer": "Solar",
+      "correct_option": "3",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Coal: Coal is a non-renewable energy source, as it is a fossil fuel that is formed from ancient plants and is not replenished in a short period of time. It takes millions of years to form.\n\nB. Oil: Oil is also a non-renewable energy source, as it is a fossil fuel that is formed from ancient plants and is not replenished in a short period of time.\n\nC. Solar: Solar energy is a renewable energy source, as it is generated from the energy stored in the sun's rays and is replenished naturally over time.\n\nD. Natural gas: Natural gas is a fossil fuel, which means it is a non-renewable energy source, as it is formed from ancient plants and is not replenished in a short period of time.\n\nTherefore, the correct answer is C. Solar.",
+      "answer_ids": {
+        "Coal": 362,
+        "Oil": 426,
+        "Solar": 356,
+        "Natural gas": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "Coal": 0.000789642333984375,
+        "Oil": 0.0024261474609375,
+        "Solar": 0.98046875,
+        "Natural gas": 0.000789642333984375
+      },
+      "processing_time": 6.139565467834473,
+      "sampler": "dcbs",
+      "pred_id": 356,
+      "predicted_answer": "Solar",
+      "correct": true,
+      "elapsed_ms": 9793.252229690552,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_4",
+      "sentence": "Which of these is a renewable energy source?",
+      "options": [
+        "Coal",
+        "Oil",
+        "Solar",
+        "Natural gas"
+      ],
+      "correct_answer": "Solar",
+      "correct_option": "3",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Coal: Coal is a non-renewable energy source, as it is a fossil fuel that is formed from ancient plants and is not replenished in a short period of time. It takes millions of years to form.\n\nB. Oil: Oil is also a non-renewable energy source, as it is a fossil fuel that is formed from ancient plants and is not replenished in a short period of time.\n\nC. Solar: Solar energy is a renewable energy source, as it is generated from the energy stored in the sun's rays and is replenished naturally over time.\n\nD. Natural gas: Natural gas is a fossil fuel, which means it is a non-renewable energy source, as it is formed from ancient plants and is not replenished in a short period of time.\n\nTherefore, the correct answer is C. Solar.",
+      "answer_ids": {
+        "Coal": 362,
+        "Oil": 426,
+        "Solar": 356,
+        "Natural gas": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 356,
+      "answer_probs": {
+        "Coal": 0.000789642333984375,
+        "Oil": 0.0024261474609375,
+        "Solar": 0.98046875,
+        "Natural gas": 0.000789642333984375
+      },
+      "processing_time": 6.139565467834473,
+      "sampler": "greedy",
+      "pred_id": 356,
+      "predicted_answer": "Solar",
+      "correct": true,
+      "elapsed_ms": 6025.169610977173,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_5",
+      "sentence": "What is the main function of roots in plants?",
+      "options": [
+        "To make food",
+        "To absorb water",
+        "To produce flowers",
+        "To release oxygen"
+      ],
+      "correct_answer": "To absorb water",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. To make food - This is a primary function of roots in plants, as they absorb water and nutrients from the soil to produce glucose through photosynthesis.\n\nB. To absorb water - While roots do absorb water, this is not their primary function. They also absorb nutrients and minerals from the soil.\n\nC. To produce flowers - This is not a primary function of roots. Flowers are produced by plants, but roots are responsible for absorbing nutrients and water.\n\nD. To release oxygen - This is not a primary function of roots. While roots do release oxygen through respiration, this is not their main function.\n\nBased on this analysis, the correct answer is A. To make food.",
+      "answer_ids": {
+        "To make food": 362,
+        "To absorb water": 426,
+        "To produce flowers": 356,
+        "To release oxygen": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "To make food": 0.99609375,
+        "To absorb water": 0.00080108642578125,
+        "To produce flowers": 0.00022983551025390625,
+        "To release oxygen": 0.0003337860107421875
+      },
+      "processing_time": 4.843719482421875,
+      "sampler": "dcbs",
+      "pred_id": 362,
+      "predicted_answer": "To make food",
+      "correct": false,
+      "elapsed_ms": 7871.288061141968,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_5",
+      "sentence": "What is the main function of roots in plants?",
+      "options": [
+        "To make food",
+        "To absorb water",
+        "To produce flowers",
+        "To release oxygen"
+      ],
+      "correct_answer": "To absorb water",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. To make food - This is a primary function of roots in plants, as they absorb water and nutrients from the soil to produce glucose through photosynthesis.\n\nB. To absorb water - While roots do absorb water, this is not their primary function. They also absorb nutrients and minerals from the soil.\n\nC. To produce flowers - This is not a primary function of roots. Flowers are produced by plants, but roots are responsible for absorbing nutrients and water.\n\nD. To release oxygen - This is not a primary function of roots. While roots do release oxygen through respiration, this is not their main function.\n\nBased on this analysis, the correct answer is A. To make food.",
+      "answer_ids": {
+        "To make food": 362,
+        "To absorb water": 426,
+        "To produce flowers": 356,
+        "To release oxygen": 423
+      },
+      "filter_tokens": "{426, 362, 356, 423}",
+      "correct_id": 426,
+      "answer_probs": {
+        "To make food": 0.99609375,
+        "To absorb water": 0.00080108642578125,
+        "To produce flowers": 0.00022983551025390625,
+        "To release oxygen": 0.0003337860107421875
+      },
+      "processing_time": 4.843719482421875,
+      "sampler": "greedy",
+      "pred_id": 362,
+      "predicted_answer": "To make food",
+      "correct": false,
+      "elapsed_ms": 4703.920125961304,
+      "cluster_info": null
+    }
+  ],
+  "prediction_differences": [],
+  "evaluation_completed_at": "2025-06-08 18:08:08"
+}

@@ -29,6 +29,6 @@ class EvaluationConfig:
     dbscan_min_samples: int = 2  # DBSCAN minimum samples
     hierarchical_linkage: str = "average"  # Hierarchical clustering linkage
     debug_mode: bool = False  # Enable verbose debug logging
-    enable_cluster_history: bool = False  # Track cluster assignments
+    enable_cluster_history: bool = True  # Track cluster assignments
     temperature: Optional[float] = None # Temperature for sampling
     top_k: Optional[int] = None # Top-K value for sampling

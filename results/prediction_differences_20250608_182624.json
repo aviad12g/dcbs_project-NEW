@@ -1,0 +1,15 @@
+[
+  {
+    "id": "Mercury_182158",
+    "sentence": "A student has just completed a laboratory activity. What is the last action that the student should perform before leaving the lab area?",
+    "dcbs_answer": "wash hands",
+    "greedy_answer": "turn off all equipment",
+    "cluster_info": null,
+    "answer_probs": {
+      "wash hands": 0.036865234375,
+      "turn off all equipment": 0.83984375,
+      "put away all glassware": 0.032470703125,
+      "wash instruments and table tops": 0.0252685546875
+    }
+  }
+]

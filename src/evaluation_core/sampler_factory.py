@@ -19,6 +19,7 @@ from src.dcbs import (
     TopNCandidateSelector,
     CategorySampler,
     GreedyCategorySelector,
+    InformationGainCategorySelector,
     GreedyTokenSelector,
     TemperatureSampler,
     TopKSampler,
@@ -38,7 +39,9 @@ class SamplerFactory:
         dbscan_min_samples: int = 2,
         hierarchical_linkage: str = "average",
         debug_mode: bool = False,
-        enable_cluster_history: bool = False,
+        enable_cluster_history: bool = True,
+        use_information_gain: bool = True,
+        kl_threshold: float = 0.1,
     ) -> DCBSSampler:
         """
         Create a DCBS sampler with the specified clustering method.
@@ -50,6 +53,10 @@ class SamplerFactory:
             dbscan_eps: DBSCAN epsilon parameter
             dbscan_min_samples: DBSCAN minimum samples parameter
             hierarchical_linkage: Linkage criterion for hierarchical clustering
+            debug_mode: Enable verbose debug logging for DCBS
+            enable_cluster_history: Record cluster assignments and probabilities
+            use_information_gain: Use information-gain pruning to avoid low-probability clusters
+            kl_threshold: KL divergence threshold for cluster pruning
             
         Returns:
             Configured DCBS sampler instance
@@ -57,9 +64,17 @@ class SamplerFactory:
         # Create candidate selector
         candidate_selector = TopNCandidateSelector(top_n=config.top_n)
         
-        # Create category sampler
+        # Create category sampler with optional information-gain pruning
+        if use_information_gain:
+            category_selector = InformationGainCategorySelector(
+                kl_threshold=kl_threshold,
+                min_clusters=1
+            )
+        else:
+            category_selector = GreedyCategorySelector()
+        
         category_sampler = CategorySampler(
-            category_selector=GreedyCategorySelector(),
+            category_selector=category_selector,
             token_selector=GreedyTokenSelector()
         )
         
@@ -98,7 +113,10 @@ class SamplerFactory:
         dbscan_min_samples: int = 2,
         hierarchical_linkage: str = "average",
         debug_mode: bool = False,
-        enable_cluster_history: bool = False,
+        enable_cluster_history: bool = True,
+        requested_samplers: Optional[list] = None,
+        use_information_gain: bool = True,
+        kl_threshold: float = 0.1,
     ) -> Dict[str, object]:
         """
         Create all sampler instances based on configuration.
@@ -112,6 +130,9 @@ class SamplerFactory:
             hierarchical_linkage: Linkage criterion for hierarchical clustering
             debug_mode: Enable verbose debug logging for DCBS
             enable_cluster_history: Record cluster assignments and probabilities
+            requested_samplers: List of sampler names to create (if None, creates all)
+            use_information_gain: Use information-gain pruning for DCBS clusters
+            kl_threshold: KL divergence threshold for cluster pruning
             
         Returns:
             Dictionary mapping sampler names to sampler instances
@@ -119,10 +140,11 @@ class SamplerFactory:
         # Use config's clustering method if none specified
         effective_clustering_method = clustering_method or getattr(config, 'clustering_method', 'dbscan')
         
-        samplers = {
-            "greedy": GreedySampler(),
-            "top_p": TopPSampler(p=config.top_p),
-            "dcbs": SamplerFactory.create_dcbs_sampler(
+        # Define all available samplers
+        all_samplers = {
+            "greedy": lambda: GreedySampler(),
+            "top_p": lambda: TopPSampler(p=config.top_p),
+            "dcbs": lambda: SamplerFactory.create_dcbs_sampler(
                 config,
                 context,
                 effective_clustering_method,
@@ -131,16 +153,29 @@ class SamplerFactory:
                 hierarchical_linkage,
                 debug_mode=debug_mode,
                 enable_cluster_history=enable_cluster_history,
+                use_information_gain=use_information_gain,
+                kl_threshold=kl_threshold,
             ),
-            "random": RandomSampler(),
+            "random": lambda: RandomSampler(),
         }
 
         # Add TemperatureSampler if temperature is specified
         if config.temperature is not None:
-            samplers["temperature"] = TemperatureSampler(temperature=config.temperature)
+            all_samplers["temperature"] = lambda: TemperatureSampler(temperature=config.temperature)
 
         # Add TopKSampler if top_k is specified
         if config.top_k is not None:
-            samplers["top_k"] = TopKSampler(k=config.top_k)
+            all_samplers["top_k"] = lambda: TopKSampler(k=config.top_k)
+
+        # Create only requested samplers, or all if none specified
+        if requested_samplers is None:
+            requested_samplers = list(all_samplers.keys())
+        
+        samplers = {}
+        for name in requested_samplers:
+            if name in all_samplers:
+                samplers[name] = all_samplers[name]()
+            else:
+                raise ValueError(f"Unknown sampler: {name}. Available: {list(all_samplers.keys())}")
 
         return samplers 

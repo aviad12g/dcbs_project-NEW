@@ -11,8 +11,10 @@ from .category_sampling import (
     CategorySelector,
     TokenSelector,
     GreedyCategorySelector,
+    InformationGainCategorySelector,
     GreedyTokenSelector,
     greedy_category_sampler,
+    information_gain_category_sampler,
 )
 from .clustering import (
     CandidateSelector,
@@ -76,8 +78,10 @@ __all__ = [
     "FilteredCandidateSelector",
     # Category sampling implementations
     "GreedyCategorySelector",
+    "InformationGainCategorySelector",
     "GreedyTokenSelector",
     "greedy_category_sampler",
+    "information_gain_category_sampler",
     # Cache management
     "CacheConfig",
     "DCBSCacheManager",

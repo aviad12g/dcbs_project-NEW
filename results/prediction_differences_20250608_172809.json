@@ -1,0 +1,301 @@
+[
+  {
+    "id": "MCAS_2001_5_19",
+    "sentence": "Plants use sunlight to make",
+    "dcbs_answer": "water.",
+    "greedy_answer": "food.",
+    "cluster_info": null,
+    "answer_probs": {
+      "soil.": 0.010009765625,
+      "minerals.": 0.0078125,
+      "food.": 0.90234375,
+      "water.": 0.0654296875
+    }
+  },
+  {
+    "id": "MCAS_1998_4_11",
+    "sentence": "A dish of sugar water was left on a window sill. One week later, there were only sugar crystals left in the dish. The water was gone. The best explanation for the appearance of sugar crystals is",
+    "dcbs_answer": "the water evaporated.",
+    "greedy_answer": "the air condensed.",
+    "cluster_info": null,
+    "answer_probs": {
+      "some of the water was absorbed by the dish.": 0.003021240234375,
+      "the air condensed.": 0.94921875,
+      "the light shining on the window sill produced more sugar.": 0.003875732421875,
+      "the water evaporated.": 0.011962890625
+    }
+  },
+  {
+    "id": "Mercury_SC_LBS10784",
+    "sentence": "Using a softball bat to hit a softball is an example of using which simple machine?",
+    "dcbs_answer": "inclined plane",
+    "greedy_answer": "lever",
+    "cluster_info": null,
+    "answer_probs": {
+      "pulley": 0.001495361328125,
+      "lever": 0.9921875,
+      "inclined plane": 0.000377655029296875,
+      "wheel and axle": 0.00131988525390625
+    }
+  },
+  {
+    "id": "NCEOGA_2013_8_36",
+    "sentence": "Where do plants get most of the energy they need to live and grow?",
+    "dcbs_answer": "sunlight",
+    "greedy_answer": "soil",
+    "cluster_info": null,
+    "answer_probs": {
+      "water": 0.02587890625,
+      "soil": 0.96875,
+      "air": 0.00113677978515625,
+      "sunlight": 0.0021209716796875
+    }
+  },
+  {
+    "id": "Mercury_SC_415412",
+    "sentence": "Which is a statement about climate?",
+    "dcbs_answer": "The temperature range today was 10\u00b0C to 20\u00b0C.",
+    "greedy_answer": "The average high temperature in May is 20\u00b0C.",
+    "cluster_info": null,
+    "answer_probs": {
+      "The average temperature yesterday was 15\u00b0C.": 0.005767822265625,
+      "The temperature range today was 10\u00b0C to 20\u00b0C.": 0.00738525390625,
+      "The high temperature tomorrow will be 14\u00b0C.": 0.002716064453125,
+      "The average high temperature in May is 20\u00b0C.": 0.96875
+    }
+  },
+  {
+    "id": "NYSEDREGENTS_2015_8_21",
+    "sentence": "Which factor is most likely to cause the number of rabbits living in an area to increase?",
+    "dcbs_answer": "less water",
+    "greedy_answer": "lack of shelter",
+    "cluster_info": null,
+    "answer_probs": {
+      "less water": 0.00022220611572265625,
+      "fewer predators": 0.02001953125,
+      "lack of shelter": 0.96484375,
+      "limited food": 0.00836181640625
+    }
+  },
+  {
+    "id": "Mercury_SC_LBS10680",
+    "sentence": "What allows a light bulb to give off light?",
+    "dcbs_answer": "the battery pushing light through the wire",
+    "greedy_answer": "the current flowing through the wire to the light bulb",
+    "cluster_info": null,
+    "answer_probs": {
+      "the current flowing through the wire to the light bulb": 1.0,
+      "the light bulb giving electrical energy to the battery": 0.0001392364501953125,
+      "the light bulb generating heat energy": 6.580352783203125e-05,
+      "the battery pushing light through the wire": 5.817413330078125e-05
+    }
+  },
+  {
+    "id": "MCAS_2000_4_29",
+    "sentence": "When white, fluffy clouds appear in Massachusetts, the weather that day will MOST LIKELY be",
+    "dcbs_answer": "foggy.",
+    "greedy_answer": "fair.",
+    "cluster_info": null,
+    "answer_probs": {
+      "fair.": 0.98046875,
+      "stormy.": 0.005828857421875,
+      "foggy.": 0.0004215240478515625,
+      "rainy.": 0.00147247314453125
+    }
+  },
+  {
+    "id": "Mercury_405057",
+    "sentence": "During science class, a teacher explains that the samples the students are studying are made of two or more minerals. What are the students studying?",
+    "dcbs_answer": "elements",
+    "greedy_answer": "rocks",
+    "cluster_info": null,
+    "answer_probs": {
+      "gases": 0.040283203125,
+      "rocks": 0.490234375,
+      "elements": 0.337890625,
+      "molecules": 0.1240234375
+    }
+  },
+  {
+    "id": "Mercury_SC_405231",
+    "sentence": "A scientist found fossils of ocean shells on a mountain top. Based on this find, which statement can be made?",
+    "dcbs_answer": "The shells were carried by the wind.",
+    "greedy_answer": "The shells once lived on dry land.",
+    "cluster_info": null,
+    "answer_probs": {
+      "The climate was once colder.": 0.02978515625,
+      "The shells were carried by the wind.": 0.01806640625,
+      "The mountain was covered by water.": 0.01092529296875,
+      "The shells once lived on dry land.": 0.87109375
+    }
+  },
+  {
+    "id": "Mercury_7015978",
+    "sentence": "A bond is formed when an electron is transferred from a sodium atom to a chlorine atom. What happens to the sodium atom during this process?",
+    "dcbs_answer": "The atom becomes a positive ion.",
+    "greedy_answer": "The atomic number decreases.",
+    "cluster_info": null,
+    "answer_probs": {
+      "The mass of the atom increases.": 0.021240234375,
+      "The atom becomes an isotope.": 0.018798828125,
+      "The atomic number decreases.": 0.90625,
+      "The atom becomes a positive ion.": 0.039794921875
+    }
+  },
+  {
+    "id": "Mercury_SC_400707",
+    "sentence": "The tops of some mountains are sharp and pointed, while the tops of others are smooth and rounded. This difference was most likely caused by",
+    "dcbs_answer": "erosion and weathering.",
+    "greedy_answer": "rocks melted underground by lava.",
+    "cluster_info": null,
+    "answer_probs": {
+      "rivers flooding along a coastal plain.": 0.0030517578125,
+      "erosion and weathering.": 0.0064697265625,
+      "earthquakes and waves.": 0.0016326904296875,
+      "rocks melted underground by lava.": 0.9609375
+    }
+  },
+  {
+    "id": "Mercury_7205590",
+    "sentence": "Solar radiation provides more heat near the equator than near the poles on Earth. The greatest amount of heat is moved away from the equator by",
+    "dcbs_answer": "surface winds.",
+    "greedy_answer": "ocean currents.",
+    "cluster_info": null,
+    "answer_probs": {
+      "ocean currents.": 0.9921875,
+      "aquatic plants.": 0.00191497802734375,
+      "surface winds.": 0.000797271728515625,
+      "tectonic plates.": 0.00191497802734375
+    }
+  },
+  {
+    "id": "Mercury_SC_415390",
+    "sentence": "Erin wants to make a strong, light chair. Which natural material should she use?",
+    "dcbs_answer": "clay",
+    "greedy_answer": "wood",
+    "cluster_info": null,
+    "answer_probs": {
+      "iron": 0.006439208984375,
+      "granite": 0.006439208984375,
+      "clay": 0.0016326904296875,
+      "wood": 0.95703125
+    }
+  },
+  {
+    "id": "Mercury_SC_408436",
+    "sentence": "Jonathon was studying bears. He found out that bears are born with some behaviors and learn others from their environment. Which behavior does a bear most likely inherit?",
+    "dcbs_answer": "how to hibernate during the winter",
+    "greedy_answer": "how to live in human neighborhoods",
+    "cluster_info": null,
+    "answer_probs": {
+      "how to find food in garbage cans": 0.0093994140625,
+      "how to hibernate during the winter": 0.0064697265625,
+      "how to seek shelter in a hollow log": 0.00238037109375,
+      "how to live in human neighborhoods": 0.9609375
+    }
+  },
+  {
+    "id": "Mercury_SC_401143",
+    "sentence": "A group of the same species of fish swim together to increase an individual's",
+    "dcbs_answer": "chance of survival.",
+    "greedy_answer": "visibility to predators.",
+    "cluster_info": null,
+    "answer_probs": {
+      "swimming speed.": 0.040771484375,
+      "body temperature.": 0.01165771484375,
+      "chance of survival.": 0.00157928466796875,
+      "visibility to predators.": 0.92578125
+    }
+  },
+  {
+    "id": "Mercury_7108045",
+    "sentence": "Some antibiotics used to treat infections in humans are also used to treat chickens, but some groups oppose this practice. The overuse of the antibiotics will most likely influence the natural selection of which type of organisms?",
+    "dcbs_answer": "microbes that are susceptible to the antibiotics",
+    "greedy_answer": "microbes that are resistant to the antibiotics",
+    "cluster_info": null,
+    "answer_probs": {
+      "chickens that naturally make the antibiotics": 0.0810546875,
+      "microbes that are resistant to the antibiotics": 0.36328125,
+      "microbes that are susceptible to the antibiotics": 0.2490234375,
+      "chickens that are resistant to infection": 0.283203125
+    }
+  },
+  {
+    "id": "Mercury_7071418",
+    "sentence": "A scientist finds a metamorphic rock formation next to a magma chamber and determines that it was originally a sedimentary rock formation. He concludes that the temperature of the magma chamber caused the rock formation to become metamorphic. Which is another reliable explanation of how the rock formation was changed?",
+    "dcbs_answer": "pressure on the rock formation inside Earth",
+    "greedy_answer": "a quick burial of the rocks by tons of volcanic ash",
+    "cluster_info": null,
+    "answer_probs": {
+      "weight of heavy machinery moving over the rocks": 0.007232666015625,
+      "pressure on the rock formation inside Earth": 0.00823974609375,
+      "a sandstorm that caused the rocks to be eroded": 0.002349853515625,
+      "a quick burial of the rocks by tons of volcanic ash": 0.94921875
+    }
+  },
+  {
+    "id": "Mercury_SC_407370",
+    "sentence": "Earth orbiting the Sun causes",
+    "dcbs_answer": "the phases of the Moon.",
+    "greedy_answer": "the changing of the seasons.",
+    "cluster_info": null,
+    "answer_probs": {
+      "the changing of the seasons.": 0.9921875,
+      "daily tidal cycles.": 0.0031585693359375,
+      "day to become night.": 0.00042724609375,
+      "the phases of the Moon.": 0.0010223388671875
+    }
+  },
+  {
+    "id": "Mercury_SC_401308",
+    "sentence": "Which event helps to renew a resource?",
+    "dcbs_answer": "A car is filled with gasoline.",
+    "greedy_answer": "An offshore rig pumps oil.",
+    "cluster_info": null,
+    "answer_probs": {
+      "A seed is planted from a tree.": 0.005218505859375,
+      "An offshore rig pumps oil.": 0.9921875,
+      "A car is filled with gasoline.": 0.00012302398681640625,
+      "An office is heated with coal.": 0.00017833709716796875
+    }
+  },
+  {
+    "id": "Mercury_7114923",
+    "sentence": "Clownfish take shelter in the tentacles of sea anemones and keep sea anemones clean. Which type of relationship does this represent?",
+    "dcbs_answer": "commensalism",
+    "greedy_answer": "mutualism",
+    "cluster_info": null,
+    "answer_probs": {
+      "parasitism": 0.01226806640625,
+      "commensalism": 0.0260009765625,
+      "mutualism": 0.66796875,
+      "neutralism": 0.0294189453125
+    }
+  },
+  {
+    "id": "Mercury_400279",
+    "sentence": "A student heats the same amount of two different liquids over Bunsen burners. Each liquid is at room temperature when the student begins. If liquid 1 has a higher specific heat than liquid 2, then liquid 1 will",
+    "dcbs_answer": "take longer to increase in temperature.",
+    "greedy_answer": "condense over a longer period.",
+    "cluster_info": null,
+    "answer_probs": {
+      "evaporate sooner.": 0.0164794921875,
+      "take longer to increase in temperature.": 0.039794921875,
+      "condense over a longer period.": 0.796875,
+      "chemically break down at a faster rate.": 0.051025390625
+    }
+  },
+  {
+    "id": "Mercury_7113890",
+    "sentence": "Scientists have discovered organisms that thrive in hot water that is 90\u00b0C (194\u00b0F) and do not need sunlight or oxygen to live. Into which kingdom would the scientists classify these organisms?",
+    "dcbs_answer": "Protista",
+    "greedy_answer": "Fungi",
+    "cluster_info": null,
+    "answer_probs": {
+      "Archaebacteria": 0.003997802734375,
+      "Fungi": 0.8671875,
+      "Plantae": 0.005157470703125,
+      "Protista": 0.1171875
+    }
+  }
+]

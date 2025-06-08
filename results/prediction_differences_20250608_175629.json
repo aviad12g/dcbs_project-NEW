@@ -1,0 +1,41 @@
+[
+  {
+    "id": "MCAS_2001_5_19",
+    "sentence": "Plants use sunlight to make",
+    "dcbs_answer": "water.",
+    "greedy_answer": "food.",
+    "cluster_info": null,
+    "answer_probs": {
+      "soil.": 0.010009765625,
+      "minerals.": 0.0078125,
+      "food.": 0.90234375,
+      "water.": 0.0654296875
+    }
+  },
+  {
+    "id": "MCAS_1998_4_11",
+    "sentence": "A dish of sugar water was left on a window sill. One week later, there were only sugar crystals left in the dish. The water was gone. The best explanation for the appearance of sugar crystals is",
+    "dcbs_answer": "the water evaporated.",
+    "greedy_answer": "the air condensed.",
+    "cluster_info": null,
+    "answer_probs": {
+      "some of the water was absorbed by the dish.": 0.003021240234375,
+      "the air condensed.": 0.94921875,
+      "the light shining on the window sill produced more sugar.": 0.003875732421875,
+      "the water evaporated.": 0.011962890625
+    }
+  },
+  {
+    "id": "Mercury_SC_LBS10784",
+    "sentence": "Using a softball bat to hit a softball is an example of using which simple machine?",
+    "dcbs_answer": "inclined plane",
+    "greedy_answer": "lever",
+    "cluster_info": null,
+    "answer_probs": {
+      "pulley": 0.001495361328125,
+      "lever": 0.9921875,
+      "inclined plane": 0.000377655029296875,
+      "wheel and axle": 0.00131988525390625
+    }
+  }
+]
