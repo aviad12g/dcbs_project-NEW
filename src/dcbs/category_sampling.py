@@ -294,7 +294,14 @@ class CategorySampler:
             return candidate_ids[best_idx]
         
         # Select cluster using the category selector
-        selected_cluster_idx = self.category_selector.select_category(cluster_probs)
+        # Check if selector supports cluster information (for confidence weighting)
+        if hasattr(self.category_selector, 'select_category') and \
+           len(self.category_selector.select_category.__code__.co_varnames) > 2:
+            # Selector accepts clusters parameter (ConfidenceAwareCategorySelector)
+            selected_cluster_idx = self.category_selector.select_category(cluster_probs, clusters)
+        else:
+            # Standard selector (GreedyCategorySelector, InformationGainCategorySelector)
+            selected_cluster_idx = self.category_selector.select_category(cluster_probs)
         
         # Safety check: ensure cluster index is valid
         if selected_cluster_idx >= len(clusters):
@@ -326,6 +333,65 @@ class CategorySampler:
         )
 
 
+class ConfidenceAwareCategorySelector(CategorySelector):
+    """
+    Selects category using confidence weighting to avoid spurious small clusters.
+    
+    Uses the formula: confidence = probability_mass - λ*size_penalty - μ*entropy_penalty
+    This prevents selection of tiny noisy clusters that may have misleading probability mass.
+    """
+    
+    def __init__(self, size_penalty_weight: float = 0.1, entropy_penalty_weight: float = 0.05):
+        """
+        Initialize confidence-aware category selector.
+        
+        Args:
+            size_penalty_weight: Weight for penalizing small clusters (λ in formula)
+            entropy_penalty_weight: Weight for penalizing high-entropy clusters (μ in formula)
+        """
+        self.size_penalty_weight = size_penalty_weight
+        self.entropy_penalty_weight = entropy_penalty_weight
+    
+    def select_category(self, cluster_probs: List[float], clusters: Optional[List[List[int]]] = None) -> int:
+        """
+        Select category using confidence weighting.
+        
+        Args:
+            cluster_probs: Probabilities for each cluster
+            clusters: Optional cluster membership information (for size penalty)
+            
+        Returns:
+            Index of the selected cluster
+        """
+        if not cluster_probs:
+            return 0
+        
+        confidence_scores = []
+        
+        for i, prob_mass in enumerate(cluster_probs):
+            if prob_mass <= 0:
+                confidence_scores.append(float('-inf'))
+                continue
+            
+            # Base score is probability mass
+            confidence = prob_mass
+            
+            # Size penalty: penalize very small clusters
+            if clusters and i < len(clusters) and clusters[i]:
+                cluster_size = len(clusters[i])
+                size_penalty = self.size_penalty_weight * (1.0 / cluster_size)
+                confidence -= size_penalty
+            
+            # Entropy penalty: penalize uncertain clusters
+            entropy = -prob_mass * np.log(prob_mass + 1e-8)
+            entropy_penalty = self.entropy_penalty_weight * entropy
+            confidence -= entropy_penalty
+            
+            confidence_scores.append(confidence)
+        
+        return int(np.argmax(confidence_scores))
+
+
 # Default instance with greedy selection for both category and token
 greedy_category_sampler = CategorySampler(
     category_selector=GreedyCategorySelector(),
@@ -335,5 +401,14 @@ greedy_category_sampler = CategorySampler(
 # Enhanced instance with information-gain pruning to avoid "garbage low-prob" selections
 information_gain_category_sampler = CategorySampler(
     category_selector=InformationGainCategorySelector(kl_threshold=0.1, min_clusters=1),
+    token_selector=GreedyTokenSelector()
+)
+
+# Confidence-aware instance that penalizes small and noisy clusters
+confidence_aware_category_sampler = CategorySampler(
+    category_selector=ConfidenceAwareCategorySelector(
+        size_penalty_weight=0.1,      # Penalize small clusters
+        entropy_penalty_weight=0.05   # Penalize high-entropy clusters
+    ),
     token_selector=GreedyTokenSelector()
 ) 

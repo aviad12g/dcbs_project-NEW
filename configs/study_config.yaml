@@ -2,7 +2,7 @@
 # Reference: Smith, J. et al. (2023). "Disjunctive Category Beam Search: Semantically Diverse Sampling for Language Models."
 
 # Model to use for evaluation
-model_path: "meta-llama/Llama-3.2-1B-Instruct"
+model_path: "microsoft/Phi-3.5-mini-instruct"
 
 # Main parameters
 clusters: 8  # Number of clusters for DCBS
@@ -13,8 +13,12 @@ sweep_top_n: [20, 50, 100]
 k: [8]
 p_values: [0.9]  # For top-p sampling
 
+# Evaluation settings
+include_cot: true         # Enable Chain of Thought reasoning
+enable_caching: true      # Enable DCBS caching for performance
+
 # Paths
-benchmark: "data/arc_easy_processed.json"
+benchmark: "data/arc_easy_full.json"
 output_file: "results/dcbs_evaluation.csv"
 
 # DCBS algorithm parameters

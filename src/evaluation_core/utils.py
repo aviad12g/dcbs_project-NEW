@@ -13,9 +13,40 @@ from src.errors import DataError, eval_logger as logger
 
 
 def load_benchmark_data(benchmark_path: str) -> List[Dict]:
-    """Load benchmark data with validation."""
+    """Load benchmark data with validation. Supports both file paths and dataset names."""
     logger.info(f"Loading benchmark: {benchmark_path}")
 
+    # Check if this is a dataset name (like 'arc_challenge') rather than a file path
+    if not os.path.exists(benchmark_path) and not benchmark_path.endswith('.json'):
+        # Try to load as a dataset name
+        try:
+            from data_loaders import load_dataset
+            logger.info(f"Loading dataset: {benchmark_path}")
+            dataset_data = load_dataset(benchmark_path)
+            
+            # Convert to the expected format
+            converted_data = []
+            for item in dataset_data:
+                converted_item = {
+                    "id": item["id"],
+                    "question": item["question"],
+                    "options": item["choices"],
+                    "correct_option": item["correct_option"],
+                    "correct_answer": item["correct_answer"]
+                }
+                converted_data.append(converted_item)
+            
+            logger.info(f"Loaded {len(converted_data)} examples from dataset {benchmark_path}")
+            return converted_data
+            
+        except ImportError:
+            logger.error("data_loaders module not available")
+            raise FileNotFoundError(f"Benchmark file not found: {benchmark_path}")
+        except Exception as e:
+            logger.error(f"Failed to load dataset {benchmark_path}: {e}")
+            raise DataError(f"Error loading dataset {benchmark_path}: {e}")
+
+    # Original file-based loading
     if not os.path.exists(benchmark_path):
         raise FileNotFoundError(f"Benchmark file not found: {benchmark_path}")
 

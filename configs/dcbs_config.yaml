@@ -29,6 +29,10 @@ dcbs_params:
   clustering_random_seed: 42    # Random seed for clustering
   min_batch_size: 3584          # Batch size for processing
 
+# Debug configuration
+debug_mode: false
+enable_cluster_history: true    # ENABLE cluster history for evaluation
+
 # Cache configuration (ENABLED)
 cache:
   embedding_cache_size: 1000    # Maximum cached token embeddings

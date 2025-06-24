@@ -118,16 +118,24 @@ class ExampleProcessor:
 
         predicted_answer = answer_result.get("selected_answer")
         
-        # Sample using the specified sampler with fresh logits
-        pred_id = sampler.sample(logits, filter_tokens=filter_tokens)
+        # Use the prediction from answer_question instead of calling sampler again
+        # This preserves the cluster history from the actual sampling decision
+        pred_id = answer_result.get("pred_token_id")
+        
+        # Fallback: if pred_token_id is None, sample again (but this shouldn't happen)
+        if pred_id is None:
+            logger.warning("pred_token_id is None, falling back to direct sampling")
+            pred_id = sampler.sample(logits, filter_tokens=filter_tokens)
 
         cluster_info = None
         if hasattr(sampler, "get_cluster_history"):
             history = sampler.get_cluster_history()
             if history:
                 cluster_info = history[-1]
-            if hasattr(sampler, "clear_debug_data"):
-                sampler.clear_debug_data()
+        
+        # Clear debug data AFTER extracting cluster info
+        if hasattr(sampler, "clear_debug_data"):
+            sampler.clear_debug_data()
         
         # Check correctness
         correct = (pred_id == correct_id)

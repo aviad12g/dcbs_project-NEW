@@ -15,6 +15,7 @@ DEFAULT_CLUSTER_CACHE_SIZE = 200  # Default size for clustering cache
 KMEANS_RANDOM_SEED = 42  # Standard seed for reproducibility across ML libraries
 KMEANS_DEFAULT_MAX_ITER = 100  # Default maximum iterations for convergence, allowing for stability
 KMEANS_MIN_BATCH_SIZE = 3584  # Optimal batch size determined by GPU memory constraints (7 * 512)
+KMEANS_DEFAULT_METRIC = "cosine"  # Distance metric for token embeddings (enforced cosine similarity)
 
 # DBSCAN Parameters
 DBSCAN_DEFAULT_EPS = 0.3  # Maximum distance between samples in a cluster

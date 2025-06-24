@@ -32,3 +32,10 @@ class EvaluationConfig:
     enable_cluster_history: bool = True  # Track cluster assignments
     temperature: Optional[float] = None # Temperature for sampling
     top_k: Optional[int] = None # Top-K value for sampling
+
+    # Multi-dataset evaluation
+    datasets: list = None  # List of datasets to evaluate
+    
+    # Disagreement tracking
+    enable_disagreement_tracking: bool = False  # Enable disagreement tracking
+    run_id: Optional[str] = None  # Run identifier for disagreement logs

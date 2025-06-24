@@ -6,6 +6,7 @@ import os
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from huggingface_hub import HfFolder
 
 
 def load_model_and_tokenizer(model_name=None, device="auto", load_in_4bit=False):
@@ -18,7 +19,12 @@ def load_model_and_tokenizer(model_name=None, device="auto", load_in_4bit=False)
 
         print(f"Loading model: {model_name}")
 
-        hf_token = os.environ.get("HF_HUB_TOKEN")
+        # Get HuggingFace token from multiple sources
+        hf_token = os.environ.get("HF_HUB_TOKEN") or HfFolder.get_token()
+        if hf_token:
+            print(f"Using HuggingFace token: {hf_token[:10]}...")
+        else:
+            print("Warning: No HuggingFace token found")
 
         if device == "auto":
             device = "cuda" if torch.cuda.is_available() else "cpu"

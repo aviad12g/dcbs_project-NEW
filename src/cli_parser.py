@@ -192,6 +192,28 @@ class ArgumentParserSetup:
             help="Record cluster history and probabilities",
         )
 
+        # Dataset selection
+        parser.add_argument(
+            "--datasets",
+            nargs="+",
+            choices=["arc_easy", "arc_challenge", "hellaswag", "mmlu_stem", "all"],
+            default=["arc_easy"],
+            help="Datasets to evaluate (can specify multiple or 'all')",
+        )
+
+        # Disagreement tracking
+        parser.add_argument(
+            "--enable-disagreement-tracking",
+            action="store_true",
+            help="Enable token-level disagreement tracking between DCBS and greedy",
+        )
+
+        parser.add_argument(
+            "--run-id",
+            type=str,
+            help="Custom run identifier for disagreement logs",
+        )
+
         # Sampler selection
         parser.add_argument(
             "--samplers",
@@ -217,6 +239,13 @@ class ArgumentParserSetup:
             type=int,
             default=None,
             help="Top-K value for sampling. Selects from the top K most probable tokens.",
+        )
+
+        # Checkpoint management
+        parser.add_argument(
+            "--list-checkpoints",
+            action="store_true",
+            help="List available checkpoints and exit",
         )
 
         return parser

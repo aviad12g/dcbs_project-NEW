@@ -18,7 +18,7 @@ from src.dcbs import (
     HierarchicalClusterer,
     TopNCandidateSelector,
     CategorySampler,
-    GreedyCategorySelector,
+    ConfidenceAwareCategorySelector,
     InformationGainCategorySelector,
     GreedyTokenSelector,
     TemperatureSampler,
@@ -40,7 +40,7 @@ class SamplerFactory:
         hierarchical_linkage: str = "average",
         debug_mode: bool = False,
         enable_cluster_history: bool = True,
-        use_information_gain: bool = True,
+        use_information_gain: bool = False,
         kl_threshold: float = 0.1,
     ) -> DCBSSampler:
         """
@@ -71,7 +71,7 @@ class SamplerFactory:
                 min_clusters=1
             )
         else:
-            category_selector = GreedyCategorySelector()
+            category_selector = ConfidenceAwareCategorySelector()
         
         category_sampler = CategorySampler(
             category_selector=category_selector,
@@ -115,7 +115,7 @@ class SamplerFactory:
         debug_mode: bool = False,
         enable_cluster_history: bool = True,
         requested_samplers: Optional[list] = None,
-        use_information_gain: bool = True,
+        use_information_gain: bool = False,
         kl_threshold: float = 0.1,
     ) -> Dict[str, object]:
         """

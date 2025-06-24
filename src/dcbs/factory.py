@@ -10,7 +10,7 @@ from typing import Optional
 
 from .cache_manager import CacheConfig
 from .clustering import KMeansClusterer, TopNCandidateSelector
-from .category_sampling import CategorySampler, GreedyCategorySelector, GreedyTokenSelector
+from .category_sampling import CategorySampler, ConfidenceAwareCategorySelector, GreedyTokenSelector
 from .constants import DEFAULT_K_CLUSTERS, DEFAULT_TOP_N, DEFAULT_EMBEDDING_CACHE_SIZE, DEFAULT_CLUSTER_CACHE_SIZE
 from .samplers.base import SamplingContext
 from .samplers.dcbs_sampler import DCBSSampler
@@ -50,7 +50,7 @@ class DCBSSamplerFactory:
         clusterer = KMeansClusterer(k=k)
         candidate_selector = TopNCandidateSelector(top_n=top_n)
         category_sampler = CategorySampler(
-            category_selector=GreedyCategorySelector(),
+            category_selector=ConfidenceAwareCategorySelector(),
             token_selector=GreedyTokenSelector()
         )
         

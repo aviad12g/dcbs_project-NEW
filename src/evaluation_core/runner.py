@@ -3,8 +3,11 @@ Evaluation runner with fixed conversation flow and parameter handling.
 
 This module provides the main evaluation logic using components
 that implement proper conversation flow and remove ChatTemplateManager dependency.
+Enhanced with checkpointing, GPU optimization, and resumption capabilities.
 """
 
+import signal
+import sys
 import time
 import traceback
 from typing import Dict, List
@@ -14,6 +17,8 @@ from src.evaluation_core.config import EvaluationConfig
 from src.evaluation_core.model_manager import ModelManager
 from src.evaluation_core.example_processor import ExampleProcessor
 from src.evaluation_core.sampler_factory import SamplerFactory
+from src.evaluation_core.checkpoint import CheckpointManager, CheckpointState
+from src.evaluation_core.gpu_optimizer import get_gpu_optimizer
 
 
 def calculate_confidence_interval(correct: int, total: int) -> tuple:
@@ -36,16 +41,53 @@ def calculate_confidence_interval(correct: int, total: int) -> tuple:
 
 
 class EvaluationRunner:
-    """Evaluation runner with proper conversation flow."""
+    """Evaluation runner with proper conversation flow, checkpointing, and GPU optimization."""
 
-    def __init__(self, config: EvaluationConfig, requested_samplers: list = None):
+    def __init__(self, config: EvaluationConfig, requested_samplers: list = None, 
+                 run_id: str = None, enable_checkpointing: bool = True):
         self.config = config
         self.requested_samplers = requested_samplers
         self.model_manager = ModelManager(config.model_name, config.load_in_4bit)
         
+        # Initialize checkpointing
+        self.enable_checkpointing = enable_checkpointing
+        self.checkpoint_manager = CheckpointManager() if enable_checkpointing else None
+        self.run_id = run_id or f"eval_{int(time.time())}"
+        
+        # Initialize GPU optimizer
+        self.gpu_optimizer = get_gpu_optimizer()
+        
+        # Signal handling for graceful interruption
+        if enable_checkpointing:
+            signal.signal(signal.SIGINT, self._signal_handler)
+            signal.signal(signal.SIGTERM, self._signal_handler)
+        
+        # State tracking
+        self.current_state = None
+        self.interrupted = False
+        
+    def _signal_handler(self, signum, frame):
+        """Handle interruption signals gracefully."""
+        logger.info(f"Received signal {signum}, saving checkpoint and exiting...")
+        self.interrupted = True
+        if self.current_state and self.checkpoint_manager:
+            self.checkpoint_manager.save_checkpoint(self.current_state)
+        sys.exit(0)
+        
+    def try_resume_from_checkpoint(self) -> CheckpointState:
+        """Try to resume from an existing checkpoint."""
+        if not self.checkpoint_manager:
+            return None
+            
+        checkpoint = self.checkpoint_manager.load_checkpoint(self.run_id)
+        if checkpoint:
+            logger.info(f"Resuming from checkpoint: {checkpoint.completed_examples}/{checkpoint.total_examples} examples completed")
+            return checkpoint
+        return None
+    
     def run_evaluation(self, benchmark_data: List[Dict]) -> Dict:
-        """Run evaluation using proper conversation flow."""
-        # Load model
+        """Run evaluation using proper conversation flow with checkpointing and GPU optimization."""
+        # Load model first 
         model, tokenizer, context = self.model_manager.load_model()
         
         # Create samplers with context and clustering parameters
@@ -61,6 +103,34 @@ class EvaluationRunner:
             requested_samplers=self.requested_samplers,
         )
         
+        # Try to resume from checkpoint after samplers are created
+        checkpoint = self.try_resume_from_checkpoint()
+        start_idx = 0
+        all_results = []
+        method_stats = {
+            name: {"correct": 0, "total": 0, "times": []}
+            for name in self.samplers.keys()
+        }
+        prediction_map = {}
+        
+        if checkpoint:
+            start_idx = checkpoint.current_example_idx
+            all_results = checkpoint.results
+            # Reconstruct method_stats and prediction_map from checkpoint results
+            for result in all_results:
+                sampler_name = result.get("sampler")
+                if sampler_name in method_stats:
+                    method_stats[sampler_name]["total"] += 1
+                    if result.get("correct"):
+                        method_stats[sampler_name]["correct"] += 1
+                    method_stats[sampler_name]["times"].append(result.get("elapsed_ms", 0))
+                    
+                    # Rebuild prediction map
+                    ex_id = result.get("id")
+                    if ex_id not in prediction_map:
+                        prediction_map[ex_id] = {}
+                    prediction_map[ex_id][sampler_name] = result
+        
         # Create processor
         processor = ExampleProcessor(model, tokenizer, context)
         
@@ -74,15 +144,16 @@ class EvaluationRunner:
         if hasattr(self.config, 'clustering_method'):
             logger.info(f"DCBS clustering method: {self.config.clustering_method}")
 
-        all_results = []
-        prediction_map = {}
-        method_stats = {
-            name: {"correct": 0, "total": 0, "times": []}
-            for name in self.samplers.keys()
-        }
+        if start_idx > 0:
+            logger.info(f"Resuming from example {start_idx + 1}")
 
-        # Process examples
+        # Process examples starting from checkpoint position
+        examples_since_checkpoint = 0
         for i, example in enumerate(benchmark_data):
+            # Skip already processed examples
+            if i < start_idx:
+                continue
+                
             if (i + 1) % 10 == 0 or i == 0:
                 logger.info(f"Processing example {i + 1}/{len(benchmark_data)}")
 
@@ -107,6 +178,9 @@ class EvaluationRunner:
                     final_result = {**processed_result, **eval_result}
                     # Remove logits for JSON serialization
                     final_result.pop("logits", None)
+                    
+                    # Convert any sets to lists for JSON serialization
+                    final_result = self._make_json_serializable(final_result)
                     all_results.append(final_result)
 
                     # Track predictions for difference analysis
@@ -121,6 +195,23 @@ class EvaluationRunner:
                     if eval_result["correct"]:
                         stats["correct"] += 1
                     stats["times"].append(eval_result["elapsed_ms"])
+
+                # Update checkpoint state
+                examples_since_checkpoint += 1
+                if self.checkpoint_manager and self.checkpoint_manager.should_save_checkpoint(examples_since_checkpoint):
+                    completed_examples = len([r for r in all_results if r.get("sampler") == list(self.samplers.keys())[0]])
+                    self.current_state = CheckpointState(
+                        run_id=self.run_id,
+                        timestamp=time.strftime("%Y-%m-%d %H:%M:%S"),
+                        total_examples=len(benchmark_data),
+                        completed_examples=completed_examples,
+                        current_example_idx=i + 1,
+                        sampler_states={name: {} for name in self.samplers.keys()},
+                        results=all_results,
+                        config=self.config.__dict__
+                    )
+                    self.checkpoint_manager.save_checkpoint(self.current_state)
+                    examples_since_checkpoint = 0
 
             except Exception as e:
                 logger.error(f"Error processing example {i}: {e}")
@@ -177,5 +268,22 @@ class EvaluationRunner:
             "evaluation_completed_at": time.strftime("%Y-%m-%d %H:%M:%S"),
         }
 
+        # Clean up checkpoint on successful completion
+        if self.checkpoint_manager:
+            self.checkpoint_manager.cleanup_checkpoint(self.run_id)
+
         logger.info("Evaluation completed successfully!")
-        return results 
+        return results
+    
+    def _make_json_serializable(self, obj):
+        """Convert sets and other non-serializable objects to JSON-serializable format."""
+        if isinstance(obj, dict):
+            return {key: self._make_json_serializable(value) for key, value in obj.items()}
+        elif isinstance(obj, list):
+            return [self._make_json_serializable(item) for item in obj]
+        elif isinstance(obj, set):
+            return list(obj)
+        elif isinstance(obj, tuple):
+            return list(obj)
+        else:
+            return obj 

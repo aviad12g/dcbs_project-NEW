@@ -108,7 +108,7 @@ def run_analysis(results_dir=None, output_dir=None):
     
     print(f"\nKey findings:")
     for method, stats in statistics.items():
-        symbol = "🥇" if method == best_method else "  "
+        symbol = " *" if method == best_method else "  "
         print(f"   {symbol} {method.upper()}: {stats['accuracy']:.1f}% ({stats['correct']}/{stats['total']})")
     
     return 0

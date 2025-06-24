@@ -236,7 +236,7 @@ def generate_config_template() -> str:
 # Environment variables can be used with ${VAR_NAME} or ${VAR_NAME:default_value}
 
 # Model configuration
-model_path: "meta-llama/Llama-3.2-1B"  # HuggingFace model name or path
+model_path: "microsoft/Phi-3.5-mini-instruct"  # HuggingFace model name or path
 # Environment variable: DCBS_MODEL_PATH
 
 # Benchmark data
