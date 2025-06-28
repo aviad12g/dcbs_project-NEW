@@ -15,6 +15,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+import numpy as np
 
 from src.cli_parser import ArgumentParserSetup
 from src.config_builder import ConfigBuilder
@@ -24,6 +25,22 @@ from src.evaluation_core.gpu_optimizer import get_gpu_optimizer
 from src.evaluation_core.runner import EvaluationRunner
 from src.evaluation_core.utils import load_benchmark_data
 from src.visualization import generate_all_visualizations
+
+
+def convert_numpy_types(obj):
+    """Convert numpy types to native Python types for JSON serialization."""
+    if isinstance(obj, dict):
+        return {key: convert_numpy_types(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_numpy_types(item) for item in obj]
+    elif isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    else:
+        return obj
 
 
 def list_available_checkpoints():
@@ -71,22 +88,14 @@ def main():
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         run_id = f"eval_{timestamp}"
     
-    # Check for existing checkpoint
+    # Check for existing checkpoint - auto-resume without prompt for unattended runs
     checkpoint_manager = CheckpointManager()
     existing_checkpoint = checkpoint_manager.load_checkpoint(run_id)
     
     if existing_checkpoint:
-        print(f"\nFound existing checkpoint for run ID: {run_id}")
-        print(f"Progress: {existing_checkpoint.completed_examples}/{existing_checkpoint.total_examples} examples")
-        
-        resume = input("Resume from checkpoint? [Y/n]: ").strip().lower()
-        if resume in ['n', 'no']:
-            # Generate new run ID
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            run_id = f"eval_{timestamp}_new"
-            print(f"Starting new evaluation with run ID: {run_id}")
-        else:
-            print("Resuming from checkpoint...")
+        logger.info(f"Found existing checkpoint for run ID: {run_id}")
+        logger.info(f"Progress: {existing_checkpoint.completed_examples}/{existing_checkpoint.total_examples} examples")
+        logger.info("Auto-resuming from checkpoint...")
     
     try:
         # Load benchmark data
@@ -107,13 +116,13 @@ def main():
         
         results = runner.run_evaluation(benchmark_data)
         
-        # Save results with timestamp
+        # Save results with timestamp (convert numpy types first)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         results_file = f"results/evaluation_results_{timestamp}.json"
         
         Path("results").mkdir(exist_ok=True)
         with open(results_file, "w") as f:
-            json.dump(results, f, indent=2)
+            json.dump(convert_numpy_types(results), f, indent=2)
         
         logger.info(f"JSON results saved to: {results_file}")
         

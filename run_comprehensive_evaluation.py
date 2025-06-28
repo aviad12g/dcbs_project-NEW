@@ -24,28 +24,26 @@ def run_command(cmd: list, description: str) -> tuple[bool, str]:
     print(f"{'='*60}")
     
     try:
+        # Run with real-time output instead of capturing
+        print("Starting evaluation... (this may take several minutes)")
+        print("Press Ctrl+C to interrupt if needed.")
+        
         result = subprocess.run(
             cmd, 
-            capture_output=True, 
-            text=True, 
             check=False
         )
         
-        print("STDOUT:")
-        print(result.stdout)
-        
-        if result.stderr:
-            print("STDERR:")
-            print(result.stderr)
-        
         success = result.returncode == 0
         if success:
-            print(f"{description} completed successfully!")
+            print(f"\n{description} completed successfully!")
         else:
-            print(f"{description} failed with return code {result.returncode}")
+            print(f"\n{description} failed with return code {result.returncode}")
         
-        return success, result.stdout
+        return success, ""
         
+    except KeyboardInterrupt:
+        print(f"\n{description} interrupted by user")
+        return False, "interrupted"
     except Exception as e:
         print(f"{description} failed with exception: {e}")
         return False, str(e)
@@ -111,12 +109,11 @@ def main():
     print(f"   Clustering methods: {', '.join(clustering_methods)}")
     print(f"   Examples per dataset: {limit}")
     
-    # Confirmation
+    # Auto-proceed for unattended runs
     if not args.quick_test:
-        response = input("\nProceed with evaluation? [y/N]: ")
-        if response.lower() not in ['y', 'yes']:
-            print("Evaluation cancelled.")
-            return
+        print("\nProceeding with full evaluation (unattended mode)")
+    else:
+        print("\nProceeding with quick test")
     
     # Track all results
     all_results = []
@@ -158,7 +155,6 @@ def main():
                 "clustering_method": clustering_method,
                 "success": success,
                 "eval_name": eval_name,
-                "output_snippet": output[-500:] if output else "No output"
             })
             
             if not success:
