@@ -94,7 +94,7 @@ def main():
     # Create results directory
     results_dir = Path("results") / run_id
     results_dir.mkdir(parents=True, exist_ok=True)
-    print(f"📁 Results will be saved to: {results_dir}")
+    print(f"Results will be saved to: {results_dir}")
     
     # Determine datasets to run
     if "all" in args.datasets:
@@ -216,7 +216,7 @@ def main():
             }
         }, indent=2)
     
-    print(f"\n📄 Summary saved to: {summary_file}")
+    print(f"\nSummary saved to: {summary_file}")
     
     if len(successful) == len(all_results):
         print("\nALL EVALUATIONS COMPLETED SUCCESSFULLY!")
