@@ -187,6 +187,57 @@ The project implements four sampling strategies with a unified interface:
 - **Characteristics**: Maximum stochasticity, serves as baseline
 - **Performance**: 25.2% accuracy, 0.01ms average time
 
+## New Features & Extensions
+
+### Multi-Dataset Support
+- **ARC Easy & Challenge**: Science reasoning questions
+- **HellaSwag**: Commonsense reasoning about physical situations  
+- **MMLU STEM**: College-level STEM questions
+- **Unified dataset interface** with HuggingFace datasets integration
+
+### Advanced Clustering Methods
+- **DBSCAN**: Density-based clustering with automatic cluster detection
+- **Hierarchical**: Agglomerative clustering with configurable linkage methods
+- **Factory pattern** for easy clustering method switching
+
+### Fine-Grained Disagreement Tracking
+- **Token-level logging** of when DCBS and greedy sampling disagree
+- **JSONL event logs** with full context and probability data
+- **Who-was-right analysis** comparing final answer correctness
+- **Analysis notebooks** with visualizations and insights
+
+### Single Command Evaluation
+
+```bash
+# Run DCBS evaluation with DBSCAN clustering on all datasets
+python run_all.py --sampler dcbs --clusterer dbscan --datasets all --limit 50
+
+# Run comparison between greedy and DCBS with multiple clustering methods
+python run_all.py --sampler greedy,dcbs --clusterer dbscan,hierarchical --datasets arc_easy,hellaswag
+
+# Run with custom model and detailed logging
+python run_all.py --model meta-llama/Llama-3.2-3B-Instruct --sampler dcbs --clusterer dbscan --datasets all --run-id my_experiment
+```
+
+### CLI Flags
+
+- `--sampler {greedy,dcbs}`: Choose samplers to evaluate (can specify multiple)
+- `--clusterer {kmeans,dbscan,hierarchical}`: Choose clustering methods for DCBS
+- `--datasets {all,arc_easy,arc_challenge,hellaswag,mmlu_stem}`: Select datasets
+- `--limit N`: Limit examples per dataset for quick testing
+- `--run-id NAME`: Custom run identifier for organizing results
+- `--load-in-4bit`: Use 4-bit quantization for memory efficiency
+
+### Log Analysis
+
+```bash
+# Summarize disagreement logs
+python scripts/summarise_logs.py runs/20250101_123456/events.jsonl --detailed
+
+# Launch analysis notebook
+jupyter notebook notebooks/01_token_level_analysis.ipynb
+```
+
 ## Installation
 
 ### Quick Start

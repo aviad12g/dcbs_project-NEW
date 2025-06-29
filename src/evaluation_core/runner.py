@@ -1,81 +1,82 @@
 """
-Evaluation runner with fixed conversation flow and parameter handling.
+Evaluation runner with proper checkpointing and GPU optimization.
 
-This module provides the main evaluation logic using components
-that implement proper conversation flow and remove ChatTemplateManager dependency.
-Enhanced with checkpointing, GPU optimization, and resumption capabilities.
+This module handles the main evaluation loop with support for:
+- Proper checkpointing and resumption
+- Automatic GPU batch size optimization
+- Multi-GPU support
+- Signal handling for graceful interruption
 """
 
 import signal
 import sys
 import time
 import traceback
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from src.errors import eval_logger as logger
-from src.evaluation_core.config import EvaluationConfig
-from src.evaluation_core.model_manager import ModelManager
-from src.evaluation_core.example_processor import ExampleProcessor
-from src.evaluation_core.sampler_factory import SamplerFactory
 from src.evaluation_core.checkpoint import CheckpointManager, CheckpointState
+from src.evaluation_core.config import EvaluationConfig
+from src.evaluation_core.example_processor import ExampleProcessor
 from src.evaluation_core.gpu_optimizer import get_gpu_optimizer
+from src.evaluation_core.model_manager import ModelManager
+from src.evaluation_core.sampler_factory import SamplerFactory
 
 
 def calculate_confidence_interval(correct: int, total: int) -> tuple:
-    """Calculate binomial confidence interval for accuracy."""
-    import numpy as np
-    from scipy import stats
-    
+    """Calculate confidence interval for accuracy."""
     if total == 0:
         return (0.0, 0.0)
     
-    # Wilson score interval (more accurate than normal approximation)
-    p = correct / total
+    # Wilson score interval for 95% confidence
+    import math
     z = 1.96  # 95% confidence
+    p = correct / total
+    n = total
     
-    denominator = 1 + z**2 / total
-    center = (p + z**2 / (2 * total)) / denominator
-    margin = z * np.sqrt((p * (1 - p) + z**2 / (4 * total)) / total) / denominator
+    denominator = 1 + z**2 / n
+    centre_adjusted_probability = p + z**2 / (2 * n)
+    adjusted_standard_deviation = math.sqrt((p * (1 - p) + z**2 / (4 * n)) / n)
     
-    return (max(0, center - margin) * 100, min(100, center + margin) * 100)
+    lower_bound = (centre_adjusted_probability - z * adjusted_standard_deviation) / denominator
+    upper_bound = (centre_adjusted_probability + z * adjusted_standard_deviation) / denominator
+    
+    return (max(0.0, lower_bound * 100), min(100.0, upper_bound * 100))
 
 
 class EvaluationRunner:
-    """Evaluation runner with proper conversation flow, checkpointing, and GPU optimization."""
-
+    """Main evaluation runner with checkpointing and GPU optimization."""
+    
     def __init__(self, config: EvaluationConfig, requested_samplers: list = None, 
                  run_id: str = None, enable_checkpointing: bool = True):
+        """Initialize evaluation runner with enhanced capabilities."""
         self.config = config
         self.requested_samplers = requested_samplers
-        self.model_manager = ModelManager(config.model_name, config.load_in_4bit)
-        
-        # Initialize checkpointing
-        self.enable_checkpointing = enable_checkpointing
-        self.checkpoint_manager = CheckpointManager() if enable_checkpointing else None
         self.run_id = run_id or f"eval_{int(time.time())}"
+        self.enable_checkpointing = enable_checkpointing
         
-        # Initialize GPU optimizer
+        # Initialize managers
+        self.model_manager = ModelManager(config)
+        self.checkpoint_manager = CheckpointManager() if enable_checkpointing else None
         self.gpu_optimizer = get_gpu_optimizer()
-        
-        # Signal handling for graceful interruption
-        if enable_checkpointing:
-            signal.signal(signal.SIGINT, self._signal_handler)
-            signal.signal(signal.SIGTERM, self._signal_handler)
         
         # State tracking
         self.current_state = None
-        self.interrupted = False
+        self.samplers = {}
+        
+        # Setup signal handling for graceful interruption
+        signal.signal(signal.SIGINT, self._signal_handler)
+        signal.signal(signal.SIGTERM, self._signal_handler)
         
     def _signal_handler(self, signum, frame):
         """Handle interruption signals gracefully."""
-        logger.info(f"Received signal {signum}, saving checkpoint and exiting...")
-        self.interrupted = True
+        logger.info("Received interruption signal, saving checkpoint...")
         if self.current_state and self.checkpoint_manager:
             self.checkpoint_manager.save_checkpoint(self.current_state)
         sys.exit(0)
         
-    def try_resume_from_checkpoint(self) -> CheckpointState:
-        """Try to resume from an existing checkpoint."""
+    def try_resume_from_checkpoint(self) -> Optional[CheckpointState]:
+        """Try to resume from existing checkpoint."""
         if not self.checkpoint_manager:
             return None
             
@@ -84,11 +85,38 @@ class EvaluationRunner:
             logger.info(f"Resuming from checkpoint: {checkpoint.completed_examples}/{checkpoint.total_examples} examples completed")
             return checkpoint
         return None
-    
+
     def run_evaluation(self, benchmark_data: List[Dict]) -> Dict:
-        """Run evaluation using proper conversation flow with checkpointing and GPU optimization."""
+        """Run evaluation with proper checkpointing and GPU optimization."""
         # Load model first 
         model, tokenizer, context = self.model_manager.load_model()
+        
+        # Try to resume from checkpoint FIRST to get optimized config
+        checkpoint = self.try_resume_from_checkpoint()
+        
+        # If we have a checkpoint with optimized config, restore it
+        if checkpoint and hasattr(checkpoint, 'config') and checkpoint.config:
+            logger.info("Restoring optimized configuration from checkpoint")
+            # Restore key optimization parameters from checkpoint
+            checkpoint_config = checkpoint.config
+            if 'batch_size' in checkpoint_config:
+                self.config.batch_size = checkpoint_config['batch_size']
+                logger.info(f"Restored optimized batch size: {self.config.batch_size}")
+            if 'target_memory_utilization' in checkpoint_config:
+                # Update GPU optimizer with restored settings
+                self.gpu_optimizer.target_memory_utilization = checkpoint_config['target_memory_utilization']
+        else:
+            # Optimize batch size for GPU utilization (only if no checkpoint)
+            if self.gpu_optimizer.available_gpus:
+                optimal_batch_size = self.gpu_optimizer.get_optimal_batch_size(
+                    model, tokenizer, sample_input_length=512
+                )
+                logger.info(f"Auto-detected optimal batch size: {optimal_batch_size}")
+                # Update config with optimal batch size
+                if hasattr(self.config, 'batch_size'):
+                    original_batch_size = self.config.batch_size
+                    self.config.batch_size = optimal_batch_size
+                    logger.info(f"Updated batch size from {original_batch_size} to {optimal_batch_size}")
         
         # Create samplers with context and clustering parameters
         self.samplers = SamplerFactory.create_samplers(
@@ -103,8 +131,7 @@ class EvaluationRunner:
             requested_samplers=self.requested_samplers,
         )
         
-        # Try to resume from checkpoint after samplers are created
-        checkpoint = self.try_resume_from_checkpoint()
+        # Initialize state variables
         start_idx = 0
         all_results = []
         method_stats = {
@@ -113,31 +140,36 @@ class EvaluationRunner:
         }
         prediction_map = {}
         
-        if checkpoint:
-            start_idx = checkpoint.current_example_idx
-            all_results = checkpoint.results
-            # Reconstruct method_stats and prediction_map from checkpoint results
-            for result in all_results:
-                sampler_name = result.get("sampler")
-                if sampler_name in method_stats:
-                    method_stats[sampler_name]["total"] += 1
-                    if result.get("correct"):
-                        method_stats[sampler_name]["correct"] += 1
-                    method_stats[sampler_name]["times"].append(result.get("elapsed_ms", 0))
-                    
-                    # Rebuild prediction map
-                    ex_id = result.get("id")
-                    if ex_id not in prediction_map:
-                        prediction_map[ex_id] = {}
-                    prediction_map[ex_id][sampler_name] = result
-        
-        # Create processor
-        processor = ExampleProcessor(model, tokenizer, context)
-        
         # Limit data if requested
         if self.config.limit:
             benchmark_data = benchmark_data[: self.config.limit]
             logger.info(f"Limited evaluation to {self.config.limit} examples")
+
+        # Apply checkpoint data if available
+        if checkpoint:
+            start_idx = checkpoint.completed_examples  # Use completed_examples, not current_example_idx
+            all_results = checkpoint.results
+            
+            # Reconstruct method_stats from checkpoint results
+            # Group results by example to count correctly
+            processed_examples = set()
+            for result in all_results:
+                example_id = result.get("id")
+                sampler_name = result.get("sampler")
+                
+                if sampler_name in method_stats:
+                    # Only count each example once per sampler
+                    if (example_id, sampler_name) not in processed_examples:
+                        method_stats[sampler_name]["total"] += 1
+                        if result.get("correct"):
+                            method_stats[sampler_name]["correct"] += 1
+                        method_stats[sampler_name]["times"].append(result.get("elapsed_ms", 0))
+                        processed_examples.add((example_id, sampler_name))
+                    
+                    # Rebuild prediction map
+                    if example_id not in prediction_map:
+                        prediction_map[example_id] = {}
+                    prediction_map[example_id][sampler_name] = result
 
         logger.info(f"Starting evaluation on {len(benchmark_data)} examples")
         logger.info(f"Using samplers: {list(self.samplers.keys())}")
@@ -147,8 +179,13 @@ class EvaluationRunner:
         if start_idx > 0:
             logger.info(f"Resuming from example {start_idx + 1}")
 
+        # Create processor
+        processor = ExampleProcessor(model, tokenizer, context)
+
         # Process examples starting from checkpoint position
         examples_since_checkpoint = 0
+        utilization_history = []  # Track GPU utilization for dynamic adjustment
+        
         for i, example in enumerate(benchmark_data):
             # Skip already processed examples
             if i < start_idx:
@@ -156,6 +193,13 @@ class EvaluationRunner:
                 
             if (i + 1) % 10 == 0 or i == 0:
                 logger.info(f"Processing example {i + 1}/{len(benchmark_data)}")
+                
+                # Log GPU utilization periodically
+                if self.gpu_optimizer.available_gpus and (i + 1) % 50 == 0:
+                    usage_info = self.gpu_optimizer.monitor_gpu_usage()
+                    for gpu_id, info in usage_info.items():
+                        logger.info(f"GPU {gpu_id}: {info['utilization_percent']:.1f}% memory, "
+                                  f"{info['allocated_gb']:.1f}GB/{info['total_gb']:.1f}GB used")
 
             try:
                 # Process example once to get reasoning and logits
@@ -167,6 +211,9 @@ class EvaluationRunner:
                     reasoning_sampler, 
                     include_cot=self.config.include_cot
                 )
+
+                # Track results for this example
+                example_results = []
 
                 # Now evaluate with each sampler using the same reasoning/logits
                 for sampler_name, sampler in self.samplers.items():
@@ -181,7 +228,7 @@ class EvaluationRunner:
                     
                     # Convert any sets to lists for JSON serialization
                     final_result = self._make_json_serializable(final_result)
-                    all_results.append(final_result)
+                    example_results.append(final_result)
 
                     # Track predictions for difference analysis
                     ex_id = final_result.get("id")
@@ -196,19 +243,62 @@ class EvaluationRunner:
                         stats["correct"] += 1
                     stats["times"].append(eval_result["elapsed_ms"])
 
-                # Update checkpoint state
+                # Add all results for this example at once (atomic operation)
+                all_results.extend(example_results)
+
+                # Update checkpoint state after processing ALL samplers for this example
                 examples_since_checkpoint += 1
-                if self.checkpoint_manager and self.checkpoint_manager.should_save_checkpoint(examples_since_checkpoint):
-                    completed_examples = len([r for r in all_results if r.get("sampler") == list(self.samplers.keys())[0]])
+                completed_examples = i + 1  # Use actual example index + 1
+                
+                # Monitor GPU utilization and adjust batch size if needed
+                if self.gpu_optimizer.available_gpus and (i + 1) % 20 == 0:  # Check every 20 examples
+                    usage_info = self.gpu_optimizer.monitor_gpu_usage()
+                    current_utilization = max(gpu_info.get('utilization_percent', 0) for gpu_info in usage_info.values())
+                    utilization_history.append(current_utilization)
+                    
+                    # Keep only recent history (last 100 measurements)
+                    if len(utilization_history) > 100:
+                        utilization_history = utilization_history[-100:]
+                    
+                    # Attempt dynamic batch size adjustment if we have enough history
+                    if len(utilization_history) >= 10:
+                        current_batch_size = getattr(self.config, 'batch_size', 1)
+                        new_batch_size = self.gpu_optimizer.adjust_batch_size_if_needed(
+                            current_batch_size, utilization_history[-10:], model, tokenizer
+                        )
+                        if new_batch_size != current_batch_size:
+                            self.config.batch_size = new_batch_size
+                            logger.info(f"Dynamically adjusted batch size to {new_batch_size}")
+                
+                # Save checkpoint periodically or if we're getting close to memory limits
+                should_save = (
+                    self.checkpoint_manager and 
+                    self.checkpoint_manager.should_save_checkpoint(examples_since_checkpoint)
+                )
+                
+                # Also save if we detect high memory usage (emergency checkpoint)
+                if self.gpu_optimizer.available_gpus and not should_save:
+                    usage_info = self.gpu_optimizer.monitor_gpu_usage()
+                    max_utilization = max(gpu_info.get('utilization_percent', 0) for gpu_info in usage_info.values())
+                    if max_utilization > 90:  # Emergency checkpoint at 90% GPU memory
+                        should_save = True
+                        logger.warning(f"High GPU memory usage ({max_utilization:.1f}%), saving emergency checkpoint")
+                
+                if should_save:
+                    # Create config dict with current optimization settings
+                    config_dict = self.config.__dict__.copy()
+                    config_dict['target_memory_utilization'] = self.gpu_optimizer.target_memory_utilization
+                    config_dict['safety_margin'] = self.gpu_optimizer.safety_margin
+                    
                     self.current_state = CheckpointState(
                         run_id=self.run_id,
                         timestamp=time.strftime("%Y-%m-%d %H:%M:%S"),
                         total_examples=len(benchmark_data),
                         completed_examples=completed_examples,
-                        current_example_idx=i + 1,
+                        current_example_idx=i + 1,  # Next example to process
                         sampler_states={name: {} for name in self.samplers.keys()},
                         results=all_results,
-                        config=self.config.__dict__
+                        config=config_dict
                     )
                     self.checkpoint_manager.save_checkpoint(self.current_state)
                     examples_since_checkpoint = 0
@@ -216,6 +306,27 @@ class EvaluationRunner:
             except Exception as e:
                 logger.error(f"Error processing example {i}: {e}")
                 logger.error(f"Full traceback:\n{traceback.format_exc()}")
+                
+                # Save emergency checkpoint on error
+                if self.checkpoint_manager:
+                    logger.info("Saving emergency checkpoint due to error...")
+                    # Create config dict with current optimization settings
+                    config_dict = self.config.__dict__.copy()
+                    config_dict['target_memory_utilization'] = self.gpu_optimizer.target_memory_utilization
+                    config_dict['safety_margin'] = self.gpu_optimizer.safety_margin
+                    
+                    emergency_state = CheckpointState(
+                        run_id=self.run_id,
+                        timestamp=time.strftime("%Y-%m-%d %H:%M:%S"),
+                        total_examples=len(benchmark_data),
+                        completed_examples=i,  # Don't count the failed example
+                        current_example_idx=i,  # Retry this example
+                        sampler_states={name: {} for name in self.samplers.keys()},
+                        results=all_results,
+                        config=config_dict
+                    )
+                    self.checkpoint_manager.save_checkpoint(emergency_state)
+                
                 continue
 
         # Calculate final statistics
@@ -262,6 +373,8 @@ class EvaluationRunner:
                 "include_cot": self.config.include_cot,
                 "enable_caching": self.config.enable_caching,
                 "clustering_method": getattr(self.config, 'clustering_method', 'dbscan'),
+                "batch_size": getattr(self.config, 'batch_size', 'auto'),
+                "gpu_info": [str(gpu) for gpu in self.gpu_optimizer.available_gpus],
             },
             "detailed_results": all_results,
             "prediction_differences": differences,
@@ -283,7 +396,7 @@ class EvaluationRunner:
             return [self._make_json_serializable(item) for item in obj]
         elif isinstance(obj, set):
             return list(obj)
-        elif isinstance(obj, tuple):
-            return list(obj)
+        elif hasattr(obj, '__dict__'):
+            return self._make_json_serializable(obj.__dict__)
         else:
             return obj 

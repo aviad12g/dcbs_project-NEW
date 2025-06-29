@@ -1,0 +1,525 @@
+[
+  {
+    "id": "Mercury_182158",
+    "sentence": "A student has just completed a laboratory activity. What is the last action that the student should perform before leaving the lab area?",
+    "dcbs_answer": "wash hands",
+    "greedy_answer": "turn off all equipment",
+    "cluster_info": {
+      "candidate_count": 4,
+      "num_clusters": 4,
+      "selected_cluster": "1",
+      "selected_token": 362,
+      "cluster_sizes": [
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "cluster_probs": [
+        0.025634765625,
+        0.9609375,
+        0.00445556640625,
+        0.007354736328125
+      ],
+      "clusters": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "labels": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "answer_probs": {
+      "wash hands": 0.037841796875,
+      "turn off all equipment": 0.859375,
+      "put away all glassware": 0.033447265625,
+      "wash instruments and table tops": 0.02294921875
+    }
+  },
+  {
+    "id": "Mercury_7166145",
+    "sentence": "The circulatory system and the endocrine system work together in the human body. Which describes one way in which these systems interact?",
+    "dcbs_answer": "releasing hormones and transporting them to cells of the body",
+    "greedy_answer": "collecting waste products from the cells and transporting it out of the body",
+    "cluster_info": {
+      "candidate_count": 4,
+      "num_clusters": 4,
+      "selected_cluster": "0",
+      "selected_token": 426,
+      "cluster_sizes": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "cluster_probs": [
+        1.0,
+        0.00102996826171875,
+        0.0004291534423828125,
+        0.000335693359375,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "clusters": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "labels": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "answer_probs": {
+      "taking in oxygen and transporting it to cells of the body": 0.00168609619140625,
+      "releasing hormones and transporting them to cells of the body": 0.00168609619140625,
+      "absorbing nutrients from food and transporting them to cells in the body": 0.00168609619140625,
+      "collecting waste products from the cells and transporting it out of the body": 0.98828125
+    }
+  },
+  {
+    "id": "Mercury_SC_401777",
+    "sentence": "Which process best explains how the Grand Canyon became so wide?",
+    "dcbs_answer": "erosion",
+    "greedy_answer": "sedimentation",
+    "cluster_info": {
+      "candidate_count": 4,
+      "num_clusters": 4,
+      "selected_cluster": "0",
+      "selected_token": 426,
+      "cluster_sizes": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "cluster_probs": [
+        0.95703125,
+        0.03271484375,
+        0.00830078125,
+        0.0023651123046875,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "clusters": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "labels": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "answer_probs": {
+      "folding": 0.0030975341796875,
+      "erosion": 0.00396728515625,
+      "deposition": 0.00396728515625,
+      "sedimentation": 0.97265625
+    }
+  },
+  {
+    "id": "Mercury_SC_LBS10784",
+    "sentence": "Using a softball bat to hit a softball is an example of using which simple machine?",
+    "dcbs_answer": "wheel and axle",
+    "greedy_answer": "lever",
+    "cluster_info": {
+      "candidate_count": 4,
+      "num_clusters": 4,
+      "selected_cluster": "3",
+      "selected_token": 423,
+      "cluster_sizes": [
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "cluster_probs": [
+        0.005859375,
+        0.004547119140625,
+        0.004547119140625,
+        0.984375
+      ],
+      "clusters": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "labels": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "answer_probs": {
+      "pulley": 0.000545501708984375,
+      "lever": 0.984375,
+      "inclined plane": 0.0014801025390625,
+      "wheel and axle": 0.0031280517578125
+    }
+  },
+  {
+    "id": "NCEOGA_2013_8_36",
+    "sentence": "Where do plants get most of the energy they need to live and grow?",
+    "dcbs_answer": "soil",
+    "greedy_answer": "sunlight",
+    "cluster_info": {
+      "candidate_count": 4,
+      "num_clusters": 4,
+      "selected_cluster": "0",
+      "selected_token": 426,
+      "cluster_sizes": [
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "cluster_probs": [
+        0.85546875,
+        0.0546875,
+        0.0201416015625,
+        0.0703125
+      ],
+      "clusters": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "labels": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "answer_probs": {
+      "water": 0.008056640625,
+      "soil": 0.006256103515625,
+      "air": 0.006256103515625,
+      "sunlight": 0.9296875
+    }
+  },
+  {
+    "id": "Mercury_SC_408762",
+    "sentence": "Marshall learned that plants need a substance from the air to make their own food. What does a plant take from the air in the presence of sunlight?",
+    "dcbs_answer": "oxygen",
+    "greedy_answer": "carbon dioxide",
+    "cluster_info": {
+      "candidate_count": 4,
+      "num_clusters": 4,
+      "selected_cluster": "3",
+      "selected_token": 423,
+      "cluster_sizes": [
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "cluster_probs": [
+        0.00244140625,
+        0.007537841796875,
+        0.002777099609375,
+        0.98828125
+      ],
+      "clusters": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "labels": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "answer_probs": {
+      "carbon dioxide": 0.98046875,
+      "hydrogen": 0.007476806640625,
+      "nitrogen": 0.00274658203125,
+      "oxygen": 0.00311279296875
+    }
+  },
+  {
+    "id": "Mercury_7263008",
+    "sentence": "Which two theories of Moon formation propose that much or all of the material comprising the Moon came from Earth?",
+    "dcbs_answer": "The Fission Theory and the Giant Impact Theory",
+    "greedy_answer": "The Capture Theory and the Giant Impact Theory",
+    "cluster_info": {
+      "candidate_count": 4,
+      "num_clusters": 4,
+      "selected_cluster": "2",
+      "selected_token": 356,
+      "cluster_sizes": [
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "cluster_probs": [
+        0.01025390625,
+        0.06689453125,
+        0.8125,
+        0.10986328125
+      ],
+      "clusters": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "labels": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "answer_probs": {
+      "The Fission Theory and The Coaccretion Theory": 0.0242919921875,
+      "The Coaccretion Theory and The Capture Theory": 0.296875,
+      "The Fission Theory and the Giant Impact Theory": 0.07470703125,
+      "The Capture Theory and the Giant Impact Theory": 0.5546875
+    }
+  },
+  {
+    "id": "Mercury_SC_405231",
+    "sentence": "A scientist found fossils of ocean shells on a mountain top. Based on this find, which statement can be made?",
+    "dcbs_answer": "The shells once lived on dry land.",
+    "greedy_answer": "The mountain was covered by water.",
+    "cluster_info": {
+      "candidate_count": 4,
+      "num_clusters": 4,
+      "selected_cluster": "3",
+      "selected_token": 423,
+      "cluster_sizes": [
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "cluster_probs": [
+        0.032470703125,
+        0.06884765625,
+        0.060791015625,
+        0.83984375
+      ],
+      "clusters": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "labels": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "answer_probs": {
+      "The climate was once colder.": 0.001129150390625,
+      "The shells were carried by the wind.": 0.000774383544921875,
+      "The mountain was covered by water.": 0.9609375,
+      "The shells once lived on dry land.": 0.0064697265625
+    }
+  }
+]

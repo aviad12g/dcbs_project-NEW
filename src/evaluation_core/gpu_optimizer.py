@@ -47,14 +47,16 @@ class GPUInfo:
 class GPUOptimizer:
     """Optimizes GPU usage for evaluation workloads."""
     
-    def __init__(self, target_memory_utilization: float = 0.85):
+    def __init__(self, target_memory_utilization: float = 0.95, safety_margin: float = 0.90):
         """
         Initialize GPU optimizer.
         
         Args:
             target_memory_utilization: Target GPU memory utilization (0.0-1.0)
+            safety_margin: Safety margin for batch size selection (0.0-1.0)
         """
         self.target_memory_utilization = target_memory_utilization
+        self.safety_margin = safety_margin
         self.available_gpus = self._detect_gpus()
         self.optimal_batch_sizes = {}
         
@@ -84,7 +86,9 @@ class GPUOptimizer:
                               model, 
                               tokenizer, 
                               sample_input_length: int = 512,
-                              device_id: int = 0) -> int:
+                              device_id: int = 0,
+                              min_batch_size: int = 1,
+                              max_batch_size: int = 512) -> int:
         """
         Determine optimal batch size for the given model and GPU.
         
@@ -93,80 +97,132 @@ class GPUOptimizer:
             tokenizer: The tokenizer
             sample_input_length: Sample input length for testing
             device_id: GPU device ID
+            min_batch_size: Minimum batch size to test
+            max_batch_size: Maximum batch size to test
             
         Returns:
             Optimal batch size
         """
-        if device_id in self.optimal_batch_sizes:
-            return self.optimal_batch_sizes[device_id]
+        cache_key = f"{device_id}_{sample_input_length}_{min_batch_size}_{max_batch_size}"
+        if cache_key in self.optimal_batch_sizes:
+            return self.optimal_batch_sizes[cache_key]
         
-        if device_id >= len(self.available_gpus):
-            logger.warning(f"Invalid device_id {device_id}, using device 0")
-            device_id = 0
+        if not self.available_gpus or device_id >= len(self.available_gpus):
+            logger.warning(f"Invalid device_id {device_id} or no GPUs available, using batch size 1")
+            return 1
         
         gpu = self.available_gpus[device_id]
         device = gpu.device
         
-        # Start with a conservative batch size
-        batch_size = 1
-        max_batch_size = 1
+        # Clear cache before optimization
+        torch.cuda.empty_cache()
         
-        # Create sample inputs
-        sample_text = "This is a sample text for batch size optimization." * 10
+        # Record initial memory state
+        initial_allocated, _, initial_util = gpu.get_memory_info()
+        logger.info(f"Starting batch size optimization on {gpu.name}")
+        logger.info(f"Initial memory usage: {initial_util:.1f}%")
+        
+        # Create sample inputs - more realistic test data
+        sample_texts = [
+            "This is a sample question about mathematics and science that requires reasoning to solve correctly.",
+            "Here is another example of a complex problem that involves multiple steps and logical thinking.",
+            "Consider this scenario where we need to analyze data and draw conclusions based on evidence.",
+            "This question tests understanding of concepts and the ability to apply knowledge effectively."
+        ]
+        
+        optimal_batch_size = min_batch_size
         
         try:
             model.eval()
             with torch.no_grad():
                 # Binary search for optimal batch size
-                low, high = 1, 64
+                low, high = min_batch_size, max_batch_size
+                last_successful_batch_size = min_batch_size
                 
                 while low <= high:
                     mid = (low + high) // 2
                     
                     try:
-                        # Clear cache
+                        # Clear cache before each test
                         torch.cuda.empty_cache()
                         
-                        # Test batch processing
-                        inputs = [sample_text] * mid
+                        # Create batch of inputs
+                        batch_texts = []
+                        for i in range(mid):
+                            batch_texts.append(sample_texts[i % len(sample_texts)])
+                        
+                        # Tokenize batch
                         encoded = tokenizer(
-                            inputs, 
+                            batch_texts, 
                             return_tensors="pt", 
                             padding=True, 
                             truncation=True, 
                             max_length=sample_input_length
                         ).to(device)
                         
-                        # Forward pass
+                        # Test forward pass
+                        start_time = time.time()
                         outputs = model(**encoded)
                         
-                        # Check memory utilization
-                        _, _, utilization = gpu.get_memory_info()
+                        # Force computation to complete
+                        if hasattr(outputs, 'logits'):
+                            _ = outputs.logits.sum()
+                        torch.cuda.synchronize()
                         
-                        if utilization <= self.target_memory_utilization * 100:
-                            max_batch_size = mid
+                        end_time = time.time()
+                        
+                        # Check memory utilization after forward pass
+                        allocated, _, utilization = gpu.get_memory_info()
+                        
+                        # Calculate throughput
+                        throughput = mid / (end_time - start_time)
+                        
+                        logger.debug(f"Batch size {mid}: {utilization:.1f}% memory, {throughput:.1f} samples/sec")
+                        
+                        # For high target utilization (>90%), be more aggressive
+                        utilization_threshold = self.target_memory_utilization * 100
+                        if self.target_memory_utilization >= 0.90:
+                            # Allow slightly higher utilization for aggressive optimization
+                            utilization_threshold = min(98.0, utilization_threshold + 5.0)
+                        
+                        if utilization <= utilization_threshold:
+                            last_successful_batch_size = mid
                             low = mid + 1
+                            logger.debug(f"  ✓ Batch size {mid} acceptable ({utilization:.1f}% ≤ {utilization_threshold:.1f}%)")
                         else:
                             high = mid - 1
+                            logger.debug(f"  ✗ Batch size {mid} too high ({utilization:.1f}% > {utilization_threshold:.1f}%)")
                             
                     except RuntimeError as e:
                         if "out of memory" in str(e).lower():
+                            logger.debug(f"Batch size {mid}: OOM error")
                             high = mid - 1
                         else:
-                            raise e
+                            logger.warning(f"Unexpected error at batch size {mid}: {e}")
+                            high = mid - 1
+                    except Exception as e:
+                        logger.warning(f"Error testing batch size {mid}: {e}")
+                        high = mid - 1
                 
-                # Use 80% of max found batch size for safety
-                optimal_batch_size = max(1, int(max_batch_size * 0.8))
+                # Apply safety margin to the last successful batch size
+                optimal_batch_size = max(min_batch_size, int(last_successful_batch_size * self.safety_margin))
                 
         except Exception as e:
             logger.warning(f"Failed to optimize batch size for GPU {device_id}: {e}")
-            optimal_batch_size = 1
+            optimal_batch_size = min_batch_size
         
         finally:
+            # Clean up
             torch.cuda.empty_cache()
+            gc.collect()
         
-        self.optimal_batch_sizes[device_id] = optimal_batch_size
+        # Final memory check
+        final_allocated, _, final_util = gpu.get_memory_info()
+        
+        self.optimal_batch_sizes[cache_key] = optimal_batch_size
         logger.info(f"Optimal batch size for GPU {device_id}: {optimal_batch_size}")
+        logger.info(f"Expected memory utilization: ~{self.target_memory_utilization * 100:.1f}%")
+        logger.info(f"Final memory usage: {final_util:.1f}%")
         
         return optimal_batch_size
     
@@ -187,6 +243,63 @@ class GPUOptimizer:
                 best_gpu = gpu
         
         return best_gpu.device if best_gpu else torch.device("cpu")
+    
+    def monitor_gpu_usage(self) -> Dict[int, Dict[str, float]]:
+        """Monitor current GPU usage across all devices."""
+        usage_info = {}
+        
+        for gpu in self.available_gpus:
+            allocated, cached, utilization = gpu.get_memory_info()
+            usage_info[gpu.device_id] = {
+                "allocated_gb": allocated / 1e9,
+                "cached_gb": cached / 1e9,
+                "total_gb": gpu.total_memory / 1e9,
+                "utilization_percent": utilization,
+                "free_gb": (gpu.total_memory - allocated) / 1e9
+            }
+        
+        return usage_info
+
+    def adjust_batch_size_if_needed(self, current_batch_size: int, utilization_history: List[float], 
+                                   model, tokenizer, device_id: int = 0) -> int:
+        """
+        Dynamically adjust batch size if GPU utilization is consistently low.
+        
+        Args:
+            current_batch_size: Current batch size being used
+            utilization_history: Recent GPU utilization percentages
+            model: The language model
+            tokenizer: The tokenizer
+            device_id: GPU device ID
+            
+        Returns:
+            New optimal batch size (may be same as current)
+        """
+        if not self.available_gpus or not utilization_history:
+            return current_batch_size
+            
+        # Check if utilization is consistently low
+        avg_utilization = sum(utilization_history) / len(utilization_history)
+        target_utilization = self.target_memory_utilization * 100
+        
+        # If utilization is significantly below target, try to increase batch size
+        if avg_utilization < target_utilization * 0.7:  # Less than 70% of target
+            logger.info(f"Low GPU utilization detected ({avg_utilization:.1f}% vs target {target_utilization:.1f}%)")
+            logger.info("Attempting to increase batch size for better utilization...")
+            
+            # Try a larger batch size range starting from current
+            new_batch_size = self.get_optimal_batch_size(
+                model, tokenizer, 
+                device_id=device_id,
+                min_batch_size=current_batch_size,
+                max_batch_size=min(1024, current_batch_size * 4)  # Cap at 4x current or 1024
+            )
+            
+            if new_batch_size > current_batch_size:
+                logger.info(f"Increased batch size from {current_batch_size} to {new_batch_size}")
+                return new_batch_size
+            
+        return current_batch_size
 
 
 # Global optimizer instance

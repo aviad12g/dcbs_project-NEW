@@ -1,0 +1,54 @@
+{
+  "statistics": {
+    "dcbs": {
+      "accuracy": 100.0,
+      "correct": 2,
+      "total": 2,
+      "avg_time_ms": 66297.71780967712,
+      "confidence_interval": [
+        34.23719528896193,
+        100.0
+      ]
+    },
+    "greedy": {
+      "accuracy": 100.0,
+      "correct": 2,
+      "total": 2,
+      "avg_time_ms": 57468.58501434326,
+      "confidence_interval": [
+        34.23719528896193,
+        100.0
+      ]
+    }
+  },
+  "config": {
+    "model": "meta-llama/Llama-3.2-1B-Instruct",
+    "total_examples": 2,
+    "methods": [
+      "dcbs",
+      "greedy"
+    ],
+    "include_cot": true,
+    "enable_caching": true,
+    "clustering_method": "dbscan"
+  },
+  "detailed_results": [
+    {
+      "id": "hellaswag_0",
+      "sentence": "A man is sitting on a roof. he",
+      "options": [
+        "is using wrap to wrap a pair of skis.",
+        "is ripping level tiles off.",
+        "is holding a rubik's cube.",
+        "starts pulling up roofing on a roof."
+      ],
+      "correct_answer": "starts pulling up roofing on a roof.",
+      "correct_option": "4",
+      "cot_reasoning": "To determine the correct answer, let's analyze the situation step by step:\n\n1. The man is sitting on a roof: This is the initial action, but it doesn't give us any information about what he is doing.\n2. He is using wrap to wrap a pair of skis: This action is not typical of sitting on a roof, as it involves holding and manipulating objects, which is not a common activity on a roof.\n3. He is ripping level tiles off: This action is also not typical of sitting on a roof, as it involves removing tiles, which is not a common activity on a roof.\n4. He is holding a rubik's cube: This action is also not typical of sitting on a roof, as it involves manipulating a puzzle, which is not a common activity on a roof.\n5. He starts pulling up roofing on a roof: This action is the most plausible, as it involves sitting on a roof and performing a common task that requires physical effort.\n\nTherefore, the correct answer is:\n\nD. starts pulling up roofing on a roof.",
+      "answer_ids": {
+        "is using wrap to wrap a pair of skis.": 362,
+        "is ripping level tiles off.": 426,
+        "is holding a rubik's cube.": 356,
+        "starts pulling up roofing on a roof.": 423
+      },
+      "filter_tokens": 

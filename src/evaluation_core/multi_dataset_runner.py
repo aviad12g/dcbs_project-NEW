@@ -8,7 +8,15 @@ and optional disagreement tracking between DCBS and greedy sampling.
 import time
 from typing import Dict, List, Optional
 
-from data_loaders import load_dataset
+try:
+    from data_loaders import load_dataset
+except ImportError:
+    # Fallback for when data_loaders is not in path
+    import sys
+    from pathlib import Path
+    project_root = Path(__file__).parent.parent.parent
+    sys.path.insert(0, str(project_root))
+    from data_loaders import load_dataset
 from src.errors import eval_logger as logger
 from src.logger import create_disagreement_logger
 from src.evaluation_core.config import EvaluationConfig

@@ -1,0 +1,384 @@
+{
+  "statistics": {
+    "dcbs": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "total": 3,
+      "avg_time_ms": 11326.245546340942,
+      "confidence_interval": [
+        0,
+        56.15060804490177
+      ]
+    },
+    "greedy": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "total": 3,
+      "avg_time_ms": 8686.86032295227,
+      "confidence_interval": [
+        0,
+        56.15060804490177
+      ]
+    }
+  },
+  "config": {
+    "model": "meta-llama/Llama-3.2-1B-Instruct",
+    "total_examples": 3,
+    "methods": [
+      "dcbs",
+      "greedy"
+    ],
+    "include_cot": true,
+    "enable_caching": true,
+    "clustering_method": "dbscan"
+  },
+  "detailed_results": [
+    {
+      "id": "arc_easy_0",
+      "sentence": "Which statement best explains why photosynthesis is the foundation of most food webs?",
+      "options": [
+        "Sunlight is the source of energy for nearly all ecosystems.",
+        "Most ecosystems are found on land instead of in water.",
+        "Carbon dioxide is more available than other gases.",
+        "The producers in all ecosystems are plants."
+      ],
+      "correct_answer": "The producers in all ecosystems are plants.",
+      "correct_option": "0",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Sunlight is the source of energy for nearly all ecosystems. - This statement is true, as sunlight is the primary source of energy for photosynthesis, which is the process by which plants, algae, and some bacteria convert carbon dioxide and water into glucose and oxygen.\n\nB. Most ecosystems are found on land instead of in water. - This statement is false. While it is true that most ecosystems are found on land, photosynthesis can occur in aquatic ecosystems, such as in aquatic plants and some types of algae.\n\nC. Carbon dioxide is more available than other gases. - This statement is false. While carbon dioxide is a reactant in photosynthesis, it is not more available than other gases. In fact, the availability of carbon dioxide can vary depending on the ecosystem and location.\n\nD. The producers in all ecosystems are plants. - This statement is false. While plants are the primary producers in most ecosystems, other organisms, such as algae, bacteria, and some types of fungi, also play important roles in the food web.\n\nTherefore, the correct answer is A. Sunlight is the source of energy for nearly all ecosystems.",
+      "answer_ids": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 362,
+        "Most ecosystems are found on land instead of in water.": 426,
+        "Carbon dioxide is more available than other gases.": 356,
+        "The producers in all ecosystems are plants.": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 423,
+      "answer_probs": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 1.0,
+        "Most ecosystems are found on land instead of in water.": 0.0001392364501953125,
+        "Carbon dioxide is more available than other gases.": 0.0001583099365234375,
+        "The producers in all ecosystems are plants.": 9.584426879882812e-05
+      },
+      "processing_time": 10.088394403457642,
+      "sampler": "dcbs",
+      "pred_id": 362,
+      "predicted_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct": false,
+      "elapsed_ms": 13291.68152809143,
+      "cluster_info": {
+        "candidate_count": 4,
+        "num_clusters": 4,
+        "selected_cluster": "1",
+        "selected_token": 362,
+        "cluster_sizes": [
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "cluster_probs": [
+          0.0001087188720703125,
+          1.0,
+          0.00012302398681640625,
+          8.487701416015625e-05
+        ],
+        "clusters": [
+          [
+            0
+          ],
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ]
+        ],
+        "labels": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    {
+      "id": "arc_easy_0",
+      "sentence": "Which statement best explains why photosynthesis is the foundation of most food webs?",
+      "options": [
+        "Sunlight is the source of energy for nearly all ecosystems.",
+        "Most ecosystems are found on land instead of in water.",
+        "Carbon dioxide is more available than other gases.",
+        "The producers in all ecosystems are plants."
+      ],
+      "correct_answer": "The producers in all ecosystems are plants.",
+      "correct_option": "0",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Sunlight is the source of energy for nearly all ecosystems. - This statement is true, as sunlight is the primary source of energy for photosynthesis, which is the process by which plants, algae, and some bacteria convert carbon dioxide and water into glucose and oxygen.\n\nB. Most ecosystems are found on land instead of in water. - This statement is false. While it is true that most ecosystems are found on land, photosynthesis can occur in aquatic ecosystems, such as in aquatic plants and some types of algae.\n\nC. Carbon dioxide is more available than other gases. - This statement is false. While carbon dioxide is a reactant in photosynthesis, it is not more available than other gases. In fact, the availability of carbon dioxide can vary depending on the ecosystem and location.\n\nD. The producers in all ecosystems are plants. - This statement is false. While plants are the primary producers in most ecosystems, other organisms, such as algae, bacteria, and some types of fungi, also play important roles in the food web.\n\nTherefore, the correct answer is A. Sunlight is the source of energy for nearly all ecosystems.",
+      "answer_ids": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 362,
+        "Most ecosystems are found on land instead of in water.": 426,
+        "Carbon dioxide is more available than other gases.": 356,
+        "The producers in all ecosystems are plants.": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 423,
+      "answer_probs": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 1.0,
+        "Most ecosystems are found on land instead of in water.": 0.0001392364501953125,
+        "Carbon dioxide is more available than other gases.": 0.0001583099365234375,
+        "The producers in all ecosystems are plants.": 9.584426879882812e-05
+      },
+      "processing_time": 10.088394403457642,
+      "sampler": "greedy",
+      "pred_id": 362,
+      "predicted_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct": false,
+      "elapsed_ms": 9923.104047775269,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_1",
+      "sentence": "Which piece of safety equipment is used to keep mold spores from entering the respiratory system?",
+      "options": [
+        "safety goggles",
+        "breathing mask",
+        "rubber gloves",
+        "lead apron"
+      ],
+      "correct_answer": "safety goggles",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Safety goggles - These are typically used to protect the eyes from debris, dust, or chemicals, but they do not specifically prevent mold spores from entering the respiratory system.\n\nB. Breathing mask - These are designed to filter out airborne particles, including mold spores, from the air we breathe. They are a common piece of personal protective equipment (PPE) used in various settings to prevent inhalation of harmful substances.\n\nC. Rubber gloves - While rubber gloves can provide some protection against certain chemicals or physical hazards, they do not specifically prevent mold spores from entering the respiratory system.\n\nD. Lead apron - Lead aprons are used to protect against chemical splashes or spills, but they do not specifically prevent mold spores from entering the respiratory system.\n\nBased on this analysis, the correct answer is the breathing mask, as it is specifically designed to filter out mold spores from the air we breathe.",
+      "answer_ids": {
+        "safety goggles": 362,
+        "breathing mask": 426,
+        "rubber gloves": 356,
+        "lead apron": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 362,
+      "answer_probs": {
+        "safety goggles": 0.00022792816162109375,
+        "breathing mask": 0.98828125,
+        "rubber gloves": 0.0001220703125,
+        "lead apron": 0.0002574920654296875
+      },
+      "processing_time": 7.939151048660278,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "breathing mask",
+      "correct": false,
+      "elapsed_ms": 10379.324913024902,
+      "cluster_info": {
+        "candidate_count": 4,
+        "num_clusters": 4,
+        "selected_cluster": "0",
+        "selected_token": 426,
+        "cluster_sizes": [
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "cluster_probs": [
+          1.0,
+          0.0002307891845703125,
+          0.00012302398681640625,
+          0.0002613067626953125
+        ],
+        "clusters": [
+          [
+            0
+          ],
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ]
+        ],
+        "labels": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    {
+      "id": "arc_easy_1",
+      "sentence": "Which piece of safety equipment is used to keep mold spores from entering the respiratory system?",
+      "options": [
+        "safety goggles",
+        "breathing mask",
+        "rubber gloves",
+        "lead apron"
+      ],
+      "correct_answer": "safety goggles",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Safety goggles - These are typically used to protect the eyes from debris, dust, or chemicals, but they do not specifically prevent mold spores from entering the respiratory system.\n\nB. Breathing mask - These are designed to filter out airborne particles, including mold spores, from the air we breathe. They are a common piece of personal protective equipment (PPE) used in various settings to prevent inhalation of harmful substances.\n\nC. Rubber gloves - While rubber gloves can provide some protection against certain chemicals or physical hazards, they do not specifically prevent mold spores from entering the respiratory system.\n\nD. Lead apron - Lead aprons are used to protect against chemical splashes or spills, but they do not specifically prevent mold spores from entering the respiratory system.\n\nBased on this analysis, the correct answer is the breathing mask, as it is specifically designed to filter out mold spores from the air we breathe.",
+      "answer_ids": {
+        "safety goggles": 362,
+        "breathing mask": 426,
+        "rubber gloves": 356,
+        "lead apron": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 362,
+      "answer_probs": {
+        "safety goggles": 0.00022792816162109375,
+        "breathing mask": 0.98828125,
+        "rubber gloves": 0.0001220703125,
+        "lead apron": 0.0002574920654296875
+      },
+      "processing_time": 7.939151048660278,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "breathing mask",
+      "correct": false,
+      "elapsed_ms": 8046.507358551025,
+      "cluster_info": null
+    },
+    {
+      "id": "arc_easy_2",
+      "sentence": "Meiosis is a type of cell division in which germ cells divide to produce haploid cells. Where does meiosis occur?",
+      "options": [
+        "brain cells",
+        "bone cells",
+        "muscle cells",
+        "ovary cells"
+      ],
+      "correct_answer": "muscle cells",
+      "correct_option": "3",
+      "cot_reasoning": "To answer this question, let's break it down step by step:\n\n1. **Identify the type of cell division**: The question asks about meiosis, which is a type of cell division.\n2. **Understand the purpose of meiosis**: Meiosis is involved in producing gametes (sperm and egg cells) for reproduction.\n3. **Determine the location of meiosis**: Meiosis occurs in the reproductive cells, specifically in the cells that will produce gametes.\n4. **Eliminate incorrect options**: \n   - Brain cells (A) are not involved in cell division.\n   - Bone cells (B) are not directly involved in meiosis.\n   - Muscle cells (C) are not involved in meiosis.\n5. **Select the correct option**: \n   - Ovary cells (D) are the cells in the female reproductive system that produce eggs (oocytes) and are involved in meiosis.\n\nThe final answer is: D",
+      "answer_ids": {
+        "brain cells": 362,
+        "bone cells": 426,
+        "muscle cells": 356,
+        "ovary cells": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 356,
+      "answer_probs": {
+        "brain cells": 0.00125885009765625,
+        "bone cells": 0.0020751953125,
+        "muscle cells": 0.00067138671875,
+        "ovary cells": 0.94921875
+      },
+      "processing_time": 7.947681188583374,
+      "sampler": "dcbs",
+      "pred_id": 423,
+      "predicted_answer": "ovary cells",
+      "correct": false,
+      "elapsed_ms": 10307.730197906494,
+      "cluster_info": {
+        "candidate_count": 4,
+        "num_clusters": 4,
+        "selected_cluster": "3",
+        "selected_token": 423,
+        "cluster_sizes": [
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "cluster_probs": [
+          0.001922607421875,
+          0.001495361328125,
+          0.0006256103515625,
+          0.99609375
+        ],
+        "clusters": [
+          [
+            0
+          ],
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ]
+        ],
+        "labels": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    {
+      "id": "arc_easy_2",
+      "sentence": "Meiosis is a type of cell division in which germ cells divide to produce haploid cells. Where does meiosis occur?",
+      "options": [
+        "brain cells",
+        "bone cells",
+        "muscle cells",
+        "ovary cells"
+      ],
+      "correct_answer": "muscle cells",
+      "correct_option": "3",
+      "cot_reasoning": "To answer this question, let's break it down step by step:\n\n1. **Identify the type of cell division**: The question asks about meiosis, which is a type of cell division.\n2. **Understand the purpose of meiosis**: Meiosis is involved in producing gametes (sperm and egg cells) for reproduction.\n3. **Determine the location of meiosis**: Meiosis occurs in the reproductive cells, specifically in the cells that will produce gametes.\n4. **Eliminate incorrect options**: \n   - Brain cells (A) are not involved in cell division.\n   - Bone cells (B) are not directly involved in meiosis.\n   - Muscle cells (C) are not involved in meiosis.\n5. **Select the correct option**: \n   - Ovary cells (D) are the cells in the female reproductive system that produce eggs (oocytes) and are involved in meiosis.\n\nThe final answer is: D",
+      "answer_ids": {
+        "brain cells": 362,
+        "bone cells": 426,
+        "muscle cells": 356,
+        "ovary cells": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 356,
+      "answer_probs": {
+        "brain cells": 0.00125885009765625,
+        "bone cells": 0.0020751953125,
+        "muscle cells": 0.00067138671875,
+        "ovary cells": 0.94921875
+      },
+      "processing_time": 7.947681188583374,
+      "sampler": "greedy",
+      "pred_id": 423,
+      "predicted_answer": "ovary cells",
+      "correct": false,
+      "elapsed_ms": 8090.969562530518,
+      "cluster_info": null
+    }
+  ],
+  "prediction_differences": [],
+  "evaluation_completed_at": "2025-06-23 21:41:22"
+}

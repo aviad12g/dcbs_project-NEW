@@ -1,0 +1,15 @@
+{
+  "run_id": "fixed_test",
+  "timestamp": "2025-06-22T23:15:18.731297",
+  "counters": {
+    "total_sequences": 0,
+    "total_disagreements": 0,
+    "disagree_greedy_correct": 0,
+    "disagree_dcbs_correct": 0,
+    "disagree_both_wrong": 0,
+    "disagree_both_correct": 0
+  },
+  "analysis": {
+    "note": "No sequences with disagreements found"
+  }
+}

@@ -66,7 +66,7 @@ cache-test:
 
 sweep:
 	python compare_methods.py \
-		--model meta-llama/Llama-3.2-1B \
+		--model meta-llama/Llama-3.2-1B-Instruct \
 		--sweep-k 4 8 16 \
 		--sweep-top-n 20 50 100 \
 		--limit 100 \
@@ -74,7 +74,7 @@ sweep:
 
 full:
 	python compare_methods.py \
-		--model meta-llama/Llama-3.2-1B \
+		--model meta-llama/Llama-3.2-1B-Instruct \
 		--benchmark data/arc_easy_full.json \
 		--save-details \
 		--output-format both

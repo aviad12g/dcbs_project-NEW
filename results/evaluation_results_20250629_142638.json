@@ -1,0 +1,433 @@
+{
+  "statistics": {
+    "dcbs": {
+      "accuracy": 80.0,
+      "correct": 4,
+      "total": 5,
+      "avg_time_ms": 188.00086975097656,
+      "confidence_interval": [
+        37.552826411853886,
+        96.37768390302125
+      ]
+    },
+    "greedy": {
+      "accuracy": 80.0,
+      "correct": 4,
+      "total": 5,
+      "avg_time_ms": 107.28754997253418,
+      "confidence_interval": [
+        37.552826411853886,
+        96.37768390302125
+      ]
+    }
+  },
+  "config": {
+    "model": "meta-llama/Llama-3.2-1B-Instruct",
+    "total_examples": 5,
+    "methods": [
+      "dcbs",
+      "greedy"
+    ],
+    "include_cot": false,
+    "enable_caching": true,
+    "clustering_method": "dbscan",
+    "batch_size": 108,
+    "gpu_info": [
+      "GPU 0: NVIDIA GeForce RTX 4060 Laptop GPU (8.6GB total, 29.2% used)"
+    ]
+  },
+  "detailed_results": [
+    {
+      "id": "Mercury_417466",
+      "sentence": "Which statement best explains why photosynthesis is the foundation of most food webs?",
+      "options": [
+        "Sunlight is the source of energy for nearly all ecosystems.",
+        "Most ecosystems are found on land instead of in water.",
+        "Carbon dioxide is more available than other gases.",
+        "The producers in all ecosystems are plants."
+      ],
+      "correct_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct_option": "1",
+      "cot_reasoning": null,
+      "answer_ids": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 362,
+        "Most ecosystems are found on land instead of in water.": 426,
+        "Carbon dioxide is more available than other gases.": 356,
+        "The producers in all ecosystems are plants.": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 362,
+      "answer_probs": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 0.345703125,
+        "Most ecosystems are found on land instead of in water.": 0.1845703125,
+        "Carbon dioxide is more available than other gases.": 0.1630859375,
+        "The producers in all ecosystems are plants.": 0.3046875
+      },
+      "processing_time": 0.2034287452697754,
+      "sampler": "dcbs",
+      "pred_id": 362,
+      "predicted_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct": true,
+      "elapsed_ms": 469.91825103759766,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_417466",
+      "sentence": "Which statement best explains why photosynthesis is the foundation of most food webs?",
+      "options": [
+        "Sunlight is the source of energy for nearly all ecosystems.",
+        "Most ecosystems are found on land instead of in water.",
+        "Carbon dioxide is more available than other gases.",
+        "The producers in all ecosystems are plants."
+      ],
+      "correct_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct_option": "1",
+      "cot_reasoning": null,
+      "answer_ids": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 362,
+        "Most ecosystems are found on land instead of in water.": 426,
+        "Carbon dioxide is more available than other gases.": 356,
+        "The producers in all ecosystems are plants.": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 362,
+      "answer_probs": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 0.345703125,
+        "Most ecosystems are found on land instead of in water.": 0.1845703125,
+        "Carbon dioxide is more available than other gases.": 0.1630859375,
+        "The producers in all ecosystems are plants.": 0.3046875
+      },
+      "processing_time": 0.2034287452697754,
+      "sampler": "greedy",
+      "pred_id": 362,
+      "predicted_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct": true,
+      "elapsed_ms": 96.73643112182617,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7081673",
+      "sentence": "Which piece of safety equipment is used to keep mold spores from entering the respiratory system?",
+      "options": [
+        "safety goggles",
+        "breathing mask",
+        "rubber gloves",
+        "lead apron"
+      ],
+      "correct_answer": "breathing mask",
+      "correct_option": "2",
+      "cot_reasoning": null,
+      "answer_ids": {
+        "safety goggles": 362,
+        "breathing mask": 426,
+        "rubber gloves": 356,
+        "lead apron": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 426,
+      "answer_probs": {
+        "safety goggles": 0.0242919921875,
+        "breathing mask": 0.9140625,
+        "rubber gloves": 0.021484375,
+        "lead apron": 0.035400390625
+      },
+      "processing_time": 0.14121603965759277,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "breathing mask",
+      "correct": true,
+      "elapsed_ms": 131.0410499572754,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7081673",
+      "sentence": "Which piece of safety equipment is used to keep mold spores from entering the respiratory system?",
+      "options": [
+        "safety goggles",
+        "breathing mask",
+        "rubber gloves",
+        "lead apron"
+      ],
+      "correct_answer": "breathing mask",
+      "correct_option": "2",
+      "cot_reasoning": null,
+      "answer_ids": {
+        "safety goggles": 362,
+        "breathing mask": 426,
+        "rubber gloves": 356,
+        "lead apron": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 426,
+      "answer_probs": {
+        "safety goggles": 0.0242919921875,
+        "breathing mask": 0.9140625,
+        "rubber gloves": 0.021484375,
+        "lead apron": 0.035400390625
+      },
+      "processing_time": 0.14121603965759277,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "breathing mask",
+      "correct": true,
+      "elapsed_ms": 138.90814781188965,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7239733",
+      "sentence": "Meiosis is a type of cell division in which germ cells divide to produce haploid cells. Where does meiosis occur?",
+      "options": [
+        "brain cells",
+        "bone cells",
+        "muscle cells",
+        "ovary cells"
+      ],
+      "correct_answer": "ovary cells",
+      "correct_option": "4",
+      "cot_reasoning": null,
+      "answer_ids": {
+        "brain cells": 362,
+        "bone cells": 426,
+        "muscle cells": 356,
+        "ovary cells": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 423,
+      "answer_probs": {
+        "brain cells": 0.055908203125,
+        "bone cells": 0.1181640625,
+        "muscle cells": 0.04931640625,
+        "ovary cells": 0.76953125
+      },
+      "processing_time": 0.11109280586242676,
+      "sampler": "dcbs",
+      "pred_id": 423,
+      "predicted_answer": "ovary cells",
+      "correct": true,
+      "elapsed_ms": 114.13359642028809,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7239733",
+      "sentence": "Meiosis is a type of cell division in which germ cells divide to produce haploid cells. Where does meiosis occur?",
+      "options": [
+        "brain cells",
+        "bone cells",
+        "muscle cells",
+        "ovary cells"
+      ],
+      "correct_answer": "ovary cells",
+      "correct_option": "4",
+      "cot_reasoning": null,
+      "answer_ids": {
+        "brain cells": 362,
+        "bone cells": 426,
+        "muscle cells": 356,
+        "ovary cells": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 423,
+      "answer_probs": {
+        "brain cells": 0.055908203125,
+        "bone cells": 0.1181640625,
+        "muscle cells": 0.04931640625,
+        "ovary cells": 0.76953125
+      },
+      "processing_time": 0.11109280586242676,
+      "sampler": "greedy",
+      "pred_id": 423,
+      "predicted_answer": "ovary cells",
+      "correct": true,
+      "elapsed_ms": 109.32564735412598,
+      "cluster_info": null
+    },
+    {
+      "id": "NYSEDREGENTS_2015_4_8",
+      "sentence": "Which characteristic describes the texture of a kitten's fur?",
+      "options": [
+        "gray",
+        "warm",
+        "long",
+        "soft"
+      ],
+      "correct_answer": "soft",
+      "correct_option": "4",
+      "cot_reasoning": null,
+      "answer_ids": {
+        "gray": 362,
+        "warm": 426,
+        "long": 356,
+        "soft": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 423,
+      "answer_probs": {
+        "gray": 0.0177001953125,
+        "warm": 0.06982421875,
+        "long": 0.0478515625,
+        "soft": 0.8515625
+      },
+      "processing_time": 0.11788272857666016,
+      "sampler": "dcbs",
+      "pred_id": 423,
+      "predicted_answer": "soft",
+      "correct": true,
+      "elapsed_ms": 121.49333953857422,
+      "cluster_info": null
+    },
+    {
+      "id": "NYSEDREGENTS_2015_4_8",
+      "sentence": "Which characteristic describes the texture of a kitten's fur?",
+      "options": [
+        "gray",
+        "warm",
+        "long",
+        "soft"
+      ],
+      "correct_answer": "soft",
+      "correct_option": "4",
+      "cot_reasoning": null,
+      "answer_ids": {
+        "gray": 362,
+        "warm": 426,
+        "long": 356,
+        "soft": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 423,
+      "answer_probs": {
+        "gray": 0.0177001953125,
+        "warm": 0.06982421875,
+        "long": 0.0478515625,
+        "soft": 0.8515625
+      },
+      "processing_time": 0.11788272857666016,
+      "sampler": "greedy",
+      "pred_id": 423,
+      "predicted_answer": "soft",
+      "correct": true,
+      "elapsed_ms": 107.60736465454102,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7037258",
+      "sentence": "Which best describes the structure of an atom?",
+      "options": [
+        "a lightweight core surrounded by neutral particles",
+        "a massive core surrounded by negatively-charged particles",
+        "a network of interacting positive and negative particles",
+        "overlapping layers of neutral, positive, and negative particles"
+      ],
+      "correct_answer": "a massive core surrounded by negatively-charged particles",
+      "correct_option": "2",
+      "cot_reasoning": null,
+      "answer_ids": {
+        "a lightweight core surrounded by neutral particles": 362,
+        "a massive core surrounded by negatively-charged particles": 426,
+        "a network of interacting positive and negative particles": 356,
+        "overlapping layers of neutral, positive, and negative particles": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 426,
+      "answer_probs": {
+        "a lightweight core surrounded by neutral particles": 0.134765625,
+        "a massive core surrounded by negatively-charged particles": 0.1728515625,
+        "a network of interacting positive and negative particles": 0.3671875,
+        "overlapping layers of neutral, positive, and negative particles": 0.32421875
+      },
+      "processing_time": 0.0770866870880127,
+      "sampler": "dcbs",
+      "pred_id": 356,
+      "predicted_answer": "a network of interacting positive and negative particles",
+      "correct": false,
+      "elapsed_ms": 103.41811180114746,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7037258",
+      "sentence": "Which best describes the structure of an atom?",
+      "options": [
+        "a lightweight core surrounded by neutral particles",
+        "a massive core surrounded by negatively-charged particles",
+        "a network of interacting positive and negative particles",
+        "overlapping layers of neutral, positive, and negative particles"
+      ],
+      "correct_answer": "a massive core surrounded by negatively-charged particles",
+      "correct_option": "2",
+      "cot_reasoning": null,
+      "answer_ids": {
+        "a lightweight core surrounded by neutral particles": 362,
+        "a massive core surrounded by negatively-charged particles": 426,
+        "a network of interacting positive and negative particles": 356,
+        "overlapping layers of neutral, positive, and negative particles": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 426,
+      "answer_probs": {
+        "a lightweight core surrounded by neutral particles": 0.134765625,
+        "a massive core surrounded by negatively-charged particles": 0.1728515625,
+        "a network of interacting positive and negative particles": 0.3671875,
+        "overlapping layers of neutral, positive, and negative particles": 0.32421875
+      },
+      "processing_time": 0.0770866870880127,
+      "sampler": "greedy",
+      "pred_id": 356,
+      "predicted_answer": "a network of interacting positive and negative particles",
+      "correct": false,
+      "elapsed_ms": 83.86015892028809,
+      "cluster_info": null
+    }
+  ],
+  "prediction_differences": [],
+  "evaluation_completed_at": "2025-06-29 14:26:38"
+}

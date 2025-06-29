@@ -1,0 +1,429 @@
+{
+  "statistics": {
+    "greedy": {
+      "accuracy": 80.0,
+      "correct": 4,
+      "total": 5,
+      "avg_time_ms": 5984.813022613525,
+      "confidence_interval": [
+        37.55282641185388,
+        96.37768390302125
+      ]
+    },
+    "dcbs": {
+      "accuracy": 80.0,
+      "correct": 4,
+      "total": 5,
+      "avg_time_ms": 8235.41612625122,
+      "confidence_interval": [
+        37.55282641185388,
+        96.37768390302125
+      ]
+    }
+  },
+  "config": {
+    "model": "meta-llama/Llama-3.2-1B-Instruct",
+    "total_examples": 5,
+    "methods": [
+      "greedy",
+      "dcbs"
+    ],
+    "include_cot": true,
+    "enable_caching": true,
+    "clustering_method": "dbscan"
+  },
+  "detailed_results": [
+    {
+      "id": "Mercury_417466",
+      "sentence": "Which statement best explains why photosynthesis is the foundation of most food webs?",
+      "options": [
+        "Sunlight is the source of energy for nearly all ecosystems.",
+        "Most ecosystems are found on land instead of in water.",
+        "Carbon dioxide is more available than other gases.",
+        "The producers in all ecosystems are plants."
+      ],
+      "correct_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Sunlight is the source of energy for nearly all ecosystems. - This statement is true, as sunlight is the primary source of energy for photosynthesis, which is the process by which plants, algae, and some bacteria convert carbon dioxide and water into glucose and oxygen.\n\nB. Most ecosystems are found on land instead of in water. - This statement is false. Most ecosystems, including forests, grasslands, and deserts, are found on land, not in water.\n\nC. Carbon dioxide is more available than other gases. - This statement is false. While carbon dioxide is a critical component of the carbon cycle, it is not more available than other gases in most ecosystems. In fact, other gases like oxygen, nitrogen, and water vapor are more abundant in the atmosphere.\n\nD. The producers in all ecosystems are plants. - This statement is false. While plants are the primary producers in most ecosystems, other organisms like bacteria, fungi, and some microorganisms also play important roles in the food web.\n\nTherefore, the correct answer is A. Sunlight is the source of energy for nearly all ecosystems.",
+      "answer_ids": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 362,
+        "Most ecosystems are found on land instead of in water.": 426,
+        "Carbon dioxide is more available than other gases.": 356,
+        "The producers in all ecosystems are plants.": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 362,
+      "answer_probs": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 0.99609375,
+        "Most ecosystems are found on land instead of in water.": 0.00012302398681640625,
+        "Carbon dioxide is more available than other gases.": 0.0001392364501953125,
+        "The producers in all ecosystems are plants.": 0.0001087188720703125
+      },
+      "processing_time": 10.484213590621948,
+      "sampler": "greedy",
+      "pred_id": 362,
+      "predicted_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct": true,
+      "elapsed_ms": 8372.33281135559,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_417466",
+      "sentence": "Which statement best explains why photosynthesis is the foundation of most food webs?",
+      "options": [
+        "Sunlight is the source of energy for nearly all ecosystems.",
+        "Most ecosystems are found on land instead of in water.",
+        "Carbon dioxide is more available than other gases.",
+        "The producers in all ecosystems are plants."
+      ],
+      "correct_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Sunlight is the source of energy for nearly all ecosystems. - This statement is true, as sunlight is the primary source of energy for photosynthesis, which is the process by which plants, algae, and some bacteria convert carbon dioxide and water into glucose and oxygen.\n\nB. Most ecosystems are found on land instead of in water. - This statement is false. Most ecosystems, including forests, grasslands, and deserts, are found on land, not in water.\n\nC. Carbon dioxide is more available than other gases. - This statement is false. While carbon dioxide is a critical component of the carbon cycle, it is not more available than other gases in most ecosystems. In fact, other gases like oxygen, nitrogen, and water vapor are more abundant in the atmosphere.\n\nD. The producers in all ecosystems are plants. - This statement is false. While plants are the primary producers in most ecosystems, other organisms like bacteria, fungi, and some microorganisms also play important roles in the food web.\n\nTherefore, the correct answer is A. Sunlight is the source of energy for nearly all ecosystems.",
+      "answer_ids": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 362,
+        "Most ecosystems are found on land instead of in water.": 426,
+        "Carbon dioxide is more available than other gases.": 356,
+        "The producers in all ecosystems are plants.": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 362,
+      "answer_probs": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 0.99609375,
+        "Most ecosystems are found on land instead of in water.": 0.00012302398681640625,
+        "Carbon dioxide is more available than other gases.": 0.0001392364501953125,
+        "The producers in all ecosystems are plants.": 0.0001087188720703125
+      },
+      "processing_time": 10.484213590621948,
+      "sampler": "dcbs",
+      "pred_id": 362,
+      "predicted_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct": true,
+      "elapsed_ms": 11623.668670654297,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7081673",
+      "sentence": "Which piece of safety equipment is used to keep mold spores from entering the respiratory system?",
+      "options": [
+        "safety goggles",
+        "breathing mask",
+        "rubber gloves",
+        "lead apron"
+      ],
+      "correct_answer": "breathing mask",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Safety goggles - These are typically used to protect the eyes from debris, dust, or chemicals, but they do not specifically prevent mold spores from entering the respiratory system.\n\nB. Breathing mask - These are designed to filter out airborne particles, including mold spores, from the air we breathe. They are a common piece of personal protective equipment (PPE) used in various industries to prevent inhalation of harmful substances.\n\nC. Rubber gloves - While rubber gloves can provide some level of protection against certain chemicals or physical hazards, they do not specifically prevent mold spores from entering the respiratory system.\n\nD. Lead apron - Lead aprons are used to protect against chemical splashes or spills, but they do not specifically prevent mold spores from entering the respiratory system.\n\nBased on this analysis, the correct answer is the breathing mask, as it is specifically designed to filter out mold spores from the air we breathe.",
+      "answer_ids": {
+        "safety goggles": 362,
+        "breathing mask": 426,
+        "rubber gloves": 356,
+        "lead apron": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 426,
+      "answer_probs": {
+        "safety goggles": 0.0002574920654296875,
+        "breathing mask": 0.984375,
+        "rubber gloves": 0.00012159347534179688,
+        "lead apron": 0.0002574920654296875
+      },
+      "processing_time": 7.461379289627075,
+      "sampler": "greedy",
+      "pred_id": 426,
+      "predicted_answer": "breathing mask",
+      "correct": true,
+      "elapsed_ms": 7091.387033462524,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7081673",
+      "sentence": "Which piece of safety equipment is used to keep mold spores from entering the respiratory system?",
+      "options": [
+        "safety goggles",
+        "breathing mask",
+        "rubber gloves",
+        "lead apron"
+      ],
+      "correct_answer": "breathing mask",
+      "correct_option": "2",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Safety goggles - These are typically used to protect the eyes from debris, dust, or chemicals, but they do not specifically prevent mold spores from entering the respiratory system.\n\nB. Breathing mask - These are designed to filter out airborne particles, including mold spores, from the air we breathe. They are a common piece of personal protective equipment (PPE) used in various industries to prevent inhalation of harmful substances.\n\nC. Rubber gloves - While rubber gloves can provide some level of protection against certain chemicals or physical hazards, they do not specifically prevent mold spores from entering the respiratory system.\n\nD. Lead apron - Lead aprons are used to protect against chemical splashes or spills, but they do not specifically prevent mold spores from entering the respiratory system.\n\nBased on this analysis, the correct answer is the breathing mask, as it is specifically designed to filter out mold spores from the air we breathe.",
+      "answer_ids": {
+        "safety goggles": 362,
+        "breathing mask": 426,
+        "rubber gloves": 356,
+        "lead apron": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 426,
+      "answer_probs": {
+        "safety goggles": 0.0002574920654296875,
+        "breathing mask": 0.984375,
+        "rubber gloves": 0.00012159347534179688,
+        "lead apron": 0.0002574920654296875
+      },
+      "processing_time": 7.461379289627075,
+      "sampler": "dcbs",
+      "pred_id": 426,
+      "predicted_answer": "breathing mask",
+      "correct": true,
+      "elapsed_ms": 9142.278909683228,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7239733",
+      "sentence": "Meiosis is a type of cell division in which germ cells divide to produce haploid cells. Where does meiosis occur?",
+      "options": [
+        "brain cells",
+        "bone cells",
+        "muscle cells",
+        "ovary cells"
+      ],
+      "correct_answer": "ovary cells",
+      "correct_option": "4",
+      "cot_reasoning": "To answer this question, let's break it down step by step:\n\n1. Meiosis is a type of cell division.\n2. It is a specialized type of cell division.\n3. It is involved in the production of gametes (sperm and egg cells).\n4. It occurs in specific cells.\n\nGiven these points, we can eliminate options A (brain cells), B (bone cells), and C (muscle cells) as they are not directly related to the production of gametes.\n\nThis leaves us with option D (ovary cells), which are the cells that produce gametes (sperm and egg cells) in the female reproductive system.\n\nTherefore, the correct answer is D.",
+      "answer_ids": {
+        "brain cells": 362,
+        "bone cells": 426,
+        "muscle cells": 356,
+        "ovary cells": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 423,
+      "answer_probs": {
+        "brain cells": 0.00130462646484375,
+        "bone cells": 0.00147247314453125,
+        "muscle cells": 0.000614166259765625,
+        "ovary cells": 0.98046875
+      },
+      "processing_time": 4.916768550872803,
+      "sampler": "greedy",
+      "pred_id": 423,
+      "predicted_answer": "ovary cells",
+      "correct": true,
+      "elapsed_ms": 4930.643796920776,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7239733",
+      "sentence": "Meiosis is a type of cell division in which germ cells divide to produce haploid cells. Where does meiosis occur?",
+      "options": [
+        "brain cells",
+        "bone cells",
+        "muscle cells",
+        "ovary cells"
+      ],
+      "correct_answer": "ovary cells",
+      "correct_option": "4",
+      "cot_reasoning": "To answer this question, let's break it down step by step:\n\n1. Meiosis is a type of cell division.\n2. It is a specialized type of cell division.\n3. It is involved in the production of gametes (sperm and egg cells).\n4. It occurs in specific cells.\n\nGiven these points, we can eliminate options A (brain cells), B (bone cells), and C (muscle cells) as they are not directly related to the production of gametes.\n\nThis leaves us with option D (ovary cells), which are the cells that produce gametes (sperm and egg cells) in the female reproductive system.\n\nTherefore, the correct answer is D.",
+      "answer_ids": {
+        "brain cells": 362,
+        "bone cells": 426,
+        "muscle cells": 356,
+        "ovary cells": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 423,
+      "answer_probs": {
+        "brain cells": 0.00130462646484375,
+        "bone cells": 0.00147247314453125,
+        "muscle cells": 0.000614166259765625,
+        "ovary cells": 0.98046875
+      },
+      "processing_time": 4.916768550872803,
+      "sampler": "dcbs",
+      "pred_id": 423,
+      "predicted_answer": "ovary cells",
+      "correct": true,
+      "elapsed_ms": 7679.471015930176,
+      "cluster_info": null
+    },
+    {
+      "id": "NYSEDREGENTS_2015_4_8",
+      "sentence": "Which characteristic describes the texture of a kitten's fur?",
+      "options": [
+        "gray",
+        "warm",
+        "long",
+        "soft"
+      ],
+      "correct_answer": "soft",
+      "correct_option": "4",
+      "cot_reasoning": "To answer this question, I'll follow the step-by-step process:\n\n1. **Identify the subject**: The subject is a kitten's fur.\n2. **Consider the characteristics of kittens' fur**: Kittens are known for their soft and fluffy coats.\n3. **Eliminate incorrect options**: \n   - A. Gray is not a characteristic of kittens' fur; it's more common in adult cats.\n   - B. Warm is a general term that doesn't specifically describe the texture of kittens' fur.\n   - C. Long is not a characteristic of kittens' fur; it's more common in adult cats.\n4. **Choose the correct option**: \n   - D. Soft is the correct answer, as kittens' fur is known for being soft and fluffy.\n\nThe final answer is D.",
+      "answer_ids": {
+        "gray": 362,
+        "warm": 426,
+        "long": 356,
+        "soft": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 423,
+      "answer_probs": {
+        "gray": 0.000789642333984375,
+        "warm": 0.0011444091796875,
+        "long": 0.0004787445068359375,
+        "soft": 0.98046875
+      },
+      "processing_time": 4.956745147705078,
+      "sampler": "greedy",
+      "pred_id": 423,
+      "predicted_answer": "soft",
+      "correct": true,
+      "elapsed_ms": 4804.227590560913,
+      "cluster_info": null
+    },
+    {
+      "id": "NYSEDREGENTS_2015_4_8",
+      "sentence": "Which characteristic describes the texture of a kitten's fur?",
+      "options": [
+        "gray",
+        "warm",
+        "long",
+        "soft"
+      ],
+      "correct_answer": "soft",
+      "correct_option": "4",
+      "cot_reasoning": "To answer this question, I'll follow the step-by-step process:\n\n1. **Identify the subject**: The subject is a kitten's fur.\n2. **Consider the characteristics of kittens' fur**: Kittens are known for their soft and fluffy coats.\n3. **Eliminate incorrect options**: \n   - A. Gray is not a characteristic of kittens' fur; it's more common in adult cats.\n   - B. Warm is a general term that doesn't specifically describe the texture of kittens' fur.\n   - C. Long is not a characteristic of kittens' fur; it's more common in adult cats.\n4. **Choose the correct option**: \n   - D. Soft is the correct answer, as kittens' fur is known for being soft and fluffy.\n\nThe final answer is D.",
+      "answer_ids": {
+        "gray": 362,
+        "warm": 426,
+        "long": 356,
+        "soft": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 423,
+      "answer_probs": {
+        "gray": 0.000789642333984375,
+        "warm": 0.0011444091796875,
+        "long": 0.0004787445068359375,
+        "soft": 0.98046875
+      },
+      "processing_time": 4.956745147705078,
+      "sampler": "dcbs",
+      "pred_id": 423,
+      "predicted_answer": "soft",
+      "correct": true,
+      "elapsed_ms": 7348.663330078125,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7037258",
+      "sentence": "Which best describes the structure of an atom?",
+      "options": [
+        "a lightweight core surrounded by neutral particles",
+        "a massive core surrounded by negatively-charged particles",
+        "a network of interacting positive and negative particles",
+        "overlapping layers of neutral, positive, and negative particles"
+      ],
+      "correct_answer": "a massive core surrounded by negatively-charged particles",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is D. overlapping layers of neutral, positive, and negative particles.\n\nThe structure of an atom is typically described as having three main layers:\n\n1. **Protons**: Positively charged particles that reside in the nucleus.\n2. **Neutrons**: Neutral particles that reside in the nucleus.\n3. **Electrons**: Negatively charged particles that orbit around the nucleus.\n\nThese three layers are often referred to as the **electron cloud** or **electron shell**. The electrons in an atom are arranged in specific energy levels or shells around the nucleus, with each shell having a specific capacity to hold a certain number of electrons.",
+      "answer_ids": {
+        "a lightweight core surrounded by neutral particles": 362,
+        "a massive core surrounded by negatively-charged particles": 426,
+        "a network of interacting positive and negative particles": 356,
+        "overlapping layers of neutral, positive, and negative particles": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 426,
+      "answer_probs": {
+        "a lightweight core surrounded by neutral particles": 0.021728515625,
+        "a massive core surrounded by negatively-charged particles": 0.00799560546875,
+        "a network of interacting positive and negative particles": 0.014892578125,
+        "overlapping layers of neutral, positive, and negative particles": 0.921875
+      },
+      "processing_time": 4.628201246261597,
+      "sampler": "greedy",
+      "pred_id": 423,
+      "predicted_answer": "overlapping layers of neutral, positive, and negative particles",
+      "correct": false,
+      "elapsed_ms": 4725.473880767822,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_7037258",
+      "sentence": "Which best describes the structure of an atom?",
+      "options": [
+        "a lightweight core surrounded by neutral particles",
+        "a massive core surrounded by negatively-charged particles",
+        "a network of interacting positive and negative particles",
+        "overlapping layers of neutral, positive, and negative particles"
+      ],
+      "correct_answer": "a massive core surrounded by negatively-charged particles",
+      "correct_option": "2",
+      "cot_reasoning": "The correct answer is D. overlapping layers of neutral, positive, and negative particles.\n\nThe structure of an atom is typically described as having three main layers:\n\n1. **Protons**: Positively charged particles that reside in the nucleus.\n2. **Neutrons**: Neutral particles that reside in the nucleus.\n3. **Electrons**: Negatively charged particles that orbit around the nucleus.\n\nThese three layers are often referred to as the **electron cloud** or **electron shell**. The electrons in an atom are arranged in specific energy levels or shells around the nucleus, with each shell having a specific capacity to hold a certain number of electrons.",
+      "answer_ids": {
+        "a lightweight core surrounded by neutral particles": 362,
+        "a massive core surrounded by negatively-charged particles": 426,
+        "a network of interacting positive and negative particles": 356,
+        "overlapping layers of neutral, positive, and negative particles": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 426,
+      "answer_probs": {
+        "a lightweight core surrounded by neutral particles": 0.021728515625,
+        "a massive core surrounded by negatively-charged particles": 0.00799560546875,
+        "a network of interacting positive and negative particles": 0.014892578125,
+        "overlapping layers of neutral, positive, and negative particles": 0.921875
+      },
+      "processing_time": 4.628201246261597,
+      "sampler": "dcbs",
+      "pred_id": 423,
+      "predicted_answer": "overlapping layers of neutral, positive, and negative particles",
+      "correct": false,
+      "elapsed_ms": 5382.998704910278,
+      "cluster_info": null
+    }
+  ],
+  "prediction_differences": [],
+  "evaluation_completed_at": "2025-06-28 21:00:33"
+}

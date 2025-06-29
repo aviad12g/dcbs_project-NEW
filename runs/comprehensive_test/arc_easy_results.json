@@ -1,0 +1,17 @@
+{
+  "statistics": {},
+  "config": {
+    "model": "meta-llama/Llama-3.2-1B-Instruct",
+    "total_examples": 3,
+    "methods": [
+      "dcbs",
+      "greedy"
+    ],
+    "include_cot": true,
+    "enable_caching": true,
+    "clustering_method": "dbscan"
+  },
+  "detailed_results": [],
+  "prediction_differences": [],
+  "evaluation_completed_at": "2025-06-22 22:29:19"
+}

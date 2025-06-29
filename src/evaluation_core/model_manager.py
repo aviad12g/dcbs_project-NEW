@@ -18,9 +18,11 @@ from src.errors import eval_logger as logger
 class ModelManager:
     """Model manager with optional chat template support."""
 
-    def __init__(self, model_name: str, load_in_4bit: bool = False):
-        self.model_name = model_name
-        self.load_in_4bit = load_in_4bit
+    def __init__(self, config):
+        """Initialize with config object."""
+        self.config = config
+        self.model_name = config.model_name
+        self.load_in_4bit = getattr(config, 'load_in_4bit', False)
         self.model = None
         self.tokenizer = None
         self.device = None

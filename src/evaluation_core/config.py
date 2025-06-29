@@ -32,6 +32,7 @@ class EvaluationConfig:
     enable_cluster_history: bool = True  # Track cluster assignments
     temperature: Optional[float] = None # Temperature for sampling
     top_k: Optional[int] = None # Top-K value for sampling
+    batch_size: Optional[int] = None  # Batch size for GPU processing (None = auto-detect)
 
     # Multi-dataset evaluation
     datasets: list = None  # List of datasets to evaluate

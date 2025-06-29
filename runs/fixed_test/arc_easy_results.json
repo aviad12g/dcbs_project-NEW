@@ -1,0 +1,54 @@
+{
+  "statistics": {
+    "dcbs": {
+      "accuracy": 100.0,
+      "correct": 2,
+      "total": 2,
+      "avg_time_ms": 65928.2534122467,
+      "confidence_interval": [
+        34.23719528896193,
+        100.0
+      ]
+    },
+    "greedy": {
+      "accuracy": 100.0,
+      "correct": 2,
+      "total": 2,
+      "avg_time_ms": 57817.7752494812,
+      "confidence_interval": [
+        34.23719528896193,
+        100.0
+      ]
+    }
+  },
+  "config": {
+    "model": "meta-llama/Llama-3.2-1B-Instruct",
+    "total_examples": 2,
+    "methods": [
+      "dcbs",
+      "greedy"
+    ],
+    "include_cot": true,
+    "enable_caching": true,
+    "clustering_method": "dbscan"
+  },
+  "detailed_results": [
+    {
+      "id": "arc_easy_0",
+      "sentence": "Which statement best explains why photosynthesis is the foundation of most food webs?",
+      "options": [
+        "Sunlight is the source of energy for nearly all ecosystems.",
+        "Most ecosystems are found on land instead of in water.",
+        "Carbon dioxide is more available than other gases.",
+        "The producers in all ecosystems are plants."
+      ],
+      "correct_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Sunlight is the source of energy for nearly all ecosystems. - This statement is true, as sunlight is the primary source of energy for photosynthesis, which is the process by which plants, algae, and some bacteria convert carbon dioxide and water into glucose and oxygen.\n\nB. Most ecosystems are found on land instead of in water. - This statement is false. Most ecosystems, including forests, grasslands, and oceans, are found on land. While some aquatic ecosystems, like coral reefs, are found in water, the majority of ecosystems are terrestrial.\n\nC. Carbon dioxide is more available than other gases. - This statement is false. While carbon dioxide is a critical component of the carbon cycle, it is not more available than other gases in most ecosystems. In fact, other gases like oxygen, nitrogen, and water vapor are more abundant in the atmosphere.\n\nD. The producers in all ecosystems are plants. - This statement is false. While plants are the primary producers in most ecosystems, other organisms like bacteria, fungi, and some microorganisms also play important roles in the food web.\n\nTherefore, the correct answer is A. Sunlight is the source of energy for nearly all ecosystems.",
+      "answer_ids": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 362,
+        "Most ecosystems are found on land instead of in water.": 426,
+        "Carbon dioxide is more available than other gases.": 356,
+        "The producers in all ecosystems are plants.": 423
+      },
+      "filter_tokens": 

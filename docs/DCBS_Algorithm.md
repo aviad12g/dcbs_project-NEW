@@ -230,7 +230,7 @@ dcbs = DCBSSampler.create_default(k=8, top_n=50, cache_config=cache_config)
 ```python
 # Avoid underflow in softmax
 logits_shifted = logits - torch.max(logits)
-probs = torch.softmax(logits_shifted, dim=0)
+probs = torch.softmax(logits_shifted, dim=-1)
 ```
 
 #### Embedding Normalization

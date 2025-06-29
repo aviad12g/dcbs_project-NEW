@@ -1,0 +1,38 @@
+{
+  "datasets": {
+    "arc_easy": {
+      "error": "Object of type set is not JSON serializable"
+    },
+    "hellaswag": {
+      "error": "Object of type set is not JSON serializable"
+    }
+  },
+  "summary": {
+    "total_datasets": 2,
+    "successful_datasets": 0,
+    "by_dataset": {
+      "arc_easy": {
+        "status": "error",
+        "error": "Object of type set is not JSON serializable"
+      },
+      "hellaswag": {
+        "status": "error",
+        "error": "Object of type set is not JSON serializable"
+      }
+    }
+  },
+  "evaluation_completed_at": "2025-06-22 23:15:18",
+  "config": {
+    "datasets": [
+      "arc_easy",
+      "hellaswag"
+    ],
+    "model": "meta-llama/Llama-3.2-1B-Instruct",
+    "samplers": [
+      "dcbs",
+      "greedy"
+    ],
+    "disagreement_tracking": true,
+    "run_id": "fixed_test"
+  }
+}

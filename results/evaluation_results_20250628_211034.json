@@ -1,0 +1,115 @@
+{
+  "statistics": {
+    "greedy": {
+      "accuracy": 70.0,
+      "correct": 7,
+      "total": 10,
+      "avg_time_ms": 5266.317510604858,
+      "confidence_interval": [
+        39.67732199795652,
+        89.2210712513788
+      ]
+    },
+    "dcbs": {
+      "accuracy": 70.0,
+      "correct": 7,
+      "total": 10,
+      "avg_time_ms": 5633.66219997406,
+      "confidence_interval": [
+        39.67732199795652,
+        89.2210712513788
+      ]
+    }
+  },
+  "config": {
+    "model": "meta-llama/Llama-3.2-1B-Instruct",
+    "total_examples": 10,
+    "methods": [
+      "greedy",
+      "dcbs"
+    ],
+    "include_cot": true,
+    "enable_caching": true,
+    "clustering_method": "hierarchical"
+  },
+  "detailed_results": [
+    {
+      "id": "Mercury_417466",
+      "sentence": "Which statement best explains why photosynthesis is the foundation of most food webs?",
+      "options": [
+        "Sunlight is the source of energy for nearly all ecosystems.",
+        "Most ecosystems are found on land instead of in water.",
+        "Carbon dioxide is more available than other gases.",
+        "The producers in all ecosystems are plants."
+      ],
+      "correct_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Sunlight is the source of energy for nearly all ecosystems. - This statement is true, as sunlight is the primary source of energy for photosynthesis, which is the process by which plants, algae, and some bacteria convert carbon dioxide and water into glucose and oxygen.\n\nB. Most ecosystems are found on land instead of in water. - This statement is false. Most ecosystems, including forests, grasslands, and deserts, are found on land, not in water.\n\nC. Carbon dioxide is more available than other gases. - This statement is false. While carbon dioxide is a critical component of the carbon cycle, it is not more available than other gases in most ecosystems. In fact, other gases like oxygen, nitrogen, and water vapor are more abundant in the atmosphere.\n\nD. The producers in all ecosystems are plants. - This statement is false. While plants are the primary producers in most ecosystems, other organisms like bacteria, fungi, and some microorganisms also play important roles in the food web.\n\nTherefore, the correct answer is A. Sunlight is the source of energy for nearly all ecosystems.",
+      "answer_ids": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 362,
+        "Most ecosystems are found on land instead of in water.": 426,
+        "Carbon dioxide is more available than other gases.": 356,
+        "The producers in all ecosystems are plants.": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 362,
+      "answer_probs": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 0.99609375,
+        "Most ecosystems are found on land instead of in water.": 0.00012302398681640625,
+        "Carbon dioxide is more available than other gases.": 0.0001392364501953125,
+        "The producers in all ecosystems are plants.": 0.0001087188720703125
+      },
+      "processing_time": 8.612663269042969,
+      "sampler": "greedy",
+      "pred_id": 362,
+      "predicted_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct": true,
+      "elapsed_ms": 8798.181772232056,
+      "cluster_info": null
+    },
+    {
+      "id": "Mercury_417466",
+      "sentence": "Which statement best explains why photosynthesis is the foundation of most food webs?",
+      "options": [
+        "Sunlight is the source of energy for nearly all ecosystems.",
+        "Most ecosystems are found on land instead of in water.",
+        "Carbon dioxide is more available than other gases.",
+        "The producers in all ecosystems are plants."
+      ],
+      "correct_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct_option": "1",
+      "cot_reasoning": "To determine the correct answer, let's analyze each option step by step:\n\nA. Sunlight is the source of energy for nearly all ecosystems. - This statement is true, as sunlight is the primary source of energy for photosynthesis, which is the process by which plants, algae, and some bacteria convert carbon dioxide and water into glucose and oxygen.\n\nB. Most ecosystems are found on land instead of in water. - This statement is false. Most ecosystems, including forests, grasslands, and deserts, are found on land, not in water.\n\nC. Carbon dioxide is more available than other gases. - This statement is false. While carbon dioxide is a critical component of the carbon cycle, it is not more available than other gases in most ecosystems. In fact, other gases like oxygen, nitrogen, and water vapor are more abundant in the atmosphere.\n\nD. The producers in all ecosystems are plants. - This statement is false. While plants are the primary producers in most ecosystems, other organisms like bacteria, fungi, and some microorganisms also play important roles in the food web.\n\nTherefore, the correct answer is A. Sunlight is the source of energy for nearly all ecosystems.",
+      "answer_ids": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 362,
+        "Most ecosystems are found on land instead of in water.": 426,
+        "Carbon dioxide is more available than other gases.": 356,
+        "The producers in all ecosystems are plants.": 423
+      },
+      "filter_tokens": [
+        426,
+        362,
+        356,
+        423
+      ],
+      "correct_id": 362,
+      "answer_probs": {
+        "Sunlight is the source of energy for nearly all ecosystems.": 0.99609375,
+        "Most ecosystems are found on land instead of in water.": 0.00012302398681640625,
+        "Carbon dioxide is more available than other gases.": 0.0001392364501953125,
+        "The producers in all ecosystems are plants.": 0.0001087188720703125
+      },
+      "processing_time": 8.612663269042969,
+      "sampler": "dcbs",
+      "pred_id": 362,
+      "predicted_answer": "Sunlight is the source of energy for nearly all ecosystems.",
+      "correct": true,
+      "elapsed_ms": 8924.896717071533,
+      "cluster_info": {
+        "candidate_count": 4,
+        "num_clusters": 4,
+        "selected_cluster": 
