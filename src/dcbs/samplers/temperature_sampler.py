@@ -65,14 +65,23 @@ class TemperatureSampler(Sampler):
                 allowed_mask[valid_indices] = True
                 working_logits[~allowed_mask] = -float('inf')
             else:
-                # No valid tokens in filter_tokens, fallback to original behavior
-                working_logits.fill_(-float('inf'))
+                # No valid tokens in filter_tokens, fallback to greedy selection
+                return torch.argmax(logits).item()
 
         # Apply temperature scaling
         scaled_logits = working_logits / self.temperature
 
         # Apply softmax to get probabilities
         probabilities = torch.softmax(scaled_logits, dim=-1)
+        
+        # Check for invalid probabilities (all -inf case)
+        if torch.isnan(probabilities).any() or torch.isinf(probabilities).all():
+            # Fallback to greedy selection from original logits
+            if filter_tokens and len(filter_tokens) > 0:
+                valid_indices = [i for i in filter_tokens if i < len(logits)]
+                if valid_indices:
+                    return max(valid_indices, key=lambda i: logits[i].item())
+            return torch.argmax(logits).item()
 
         # Sample a token (multinomial handles normalization internally)
         selected_token_id = torch.multinomial(probabilities, num_samples=1).item()

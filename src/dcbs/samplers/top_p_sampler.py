@@ -69,5 +69,12 @@ class TopPSampler(Sampler):
         filtered_logits[indices_to_remove] = float("-inf")
 
         # Sample from filtered distribution
-        token_id = torch.multinomial(torch.softmax(filtered_logits, dim=-1), 1).item()
+        probabilities = torch.softmax(filtered_logits, dim=-1)
+        
+        # Check for invalid probabilities
+        if torch.isnan(probabilities).any() or torch.isinf(probabilities).all():
+            # Fallback to greedy selection from original logits
+            return torch.argmax(logits).item()
+            
+        token_id = torch.multinomial(probabilities, 1).item()
         return token_id 

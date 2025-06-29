@@ -79,6 +79,12 @@ class TopKSampler(Sampler):
 
         # Apply softmax and sample (multinomial handles normalization)
         probabilities = torch.softmax(relevant_logits, dim=-1)
+        
+        # Check for invalid probabilities
+        if torch.isnan(probabilities).any() or torch.isinf(probabilities).all():
+            # Fallback to greedy selection from original logits
+            return torch.argmax(logits).item()
+            
         sampled_idx = torch.multinomial(probabilities, num_samples=1).item()
 
         return relevant_indices[sampled_idx].item() 

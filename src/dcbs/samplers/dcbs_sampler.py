@@ -336,11 +336,22 @@ class DCBSSampler(Sampler):
     ) -> List[List[int]]:
         """Group token indices by their cluster labels."""
         # For dynamic clustering (like DBSCAN), use actual number of clusters
-        actual_num_clusters = max(len(np.unique(labels)), num_clusters)
+        # Handle DBSCAN noise points (label = -1) by filtering them out
+        valid_labels = labels[labels >= 0]
+        if len(valid_labels) == 0:
+            # All points are noise, create single cluster with all points
+            return [list(range(len(labels)))]
+        
+        actual_num_clusters = max(len(np.unique(valid_labels)), num_clusters)
         clusters = [[] for _ in range(actual_num_clusters)]
         for i, label in enumerate(labels):
-            if label < len(clusters):  # Safety check
-                    clusters[label].append(i)
+            if label >= 0 and label < len(clusters):  # Skip noise points (label = -1)
+                clusters[label].append(i)
+        
+        # If all clusters are empty due to noise points, put all points in first cluster
+        if all(len(cluster) == 0 for cluster in clusters):
+            clusters[0] = list(range(len(labels)))
+        
         return clusters
 
     def _record_selection_decision(

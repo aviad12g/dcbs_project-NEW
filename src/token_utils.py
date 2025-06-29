@@ -368,6 +368,14 @@ def sample_token_from_logits(
             return random.randint(0, len(logits) - 1)
 
     probs = torch.softmax(filtered_logits, dim=-1)
+    
+    # Additional check for invalid probabilities after softmax
+    if torch.isnan(probs).any() or torch.isinf(probs).all():
+        if filter_tokens:
+            return random.choice(list(filter_tokens))
+        else:
+            return random.randint(0, len(logits) - 1)
+    
     return torch.multinomial(probs, 1).item()
 
 
