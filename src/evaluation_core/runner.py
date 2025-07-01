@@ -250,6 +250,22 @@ class EvaluationRunner:
                 examples_since_checkpoint += 1
                 completed_examples = i + 1  # Use actual example index + 1
                 
+                # Always update current state for signal handler
+                config_dict = self.config.__dict__.copy()
+                config_dict['target_memory_utilization'] = self.gpu_optimizer.target_memory_utilization
+                config_dict['safety_margin'] = self.gpu_optimizer.safety_margin
+                
+                self.current_state = CheckpointState(
+                    run_id=self.run_id,
+                    timestamp=time.strftime("%Y-%m-%d %H:%M:%S"),
+                    total_examples=len(benchmark_data),
+                    completed_examples=completed_examples,
+                    current_example_idx=i + 1,  # Next example to process
+                    sampler_states={name: {} for name in self.samplers.keys()},
+                    results=all_results,
+                    config=config_dict
+                )
+                
                 # Monitor GPU utilization and adjust batch size if needed
                 if self.gpu_optimizer.available_gpus and (i + 1) % 20 == 0:  # Check every 20 examples
                     usage_info = self.gpu_optimizer.monitor_gpu_usage()

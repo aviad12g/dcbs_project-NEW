@@ -68,14 +68,27 @@ class CheckpointManager:
             with open(temp_path, 'w') as f:
                 json.dump(state.to_dict(), f, indent=2)
             
-            # Atomic rename
-            temp_path.rename(checkpoint_path)
+            # Atomic rename (with Windows fallback)
+            try:
+                temp_path.rename(checkpoint_path)
+            except OSError as rename_error:
+                # Windows file locking issue - use copy + delete fallback
+                logger.warning(f"Atomic rename failed ({rename_error}), using copy fallback")
+                import shutil
+                if checkpoint_path.exists():
+                    checkpoint_path.unlink()  # Remove existing file first
+                shutil.copy2(temp_path, checkpoint_path)
+                temp_path.unlink()  # Remove temp file
             
             logger.info(f"Checkpoint saved: {state.completed_examples}/{state.total_examples} examples")
             self.last_save_time = time.time()
             
         except Exception as e:
             logger.error(f"Failed to save checkpoint: {e}")
+            # Still log what temp files exist for debugging
+            temp_files = list(self.checkpoint_dir.glob(f"checkpoint_{state.run_id}*.tmp"))
+            if temp_files:
+                logger.info(f"Temporary checkpoint files found: {[f.name for f in temp_files]}")
     
     def load_checkpoint(self, run_id: str) -> Optional[CheckpointState]:
         """Load checkpoint state from disk."""

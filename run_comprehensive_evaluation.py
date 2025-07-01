@@ -214,7 +214,7 @@ def main():
                 "successful": len(successful),
                 "failed": len(failed)
             }
-        }, indent=2)
+        }, f, indent=2)
     
     print(f"\nSummary saved to: {summary_file}")
     
