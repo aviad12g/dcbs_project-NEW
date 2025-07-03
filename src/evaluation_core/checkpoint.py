@@ -135,4 +135,66 @@ class CheckpointManager:
             except Exception:
                 continue
                 
-        return sorted(run_ids) 
+        return sorted(run_ids)
+
+    def _configs_match(self, config_a: Dict, config_b: Dict, keys_to_compare: Optional[List[str]] = None) -> bool:
+        """Return True if configs are equivalent on a selected subset of keys.
+
+        We deliberately compare only *core* hyper-parameters that define an
+        evaluation run so that cosmetic differences (e.g. logging level) do
+        not block resumption.  If *keys_to_compare* is None we use a sensible
+        default list.
+        """
+        if config_a is None or config_b is None:
+            return False
+
+        if keys_to_compare is None:
+            keys_to_compare = [
+                "model_name",
+                "benchmark_path",
+                "k",
+                "top_n",
+                "top_p",
+                "include_cot",
+                "clustering_method",
+                "dbscan_eps",
+                "dbscan_min_samples",
+                "hierarchical_linkage",
+            ]
+
+        for key in keys_to_compare:
+            if config_a.get(key) != config_b.get(key):
+                return False
+        return True
+
+    def find_latest_matching_checkpoint(self, target_config: Dict) -> Optional[CheckpointState]:
+        """Return the *most recent* checkpoint compatible with *target_config*.
+
+        Compatibility is determined by a relaxed config comparison (see
+        ``_configs_match``).  Among all compatible checkpoints we pick the one
+        with the highest ``completed_examples`` value; if tied we take the one
+        with the newest timestamp.
+        """
+        best_state: Optional[CheckpointState] = None
+
+        for run_id in self.list_checkpoints():
+            state = self.load_checkpoint(run_id)
+            if not state:
+                continue
+            if not self._configs_match(target_config, state.config):
+                continue
+
+            if best_state is None:
+                best_state = state
+                continue
+
+            # Prefer checkpoint with more progress, break ties by timestamp
+            if state.completed_examples > best_state.completed_examples:
+                best_state = state
+            elif (
+                state.completed_examples == best_state.completed_examples and
+                state.timestamp > best_state.timestamp
+            ):
+                best_state = state
+
+        return best_state 
