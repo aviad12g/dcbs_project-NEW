@@ -76,14 +76,37 @@ class EvaluationRunner:
         sys.exit(0)
         
     def try_resume_from_checkpoint(self) -> Optional[CheckpointState]:
-        """Try to resume from existing checkpoint."""
+        """Try to resume from existing checkpoint.
+
+        The logic now attempts three steps:
+        1. Exact match on self.run_id (original behaviour)
+        2. If not found, look for the *latest* checkpoint compatible with the
+           current configuration using CheckpointManager.find_latest_matching_checkpoint.
+        3. Return the discovered checkpoint (or None if nothing compatible).
+        """
         if not self.checkpoint_manager:
             return None
-            
+
+        # Step 1: exact match first
         checkpoint = self.checkpoint_manager.load_checkpoint(self.run_id)
         if checkpoint:
-            logger.info(f"Resuming from checkpoint: {checkpoint.completed_examples}/{checkpoint.total_examples} examples completed")
+            logger.info(
+                f"Resuming from checkpoint: {checkpoint.completed_examples}/{checkpoint.total_examples} examples completed (run_id={self.run_id})"
+            )
             return checkpoint
+
+        # Step 2: search for compatible checkpoints
+        checkpoint = self.checkpoint_manager.find_latest_matching_checkpoint(self.config.__dict__)
+        if checkpoint:
+            logger.info(
+                "No checkpoint found for current run_id, but discovered compatible checkpoint "
+                f"(run_id={checkpoint.run_id}) with progress {checkpoint.completed_examples}/{checkpoint.total_examples}."
+            )
+            # Switch to discovered run_id so that subsequent saves overwrite the same file
+            self.run_id = checkpoint.run_id
+            return checkpoint
+
+        # Step 3: nothing found
         return None
 
     def run_evaluation(self, benchmark_data: List[Dict]) -> Dict:
@@ -91,6 +114,27 @@ class EvaluationRunner:
         # Load model first 
         model, tokenizer, context = self.model_manager.load_model()
         
+        # ------------------------------------------------------------------
+        # Guard: Skip evaluation altogether if the model fell back to CPU.
+        # Doing this right after loading prevents expensive CPU inference.
+        # ------------------------------------------------------------------
+        if model.device.type != "cuda":
+            logger.warning(
+                "Model could not be placed on GPU and fell back to CPU – "
+                "skipping this run to avoid extremely slow inference."
+            )
+
+            # Return a stub result so that the caller can detect the skip.
+            return {
+                "statistics": {
+                    "dcbs": {
+                        "accuracy": -1.0,
+                        "avg_time_ms": float("inf"),
+                        "skipped_cpu_fallback": True,
+                    }
+                }
+            }
+
         # Try to resume from checkpoint FIRST to get optimized config
         checkpoint = self.try_resume_from_checkpoint()
         
@@ -106,17 +150,27 @@ class EvaluationRunner:
                 # Update GPU optimizer with restored settings
                 self.gpu_optimizer.target_memory_utilization = checkpoint_config['target_memory_utilization']
         else:
-            # Optimize batch size for GPU utilization (only if no checkpoint)
-            if self.gpu_optimizer.available_gpus:
-                optimal_batch_size = self.gpu_optimizer.get_optimal_batch_size(
-                    model, tokenizer, sample_input_length=512
+            # If user supplied a fixed batch size, honour it and skip the costly auto-search.
+            if getattr(self.config, "batch_size", None):
+                logger.info(
+                    f"Using provided batch size {self.config.batch_size}; skipping auto batch-size search"
                 )
-                logger.info(f"Auto-detected optimal batch size: {optimal_batch_size}")
-                # Update config with optimal batch size
-                if hasattr(self.config, 'batch_size'):
-                    original_batch_size = self.config.batch_size
-                    self.config.batch_size = optimal_batch_size
-                    logger.info(f"Updated batch size from {original_batch_size} to {optimal_batch_size}")
+            else:
+                # Otherwise perform GPU memory-aware search
+                if self.gpu_optimizer.available_gpus:
+                    optimal_batch_size = self.gpu_optimizer.get_optimal_batch_size(
+                        model, tokenizer, sample_input_length=512
+                    )
+                    logger.info(
+                        f"Auto-detected optimal batch size: {optimal_batch_size}"
+                    )
+                    # Update config with optimal batch size
+                    if hasattr(self.config, "batch_size"):
+                        original_batch_size = self.config.batch_size
+                        self.config.batch_size = optimal_batch_size
+                        logger.info(
+                            f"Updated batch size from {original_batch_size} to {optimal_batch_size}"
+                        )
         
         # Create samplers with context and clustering parameters
         self.samplers = SamplerFactory.create_samplers(
@@ -185,50 +239,27 @@ class EvaluationRunner:
         # Process examples starting from checkpoint position
         examples_since_checkpoint = 0
         utilization_history = []  # Track GPU utilization for dynamic adjustment
-        
-        for i, example in enumerate(benchmark_data):
-            # Skip already processed examples
-            if i < start_idx:
-                continue
-                
-            if (i + 1) % 10 == 0 or i == 0:
-                logger.info(f"Processing example {i + 1}/{len(benchmark_data)}")
-                
-                # Log GPU utilization periodically
-                if self.gpu_optimizer.available_gpus and (i + 1) % 50 == 0:
-                    usage_info = self.gpu_optimizer.monitor_gpu_usage()
-                    for gpu_id, info in usage_info.items():
-                        logger.info(f"GPU {gpu_id}: {info['utilization_percent']:.1f}% memory, "
-                                  f"{info['allocated_gb']:.1f}GB/{info['total_gb']:.1f}GB used")
 
-            try:
-                # Process example once to get reasoning and logits
-                # Use a consistent sampler for reasoning generation (greedy for reproducibility)
-                reasoning_sampler = self.samplers.get("greedy", list(self.samplers.values())[0])
-                
-                processed_result = processor.process_example(
-                    example, 
-                    reasoning_sampler, 
-                    include_cot=self.config.include_cot
+        raw_batch_size = getattr(self.config, "batch_size", 1)
+        batch_size = max(1, int(raw_batch_size) if raw_batch_size else 1)
+
+        # Helper to process a *list* of pre-processed results with all samplers
+        def _evaluate_with_all_samplers(processed_batch: List[Dict], global_index_offset: int):
+            nonlocal examples_since_checkpoint, all_results, prediction_map
+
+            # Iterate samplers first, evaluate whole batch at once
+            for sampler_name, sampler in self.samplers.items():
+                eval_results_batch = processor.evaluate_batch_with_sampler(
+                    processed_batch, sampler, sampler_name
                 )
 
-                # Track results for this example
-                example_results = []
-
-                # Now evaluate with each sampler using the same reasoning/logits
-                for sampler_name, sampler in self.samplers.items():
-                    eval_result = processor.evaluate_with_sampler(
-                        processed_result, sampler, sampler_name
-                    )
-
-                    # Combine results
+                for local_idx, eval_result in enumerate(eval_results_batch):
+                    processed_result = processed_batch[local_idx]
                     final_result = {**processed_result, **eval_result}
-                    # Remove logits for JSON serialization
                     final_result.pop("logits", None)
-                    
-                    # Convert any sets to lists for JSON serialization
                     final_result = self._make_json_serializable(final_result)
-                    example_results.append(final_result)
+
+                    all_results.append(final_result)
 
                     # Track predictions for difference analysis
                     ex_id = final_result.get("id")
@@ -243,12 +274,43 @@ class EvaluationRunner:
                         stats["correct"] += 1
                     stats["times"].append(eval_result["elapsed_ms"])
 
-                # Add all results for this example at once (atomic operation)
-                all_results.extend(example_results)
+            # Each processed example accounted once per sampler; update checkpoint counters
+            examples_since_checkpoint += len(processed_batch)
 
-                # Update checkpoint state after processing ALL samplers for this example
-                examples_since_checkpoint += 1
-                completed_examples = i + 1  # Use actual example index + 1
+        # Choose reasoning sampler once outside loop
+        reasoning_sampler = self.samplers.get("greedy", list(self.samplers.values())[0])
+
+        for batch_start in range(start_idx, len(benchmark_data), batch_size):
+            batch_end = min(batch_start + batch_size, len(benchmark_data))
+
+            # Logging progress every 10 examples equivalent
+            if (batch_start + 1) % 10 == 0 or batch_start == 0:
+                logger.info(f"Processing examples {batch_start + 1}-{batch_end}/{len(benchmark_data)}")
+
+                if self.gpu_optimizer.available_gpus and (batch_start + 1) % 50 == 0:
+                    usage_info = self.gpu_optimizer.monitor_gpu_usage()
+                    for gpu_id, info in usage_info.items():
+                        logger.info(
+                            f"GPU {gpu_id}: {info['utilization_percent']:.1f}% memory, "
+                            f"{info['allocated_gb']:.1f}GB/{info['total_gb']:.1f}GB used"
+                        )
+
+            try:
+                current_examples = benchmark_data[batch_start:batch_end]
+
+                if batch_size == 1:
+                    # Fallback to original single-example path
+                    processed_single = processor.process_example(
+                        current_examples[0], reasoning_sampler, include_cot=self.config.include_cot
+                    )
+                    _evaluate_with_all_samplers([processed_single], batch_start)
+                else:
+                    processed_batch = processor.process_examples_batch(
+                        current_examples, reasoning_sampler, include_cot=self.config.include_cot
+                    )
+                    _evaluate_with_all_samplers(processed_batch, batch_start)
+
+                completed_examples = batch_end  # number processed so far
                 
                 # Always update current state for signal handler
                 config_dict = self.config.__dict__.copy()
@@ -260,14 +322,14 @@ class EvaluationRunner:
                     timestamp=time.strftime("%Y-%m-%d %H:%M:%S"),
                     total_examples=len(benchmark_data),
                     completed_examples=completed_examples,
-                    current_example_idx=i + 1,  # Next example to process
+                    current_example_idx=batch_end,  # Next example to process
                     sampler_states={name: {} for name in self.samplers.keys()},
                     results=all_results,
                     config=config_dict
                 )
                 
                 # Monitor GPU utilization and adjust batch size if needed
-                if self.gpu_optimizer.available_gpus and (i + 1) % 20 == 0:  # Check every 20 examples
+                if self.gpu_optimizer.available_gpus and (batch_end) % 20 == 0:  # Check every 20 examples
                     usage_info = self.gpu_optimizer.monitor_gpu_usage()
                     current_utilization = max(gpu_info.get('utilization_percent', 0) for gpu_info in usage_info.values())
                     utilization_history.append(current_utilization)
@@ -311,7 +373,7 @@ class EvaluationRunner:
                         timestamp=time.strftime("%Y-%m-%d %H:%M:%S"),
                         total_examples=len(benchmark_data),
                         completed_examples=completed_examples,
-                        current_example_idx=i + 1,  # Next example to process
+                        current_example_idx=batch_end,  # Next example to process
                         sampler_states={name: {} for name in self.samplers.keys()},
                         results=all_results,
                         config=config_dict
@@ -320,7 +382,7 @@ class EvaluationRunner:
                     examples_since_checkpoint = 0
 
             except Exception as e:
-                logger.error(f"Error processing example {i}: {e}")
+                logger.error(f"Error processing example {batch_start}: {e}")
                 logger.error(f"Full traceback:\n{traceback.format_exc()}")
                 
                 # Save emergency checkpoint on error
@@ -335,8 +397,8 @@ class EvaluationRunner:
                         run_id=self.run_id,
                         timestamp=time.strftime("%Y-%m-%d %H:%M:%S"),
                         total_examples=len(benchmark_data),
-                        completed_examples=i,  # Don't count the failed example
-                        current_example_idx=i,  # Retry this example
+                        completed_examples=batch_start,  # Don't count the failed examples
+                        current_example_idx=batch_start,  # Retry these examples
                         sampler_states={name: {} for name in self.samplers.keys()},
                         results=all_results,
                         config=config_dict
