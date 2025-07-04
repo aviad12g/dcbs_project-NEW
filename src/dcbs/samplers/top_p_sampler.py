@@ -72,7 +72,7 @@ class TopPSampler(Sampler):
         probabilities = torch.softmax(filtered_logits, dim=-1)
         
         # Check for invalid probabilities
-        if torch.isnan(probabilities).any() or torch.isinf(probabilities).all():
+        if torch.isnan(probabilities).any() or torch.isinf(probabilities).any():
             # Fallback to greedy selection from original logits
             return torch.argmax(logits).item()
             

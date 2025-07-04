@@ -206,7 +206,7 @@ class DCBSSampler(Sampler):
         """Check if candidate logits contain invalid values."""
         candidate_logits = logits[candidate_ids]
         return (
-            torch.isinf(candidate_logits).all() or torch.isnan(candidate_logits).any()
+            torch.isinf(candidate_logits).any() or torch.isnan(candidate_logits).any()
         )
 
     def _fallback_selection(
@@ -269,7 +269,9 @@ class DCBSSampler(Sampler):
     
     def _cluster_candidates(self, candidate_ids: list, embedding: torch.nn.Embedding) -> dict:
         """Perform clustering on candidate embeddings."""
-        candidate_ids_tensor = torch.tensor(candidate_ids, device=embedding.weight.device)
+        # Ensure device consistency - use embedding device for all operations
+        device = embedding.weight.device
+        candidate_ids_tensor = torch.tensor(candidate_ids, device=device)
 
         # Get normalized embeddings
         norm_embeddings = self.embedding_ops.get_normalized_embeddings(

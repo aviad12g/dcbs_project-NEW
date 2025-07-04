@@ -75,7 +75,7 @@ class TemperatureSampler(Sampler):
         probabilities = torch.softmax(scaled_logits, dim=-1)
         
         # Check for invalid probabilities (all -inf case)
-        if torch.isnan(probabilities).any() or torch.isinf(probabilities).all():
+        if torch.isnan(probabilities).any() or torch.isinf(probabilities).any():
             # Fallback to greedy selection from original logits
             if filter_tokens and len(filter_tokens) > 0:
                 valid_indices = [i for i in filter_tokens if i < len(logits)]

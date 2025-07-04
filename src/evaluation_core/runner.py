@@ -278,6 +278,8 @@ class EvaluationRunner:
             examples_since_checkpoint += len(processed_batch)
 
         # Choose reasoning sampler once outside loop
+        if not self.samplers:
+            raise ValueError("No samplers configured for evaluation")
         reasoning_sampler = self.samplers.get("greedy", list(self.samplers.values())[0])
 
         for batch_start in range(start_idx, len(benchmark_data), batch_size):

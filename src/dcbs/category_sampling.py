@@ -221,7 +221,10 @@ class GreedyTokenSelector(TokenSelector):
                     if token_id in filter_tokens:
                         return token_id
                 # If still no valid token, return first in filter set
-                return next(iter(filter_tokens))
+                if filter_tokens:
+                    return next(iter(filter_tokens))
+                # Fallback to first candidate if filter_tokens is empty
+                return candidate_ids[0] if candidate_ids else 0
 
             cluster_token_indices = [cluster_token_indices[i] for i in valid_indices]
             cluster_token_probs = cluster_token_probs[valid_indices]
@@ -288,7 +291,10 @@ class CategorySampler:
                 for token_id in candidate_ids:
                     if token_id in filter_tokens:
                         return token_id
-                return next(iter(filter_tokens))
+                if filter_tokens:
+                    return next(iter(filter_tokens))
+                # Fallback to first candidate if filter_tokens is empty
+                return candidate_ids[0] if candidate_ids else 0
             # Otherwise use highest probability token
             best_idx = torch.argmax(candidate_probs).item()
             return candidate_ids[best_idx]
@@ -323,7 +329,10 @@ class CategorySampler:
                     for token_id in candidate_ids:
                         if token_id in filter_tokens:
                             return token_id
-                    return next(iter(filter_tokens))
+                    if filter_tokens:
+                        return next(iter(filter_tokens))
+                    # Fallback to first candidate if filter_tokens is empty
+                    return candidate_ids[0] if candidate_ids else 0
                 best_idx = torch.argmax(candidate_probs).item()
                 return candidate_ids[best_idx]
         

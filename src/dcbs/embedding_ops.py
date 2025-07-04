@@ -96,6 +96,10 @@ class EmbeddingOperations:
         """
         uncached_ids = [token_ids_list[i] for i in uncached_indices]
 
+        # Early return if no uncached embeddings needed
+        if not uncached_ids:
+            return
+
         # Bounds checking
         max_token_id = max(uncached_ids)
         if embedding_layer.weight.shape[0] > max_token_id:

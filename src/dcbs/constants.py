@@ -36,7 +36,7 @@ DEBUG_ENV_TRUE_VALUES = ("true", "1", "yes", "on")
 DEBUG_ENV_FALSE_VALUES = ("false", "0", "no", "off")
 
 # Probability Constants
-PROB_EPSILON = 1e-6  # Small value to prevent division by zero
+PROB_EPSILON = 1e-8  # Small value to prevent division by zero - increased for better numerical stability
 
 # Performance Thresholds
 CACHING_BENEFIT_THRESHOLD_EXAMPLES = 1000  # Number of examples where caching becomes beneficial
