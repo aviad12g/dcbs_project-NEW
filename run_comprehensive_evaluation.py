@@ -77,6 +77,15 @@ def main():
         help="Clustering methods to test (default: dbscan, hierarchical)"
     )
     
+    # NEW: Allow custom sampler sets (e.g. greedy top_p dcbs)
+    parser.add_argument(
+        "--samplers",
+        nargs="+",
+        choices=["greedy", "top_p", "dcbs", "random"],
+        default=["greedy", "dcbs"],
+        help="Samplers to include in each compare_methods run (default: greedy dcbs)",
+    )
+    
     args = parser.parse_args()
     
     # Adjust limit for quick test
@@ -129,19 +138,25 @@ def main():
             
             eval_name = f"{dataset}_{clustering_method}"
             
-            # Build command
+            # Build command with dynamic sampler list
             cmd = [
                 "python", "compare_methods.py",
                 "--model", "meta-llama/Llama-3.2-1B-Instruct",
                 "--limit", str(limit),
-                "--samplers", "greedy", "dcbs",
+            ]
+
+            # Inject user-requested samplers
+            cmd.extend(["--samplers", *args.samplers])
+
+            # Remaining parameters
+            cmd.extend([
                 "--datasets", dataset,
                 "--clustering-method", clustering_method,
                 "--enable-cluster-history",
                 "--debug-mode",
                 "--enable-disagreement-tracking",
                 "--run-id", f"{run_id}_{eval_name}",
-            ]
+            ])
             
             # Add hierarchical-specific parameters
             if clustering_method == "hierarchical":
@@ -206,7 +221,8 @@ def main():
                 "limit": limit,
                 "datasets": datasets,
                 "clustering_methods": clustering_methods,
-                "quick_test": args.quick_test
+                "quick_test": args.quick_test,
+                "samplers": args.samplers
             },
             "results": all_results,
             "summary": {

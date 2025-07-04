@@ -305,9 +305,24 @@ class EvaluationRunner:
                     )
                     _evaluate_with_all_samplers([processed_single], batch_start)
                 else:
-                    processed_batch = processor.process_examples_batch(
-                        current_examples, reasoning_sampler, include_cot=self.config.include_cot
-                    )
+                    # Use batched path when available; otherwise fall back to per-example processing
+                    if hasattr(processor, "process_examples_batch"):
+                        processed_batch = processor.process_examples_batch(
+                            current_examples,
+                            reasoning_sampler,
+                            include_cot=self.config.include_cot,
+                        )
+                    else:
+                        # Legacy support: process each example individually when the
+                        # processor implementation does not yet support batching.
+                        processed_batch = [
+                            processor.process_example(
+                                ex,
+                                reasoning_sampler,
+                                include_cot=self.config.include_cot,
+                            )
+                            for ex in current_examples
+                        ]
                     _evaluate_with_all_samplers(processed_batch, batch_start)
 
                 completed_examples = batch_end  # number processed so far
