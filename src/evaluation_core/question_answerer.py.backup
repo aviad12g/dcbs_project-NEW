@@ -182,23 +182,21 @@ class QuestionAnswerer:
         # Get logits for final answer
         logits = self.token_generator.get_logits_for_prompt(final_prompt)
         
-        # Get answer token IDs using the original label-based approach
+        # Get answer token mappings and probabilities
         answer_ids = self.token_resolver.get_answer_token_ids(options)
-
-        # Calculate probabilities
         answer_probs = self._calculate_answer_probabilities(logits, answer_ids)
-
-        # Sample using the label tokens (A/B/C/D)
+        
+        # Sample the answer
         filter_tokens = set(answer_ids.values())
         pred_token_id = sampler.sample(logits, filter_tokens=filter_tokens)
-
+        
         # Find which answer was selected
         selected_answer = None
-        for answer_text, token_id in answer_ids.items():
+        for answer, token_id in answer_ids.items():
             if token_id == pred_token_id:
-                selected_answer = answer_text
+                selected_answer = answer
                 break
-
+        
         return {
             'selected_answer': selected_answer,
             'reasoning': reasoning_response,
@@ -230,23 +228,21 @@ class QuestionAnswerer:
         # Get logits
         logits = self.token_generator.get_logits_for_prompt(prompt)
         
-        # Get answer token IDs using the original label-based approach
+        # Get answer token mappings and probabilities
         answer_ids = self.token_resolver.get_answer_token_ids(options)
-
-        # Calculate probabilities
         answer_probs = self._calculate_answer_probabilities(logits, answer_ids)
-
-        # Sample using the label tokens (A/B/C/D)
+        
+        # Sample the answer
         filter_tokens = set(answer_ids.values())
         pred_token_id = sampler.sample(logits, filter_tokens=filter_tokens)
-
+        
         # Find which answer was selected
         selected_answer = None
-        for answer_text, token_id in answer_ids.items():
+        for answer, token_id in answer_ids.items():
             if token_id == pred_token_id:
-                selected_answer = answer_text
+                selected_answer = answer
                 break
-
+        
         return {
             'selected_answer': selected_answer,
             'reasoning': None,
@@ -257,28 +253,17 @@ class QuestionAnswerer:
             'logits': logits
         }
     
-
-
     def _calculate_answer_probabilities(
         self,
         logits: torch.Tensor,
         answer_ids: Dict[str, int]
     ) -> Dict[str, float]:
         """Calculate probabilities for each answer option."""
-        import torch
-        
-        # Extract logits for only the answer tokens
-        answer_token_ids = list(answer_ids.values())
-        answer_logits = logits[answer_token_ids]
-        
-        # Apply softmax to only the answer tokens (so they sum to 1.0)
-        answer_probs_tensor = torch.softmax(answer_logits, dim=-1)
-        
-        # Map back to option text
-        answer_probs = {}
-        for i, (option, token_id) in enumerate(answer_ids.items()):
-            answer_probs[option] = answer_probs_tensor[i].item()
-        
+        all_probs = torch.softmax(logits, dim=-1)
+        answer_probs = {
+            option: all_probs[token_id].item()
+            for option, token_id in answer_ids.items()
+        }
         return answer_probs
     
     def _answer_batch_with_reasoning(
@@ -326,23 +311,20 @@ class QuestionAnswerer:
             
             # Get logits and probabilities
             logits = self.token_generator.get_logits_for_prompt(final_prompt)
-            
-            # Get answer token IDs using the original label-based approach
             answer_ids = self.token_resolver.get_answer_token_ids(options)
-
-            # Calculate probabilities
             answer_probs = self._calculate_answer_probabilities(logits, answer_ids)
-
-            # Sample using the label tokens (A/B/C/D)
+            
+            # Sample the answer
             filter_tokens = set(answer_ids.values())
             pred_token_id = sampler.sample(logits, filter_tokens=filter_tokens)
-
+            
             # Find which answer was selected
             selected_answer = None
-            for answer_text, token_id in answer_ids.items():
+            for answer, token_id in answer_ids.items():
                 if token_id == pred_token_id:
-                    selected_answer = answer_text
+                    selected_answer = answer
                     break
+            
             result = {
                 'selected_answer': selected_answer,
                 'reasoning': reasoning_resp,
@@ -376,5 +358,3 @@ class QuestionAnswerer:
         
         logger.debug(f"Batch direct answering completed for {len(results)} questions")
         return results 
-
- 

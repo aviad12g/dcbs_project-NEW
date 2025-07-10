@@ -2,10 +2,9 @@
 
 | Method | Accuracy (%) | 95% CI | Correct/Total | Avg Time (ms) |
 |--------|--------------|--------|---------------|---------------|
-| Greedy | 72.40 | (70.4, 74.3) | 1448/2000 | 20.33 |
-| Dcbs | 71.65 | (69.6, 73.6) | 1433/2000 | 22.50 |
+| Greedy | 68.00 | (48.4, 82.8) | 17/25 | 601.47 |
 
-**Total Examples:** 2000
+**Total Examples:** 25
 **Model:** meta-llama/Llama-3.2-1B-Instruct
 
 **Notes:**

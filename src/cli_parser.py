@@ -218,8 +218,8 @@ class ArgumentParserSetup:
         parser.add_argument(
             "--samplers",
             nargs="+",
-            choices=["greedy", "top_p", "dcbs", "random"],
-            help="Specify which samplers to evaluate (default: all)",
+            choices=["greedy", "top_p", "dcbs", "enhanced_dcbs", "random"],
+            help="Specify which samplers to evaluate (default: all). 'enhanced_dcbs' uses 50% confidence threshold for hierarchical selection.",
         )
 
         parser.add_argument(

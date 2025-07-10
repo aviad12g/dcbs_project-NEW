@@ -83,6 +83,81 @@ class ExampleProcessor:
 
         return result
 
+    def process_examples_batch(
+        self, 
+        examples: List[Dict], 
+        sampler, 
+        include_cot: bool = True
+    ) -> List[Dict]:
+        """
+        Process multiple examples in parallel using batch processing.
+        
+        Args:
+            examples: List of example data dictionaries
+            sampler: Sampler to use for generation
+            include_cot: Whether to include chain-of-thought reasoning
+            
+        Returns:
+            List of processed example results
+        """
+        start_time = time.time()
+        logger.debug(f"Starting batch processing for {len(examples)} examples")
+        
+        if not examples:
+            return []
+        
+        # STEP 1: Extract questions and options from all examples
+        questions = []
+        options_list = []
+        example_metadata = []
+        
+        for example in examples:
+            if "question" in example:
+                sentence = example["question"]
+                options = example["options"]
+                correct_option = example.get("correct_option", "1")
+                correct_idx = int(correct_option) - 1
+                correct_answer = options[correct_idx]
+                
+                questions.append(sentence)
+                options_list.append(options)
+                example_metadata.append({
+                    "id": example.get("id", "unknown"),
+                    "sentence": sentence,
+                    "options": options,
+                    "correct_answer": correct_answer,
+                    "correct_option": correct_option,
+                    "correct_idx": correct_idx
+                })
+            else:
+                raise ValueError("Example must have 'question' field")
+        
+        # STEP 2: Batch question answering
+        answer_results = self.question_answerer.answer_questions_batch(
+            questions, options_list, sampler, include_cot
+        )
+        
+        # STEP 3: Combine results with example metadata
+        processed_examples = []
+        total_time = time.time() - start_time
+        
+        for metadata, answer_result in zip(example_metadata, answer_results):
+            result = metadata.copy()
+            
+            # Extract results from batch answer
+            result["cot_reasoning"] = answer_result.get("reasoning")
+            result["answer_ids"] = answer_result["answer_ids"]
+            result["filter_tokens"] = answer_result["filter_tokens"]
+            result["correct_id"] = answer_result["answer_ids"][metadata["correct_answer"]]
+            result["logits"] = answer_result["logits"]
+            result["answer_probs"] = answer_result["answer_probs"]
+            result["processing_time"] = answer_result.get("processing_time", total_time / len(examples))
+            
+            processed_examples.append(result)
+        
+        logger.debug(f"Batch processing completed for {len(processed_examples)} examples in {total_time:.2f}s")
+        return processed_examples
+
     def evaluate_with_sampler(
         self, processed_result: Dict, sampler, sampler_name: str
     ) -> Dict:
@@ -150,3 +225,104 @@ class ExampleProcessor:
             "elapsed_ms": elapsed_ms,
             "cluster_info": cluster_info,
         }
+
+    def evaluate_batch_with_sampler(
+        self, 
+        processed_results: List[Dict], 
+        sampler, 
+        sampler_name: str
+    ) -> List[Dict]:
+        """
+        Evaluate multiple processed examples with a specific sampler in batch.
+        
+        Args:
+            processed_results: List of results from process_examples_batch
+            sampler: Sampler to use
+            sampler_name: Name for logging
+            
+        Returns:
+            List of evaluation results, one per processed example
+        """
+        start_time = time.time()
+        logger.debug(f"Starting batch evaluation with {sampler_name} for {len(processed_results)} examples")
+        
+        if not processed_results:
+            return []
+        
+        # Extract questions and options for batch processing
+        questions = []
+        options_list = []
+        include_cot_flags = []
+        
+        for processed_result in processed_results:
+            sentence = processed_result["sentence"]
+            options = processed_result["options"]
+            include_cot = processed_result.get("cot_reasoning") is not None
+            
+            questions.append(sentence)
+            options_list.append(options)
+            include_cot_flags.append(include_cot)
+        
+        # Check if all examples have the same CoT setting for efficient batching
+        uniform_cot = all(flag == include_cot_flags[0] for flag in include_cot_flags)
+        
+        if uniform_cot:
+            # All examples have same CoT setting - use efficient batch processing
+            answer_results = self.question_answerer.answer_questions_batch(
+                questions, options_list, sampler, include_cot=include_cot_flags[0]
+            )
+        else:
+            # Mixed CoT settings - process individually for correctness
+            answer_results = []
+            for i, processed_result in enumerate(processed_results):
+                sentence = processed_result["sentence"]
+                options = processed_result["options"]
+                include_cot = processed_result.get("cot_reasoning") is not None
+                
+                answer_result = self.question_answerer.answer_question(
+                    sentence, options, sampler, include_cot
+                )
+                answer_results.append(answer_result)
+        
+        # Process results
+        evaluation_results = []
+        total_time = time.time() - start_time
+        
+        for processed_result, answer_result in zip(processed_results, answer_results):
+            logits = answer_result["logits"]
+            filter_tokens = answer_result["filter_tokens"]
+            correct_id = processed_result["correct_id"]
+
+            predicted_answer = answer_result.get("selected_answer")
+            pred_id = answer_result.get("pred_token_id")
+            
+            # Fallback: if pred_token_id is None, sample again (but this shouldn't happen)
+            if pred_id is None:
+                logger.warning("pred_token_id is None, falling back to direct sampling")
+                pred_id = sampler.sample(logits, filter_tokens=filter_tokens)
+
+            cluster_info = None
+            if hasattr(sampler, "get_cluster_history"):
+                history = sampler.get_cluster_history()
+                if history:
+                    cluster_info = history[-1]
+            
+            # Check correctness
+            correct = (pred_id == correct_id)
+            
+            evaluation_result = {
+                "sampler": sampler_name,
+                "pred_id": pred_id,
+                "predicted_answer": predicted_answer,
+                "correct": correct,
+                "elapsed_ms": (total_time / len(processed_results)) * 1000,  # Average per example
+                "cluster_info": cluster_info,
+            }
+            evaluation_results.append(evaluation_result)
+        
+        # Clear debug data AFTER processing all examples
+        if hasattr(sampler, "clear_debug_data"):
+            sampler.clear_debug_data()
+        
+        logger.debug(f"Batch evaluation with {sampler_name} completed for {len(evaluation_results)} examples in {total_time:.2f}s")
+        return evaluation_results

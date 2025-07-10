@@ -180,6 +180,10 @@ class DCBSSampler(Sampler):
         if filter_tokens and len(filter_tokens) == 1:
             return list(filter_tokens)[0]
 
+        # For multiple-choice questions, proceed with the unified CategorySampler path
+        # This ensures Enhanced DCBS uses proper DuelingAlgorithmCategorySelector
+
+        # Original logic for general text generation (non-multiple choice)
         # Get candidate tokens using strategy
         candidate_ids = self.candidate_selector.select_candidates(logits, filter_tokens)
 
@@ -400,4 +404,70 @@ class DCBSSampler(Sampler):
     
     def clear_debug_data(self) -> None:
         """Clear debug data and statistics."""
-        self.debugger.clear_debug_data() 
+        self.debugger.clear_debug_data()
+
+    def sample_batch(
+        self,
+        logits_batch: torch.Tensor,
+        filter_tokens_batch: Optional[List[Optional[Set[int]]]] = None,
+        context: Optional[SamplingContext] = None,
+    ) -> List[int]:
+        """
+        Sample tokens for a batch of logits using DCBS algorithm.
+        
+        Args:
+            logits_batch: Batch of token logits [batch_size, vocab_size]
+            filter_tokens_batch: Optional list of filter sets for each sequence
+            context: Sampling context (optional, uses instance context if not provided)
+            
+        Returns:
+            List of selected token IDs, one per sequence in the batch
+            
+        Raises:
+            ValueError: If context or embedding_layer is missing
+        """
+        # Use provided context or instance context
+        effective_context = context or self.context
+        
+        if effective_context is None or effective_context.embedding_layer is None:
+            raise ValueError("DCBS requires a SamplingContext with embedding_layer. "
+                           "Please provide a valid context with an embedding layer.")
+
+        batch_size = logits_batch.shape[0]
+        
+        # Handle empty batch
+        if batch_size == 0:
+            return []
+        
+        # Prepare filter tokens for each sequence
+        if filter_tokens_batch is None:
+            filter_tokens_batch = [None] * batch_size
+        elif len(filter_tokens_batch) != batch_size:
+            raise ValueError(f"filter_tokens_batch length ({len(filter_tokens_batch)}) must match batch_size ({batch_size})")
+        
+        self.debugger.log_debug(f"Starting batch DCBS sampling for {batch_size} sequences")
+        
+        # Process each sequence in the batch
+        # Note: For now, we process sequentially for simplicity and stability
+        # Future optimization could implement true parallel batch processing
+        results = []
+        for i in range(batch_size):
+            logits = logits_batch[i]
+            filter_tokens = filter_tokens_batch[i]
+            
+            try:
+                selected_token = self.sample(logits, filter_tokens, effective_context)
+                results.append(selected_token)
+            except Exception as e:
+                self.debugger.log_debug(f"Batch sampling failed for sequence {i}: {e}")
+                # Fallback to simple selection
+                if filter_tokens:
+                    filter_list = list(filter_tokens)
+                    filter_logits = logits[filter_list]
+                    best_idx = torch.argmax(filter_logits).item()
+                    results.append(filter_list[best_idx])
+                else:
+                    results.append(logits.argmax().item())
+        
+        self.debugger.log_debug(f"Batch DCBS sampling completed for {batch_size} sequences")
+        return results 

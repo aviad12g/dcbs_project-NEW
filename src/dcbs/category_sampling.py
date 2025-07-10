@@ -300,14 +300,39 @@ class CategorySampler:
             return candidate_ids[best_idx]
         
         # Select cluster using the category selector
-        # Check if selector supports cluster information (for confidence weighting)
-        if hasattr(self.category_selector, 'select_category') and \
-           len(self.category_selector.select_category.__code__.co_varnames) > 2:
-            # Selector accepts clusters parameter (ConfidenceAwareCategorySelector)
-            selected_cluster_idx = self.category_selector.select_category(cluster_probs, clusters)
+        # Check if selector supports extended parameters (DuelingAlgorithmCategorySelector)
+        if hasattr(self.category_selector, 'select_category'):
+            selector_params = self.category_selector.select_category.__code__.co_varnames
+            if 'candidate_probs' in selector_params and 'candidate_ids' in selector_params:
+                # Enhanced selector that needs additional parameters
+                selected_cluster_idx = self.category_selector.select_category(
+                    cluster_probs, clusters, candidate_probs, candidate_ids
+                )
+            elif len(selector_params) > 2:
+                # Confidence-aware selector that accepts clusters parameter
+                selected_cluster_idx = self.category_selector.select_category(cluster_probs, clusters)
+            else:
+                # Standard selector (GreedyCategorySelector, InformationGainCategorySelector)
+                selected_cluster_idx = self.category_selector.select_category(cluster_probs)
         else:
-            # Standard selector (GreedyCategorySelector, InformationGainCategorySelector)
-            selected_cluster_idx = self.category_selector.select_category(cluster_probs)
+            # Select cluster using the category selector
+            # Check if selector supports extended parameters
+            if hasattr(self.category_selector, 'select_category'):
+                selector_params = self.category_selector.select_category.__code__.co_varnames
+                if 'candidate_probs' in selector_params and 'candidate_ids' in selector_params:
+                    # Enhanced selector that needs additional parameters
+                    selected_cluster_idx = self.category_selector.select_category(
+                        cluster_probs, clusters, candidate_probs, candidate_ids
+                    )
+                elif len(selector_params) > 2:
+                    # Confidence-aware selector that accepts clusters parameter
+                    selected_cluster_idx = self.category_selector.select_category(cluster_probs, clusters)
+                else:
+                    # Standard selector (GreedyCategorySelector, InformationGainCategorySelector)
+                    selected_cluster_idx = self.category_selector.select_category(cluster_probs)
+            else:
+                # Fallback for any unexpected selector type
+                selected_cluster_idx = 0
         
         # Safety check: ensure cluster index is valid
         if selected_cluster_idx >= len(clusters):
@@ -401,6 +426,167 @@ class ConfidenceAwareCategorySelector(CategorySelector):
         return int(np.argmax(confidence_scores))
 
 
+class DuelingAlgorithmCategorySelector(CategorySelector):
+    """
+    Implements the Dueling Algorithm for robust cluster selection.
+
+    This algorithm recognizes that Certainty and Consensus are fundamentally 
+    different phenomena and cannot be compared with the same scoring function:
+    
+    - Certainty: High probability on a single token (cluster size = 1)
+    - Consensus: Probability distributed across semantically similar tokens (cluster size >= 2)
+
+    The Dueling Algorithm uses a two-champion approach:
+    
+    1. Champion of Certainty: Best token from single-member clusters (highest raw probability)
+    2. Champion of Consensus: Best token from multi-member clusters (using Stability Formula)
+    3. The Duel: Direct probability comparison between champions - no artificial scoring
+    
+    This respects the nature of the data and prevents artificial score multipliers
+    from corrupting decisions between fundamentally different model outputs.
+    """
+    
+    def __init__(self, dominance_weight: float = 0.5, min_cluster_size: int = 2):
+        """
+        Initialize the enhanced selector.
+        
+        Args:
+            dominance_weight: The weight for the dominance bonus (default: 0.5)
+            min_cluster_size: Minimum tokens for a valid cluster (default: 2)
+        """
+        if not 0 <= dominance_weight <= 1:
+            raise ValueError("dominance_weight must be between 0 and 1")
+        self.dominance_weight = dominance_weight
+        self.min_cluster_size = min_cluster_size
+    
+    def select_category(self, cluster_probs: List[float], clusters: Optional[List[List[int]]] = None, 
+                       candidate_probs: Optional[torch.Tensor] = None, 
+                       candidate_ids: Optional[List[int]] = None) -> int:
+        """
+        Enhanced hierarchical selection based on intra-cluster dominance.
+        
+        ALWAYS uses clustering. Finds clusters where one token clearly dominates
+        within that semantic cluster (>60% of cluster probability mass).
+        
+        Args:
+            cluster_probs: Probabilities for each cluster
+            clusters: Cluster membership information
+            candidate_probs: Individual token probabilities
+            candidate_ids: Candidate token IDs
+            
+        Returns:
+            Index of the selected cluster with best deterministic token
+        """
+        if not cluster_probs:
+            return 0
+        
+        # ALWAYS use enhanced hierarchical selection based on intra-cluster dominance
+        return self._enhanced_cluster_selection(cluster_probs, clusters, candidate_probs, candidate_ids)
+    
+    def _enhanced_cluster_selection(self, cluster_probs: List[float], clusters: Optional[List[List[int]]], 
+                                  candidate_probs: Optional[torch.Tensor], 
+                                  candidate_ids: Optional[List[int]]) -> int:
+        """
+        Selects the best cluster using the Dueling Algorithm.
+        
+        Finds Champion of Certainty vs Champion of Consensus, then conducts
+        a direct probability duel between them.
+        """
+        if not clusters or candidate_probs is None or not any(clusters):
+            return int(np.argmax(cluster_probs))  # Fallback for invalid input
+
+        # --- Step 1A: Find Champion of Certainty ---
+        # Scan only clusters of size 1, find highest probability token
+        certainty_champion_cluster = None
+        certainty_champion_prob = -1.0
+        
+        for cluster_idx, cluster_tokens in enumerate(clusters):
+            if len(cluster_tokens) == 1:  # Single-token cluster (Certainty)
+                token_prob = candidate_probs[cluster_tokens[0]].item()
+                if token_prob > certainty_champion_prob:
+                    certainty_champion_prob = token_prob
+                    certainty_champion_cluster = cluster_idx
+
+        # --- Step 1B: Find Champion of Consensus ---
+        # Scan clusters of size >= 2, use Stability Formula to find best cluster
+        consensus_champion_cluster = None
+        consensus_champion_prob = -1.0
+        best_consensus_score = -1.0
+        
+        for cluster_idx, cluster_tokens in enumerate(clusters):
+            if len(cluster_tokens) >= self.min_cluster_size:  # Multi-token cluster (Consensus)
+                cluster_total_prob = cluster_probs[cluster_idx]
+                if cluster_total_prob <= 0:
+                    continue
+                
+                # Apply Stability Formula to find best consensus cluster
+                cluster_token_probs = candidate_probs[cluster_tokens]
+                best_token_prob_in_cluster = torch.max(cluster_token_probs).item()
+                
+                dominance = best_token_prob_in_cluster / cluster_total_prob
+                consensus_score = cluster_total_prob * (1 + self.dominance_weight * dominance)
+                
+                if consensus_score > best_consensus_score:
+                    best_consensus_score = consensus_score
+                    consensus_champion_cluster = cluster_idx
+                    consensus_champion_prob = best_token_prob_in_cluster
+
+        # --- Step 2: The Duel ---
+        # Direct probability comparison between champions
+        
+        # Handle cases where one or both champions don't exist
+        if certainty_champion_cluster is None and consensus_champion_cluster is None:
+            return int(np.argmax(cluster_probs))  # Fallback to greedy
+        elif certainty_champion_cluster is None:
+            return consensus_champion_cluster  # Consensus wins by default
+        elif consensus_champion_cluster is None:
+            return certainty_champion_cluster  # Certainty wins by default
+        
+        # Both champions exist - let them duel!
+        if certainty_champion_prob > consensus_champion_prob:
+            return certainty_champion_cluster  # Certainty wins the duel
+        else:
+            return consensus_champion_cluster  # Consensus wins the duel
+    
+    def _is_deterministic_answer(self, token_idx: int, candidate_ids: Optional[List[int]], 
+                               cluster_probs: torch.Tensor, token_position: int) -> bool:
+        """
+        Heuristic to determine if a token represents a "deterministic" answer.
+        
+        This is a simple heuristic that can be enhanced with more sophisticated logic:
+        - Prefer tokens that are clearly dominant within their cluster
+        - Avoid very common "uncertainty" patterns
+        
+        Args:
+            token_idx: Index of the token to check
+            candidate_ids: List of candidate token IDs
+            cluster_probs: Probabilities within the cluster
+            token_position: Position of token within cluster
+            
+        Returns:
+            True if this appears to be a deterministic answer
+        """
+        if len(cluster_probs) <= 1:
+            return True  # Single token in cluster is deterministic
+        
+        # Check if this token is clearly dominant within its cluster
+        token_prob = cluster_probs[token_position].item()
+        cluster_total = cluster_probs.sum().item()
+        
+        if cluster_total > 0:
+            relative_dominance = token_prob / cluster_total
+            # If this token represents >60% of the cluster's probability, it's deterministic
+            if relative_dominance > 0.6:
+                return True
+        
+        # Additional heuristics can be added here:
+        # - Check token content for uncertainty markers ("don't", "unsure", etc.)
+        # - Prefer numeric answers over text answers
+        # - etc.
+        
+        return False
+
+
 # Default instance with greedy selection for both category and token
 greedy_category_sampler = CategorySampler(
     category_selector=GreedyCategorySelector(),
@@ -418,6 +604,15 @@ confidence_aware_category_sampler = CategorySampler(
     category_selector=ConfidenceAwareCategorySelector(
         size_penalty_weight=0.1,      # Penalize small clusters
         entropy_penalty_weight=0.05   # Penalize high-entropy clusters
+    ),
+    token_selector=GreedyTokenSelector()
+)
+
+# Enhanced hierarchical sampler with stability formula
+enhanced_hierarchical_sampler = CategorySampler(
+    category_selector=DuelingAlgorithmCategorySelector(
+        dominance_weight=0.5,
+        min_cluster_size=2
     ),
     token_selector=GreedyTokenSelector()
 ) 

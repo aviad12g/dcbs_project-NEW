@@ -23,6 +23,7 @@ from src.dcbs import (
     GreedyTokenSelector,
     TemperatureSampler,
     TopKSampler,
+    DCBSSamplerFactory,
 )
 from .config import EvaluationConfig
 
@@ -155,6 +156,16 @@ class SamplerFactory:
                 enable_cluster_history=enable_cluster_history,
                 use_information_gain=use_information_gain,
                 kl_threshold=kl_threshold,
+            ),
+            "enhanced_dcbs": lambda: DCBSSamplerFactory.create_enhanced_hierarchical(
+                k=config.k,
+                top_n=config.top_n,
+                dominance_weight=0.5,  # Pure Algorithm dominance weight
+                min_cluster_size=2,   # Pure Algorithm minimum cluster size
+                context=context,
+                enable_caching=config.enable_caching,
+                debug_mode=debug_mode,
+                enable_cluster_history=enable_cluster_history,
             ),
             "random": lambda: RandomSampler(),
         }

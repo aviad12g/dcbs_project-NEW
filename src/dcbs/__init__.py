@@ -13,10 +13,12 @@ from .category_sampling import (
     GreedyCategorySelector,
     ConfidenceAwareCategorySelector,
     InformationGainCategorySelector,
+    DuelingAlgorithmCategorySelector,
     GreedyTokenSelector,
     greedy_category_sampler,
     information_gain_category_sampler,
     confidence_aware_category_sampler,
+    enhanced_hierarchical_sampler,
 )
 from .clustering import (
     CandidateSelector,
@@ -82,10 +84,12 @@ __all__ = [
     "GreedyCategorySelector",
     "ConfidenceAwareCategorySelector",
     "InformationGainCategorySelector",
+    "DuelingAlgorithmCategorySelector",
     "GreedyTokenSelector",
     "greedy_category_sampler",
     "information_gain_category_sampler",
     "confidence_aware_category_sampler",
+    "enhanced_hierarchical_sampler",
     # Cache management
     "CacheConfig",
     "DCBSCacheManager",
