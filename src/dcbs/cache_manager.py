@@ -195,8 +195,9 @@ class DCBSCacheManager:
 
     def put_embedding(self, token_id: int, embedding: torch.Tensor) -> None:
         """Cache token embedding (detached from computation graph)."""
-        # Always detach to prevent memory leaks
-        detached_embedding = embedding.detach().clone()
+        # CRITICAL FIX: Always store embeddings on CPU to prevent device mismatches
+        # This ensures consistent device handling across different GPU/CPU scenarios
+        detached_embedding = embedding.detach().clone().cpu()
         self.embedding_cache.put(token_id, detached_embedding)
 
     def get_clustering(self, cache_key: Tuple) -> Optional[np.ndarray]:
@@ -230,10 +231,9 @@ class DCBSCacheManager:
             for i, token_id in enumerate(token_ids):
                 cached_embedding = self.get_embedding(token_id)
                 if cached_embedding is not None:
-                    # Move to correct device if necessary
-                    if cached_embedding.device != device:
-                        cached_embedding = cached_embedding.to(device)
-                    result[i] = cached_embedding
+                    # CRITICAL FIX: Always move cached embeddings to target device
+                    # Since we store on CPU, we always need to move to target device
+                    result[i] = cached_embedding.to(device)
                 else:
                     uncached_indices.append(i)
 

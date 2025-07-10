@@ -212,6 +212,66 @@ class DCBSSampler(Sampler):
         return (
             torch.isinf(candidate_logits).any() or torch.isnan(candidate_logits).any()
         )
+    
+    def _validate_batch_inputs(self, logits_batch: torch.Tensor, filter_tokens_batch: Optional[List[Optional[Set[int]]]]) -> None:
+        """
+        Comprehensive validation of batch inputs to catch common errors early.
+        
+        Args:
+            logits_batch: Batch of token logits
+            filter_tokens_batch: Optional list of filter sets
+            
+        Raises:
+            ValueError: If inputs are invalid
+        """
+        # Validate logits_batch tensor
+        if not isinstance(logits_batch, torch.Tensor):
+            raise ValueError(f"logits_batch must be a torch.Tensor, got {type(logits_batch)}")
+        
+        if logits_batch.dim() != 2:
+            raise ValueError(f"logits_batch must be 2D [batch_size, vocab_size], got {logits_batch.dim()}D tensor with shape {logits_batch.shape}")
+        
+        batch_size, vocab_size = logits_batch.shape
+        
+        if batch_size < 0:
+            raise ValueError(f"Invalid batch_size: {batch_size}")
+        
+        if vocab_size <= 0:
+            raise ValueError(f"Invalid vocab_size: {vocab_size}")
+        
+        # Validate filter_tokens_batch if provided
+        if filter_tokens_batch is not None:
+            if not isinstance(filter_tokens_batch, list):
+                raise ValueError(f"filter_tokens_batch must be a list, got {type(filter_tokens_batch)}")
+            
+            if len(filter_tokens_batch) != batch_size:
+                raise ValueError(f"filter_tokens_batch length ({len(filter_tokens_batch)}) must match batch_size ({batch_size})")
+            
+            # Validate each filter set
+            for i, filter_tokens in enumerate(filter_tokens_batch):
+                if filter_tokens is not None:
+                    if not isinstance(filter_tokens, set):
+                        raise ValueError(f"filter_tokens_batch[{i}] must be a set or None, got {type(filter_tokens)}")
+                    
+                    # Check for invalid token IDs
+                    if filter_tokens:
+                        max_token_id = max(filter_tokens)
+                        min_token_id = min(filter_tokens)
+                        
+                        if min_token_id < 0:
+                            raise ValueError(f"filter_tokens_batch[{i}] contains negative token ID: {min_token_id}")
+                        
+                        if max_token_id >= vocab_size:
+                            raise ValueError(f"filter_tokens_batch[{i}] contains token ID {max_token_id} >= vocab_size {vocab_size}")
+        
+        # Check for invalid values in logits
+        if torch.isnan(logits_batch).any():
+            raise ValueError("logits_batch contains NaN values")
+        
+        # Allow infinite values as they can be valid (e.g., -inf for masking)
+        # but warn if ALL values are infinite
+        if torch.isinf(logits_batch).all():
+            raise ValueError("logits_batch contains only infinite values")
 
     def _fallback_selection(
         self, logits: torch.Tensor, filter_tokens: Optional[Set[int]]
@@ -261,7 +321,9 @@ class DCBSSampler(Sampler):
     
     def _prepare_candidate_data(self, logits: torch.Tensor, candidate_ids: list) -> dict:
         """Prepare candidate token data for DCBS processing."""
-        candidate_ids_tensor = torch.tensor(candidate_ids, device=logits.device)
+        # CRITICAL FIX: Use logits device consistently for all candidate operations
+        device = logits.device
+        candidate_ids_tensor = torch.tensor(candidate_ids, device=device)
         candidate_logits = logits[candidate_ids_tensor]
         candidate_probs = torch.softmax(candidate_logits, dim=-1)
         
@@ -273,7 +335,8 @@ class DCBSSampler(Sampler):
     
     def _cluster_candidates(self, candidate_ids: list, embedding: torch.nn.Embedding) -> dict:
         """Perform clustering on candidate embeddings."""
-        # Ensure device consistency - use embedding device for all operations
+        # CRITICAL FIX: Ensure device consistency throughout the pipeline
+        # Use the embedding layer's device as the authoritative device
         device = embedding.weight.device
         candidate_ids_tensor = torch.tensor(candidate_ids, device=device)
 
@@ -433,6 +496,9 @@ class DCBSSampler(Sampler):
             raise ValueError("DCBS requires a SamplingContext with embedding_layer. "
                            "Please provide a valid context with an embedding layer.")
 
+        # CRITICAL FIX: Comprehensive batch validation
+        self._validate_batch_inputs(logits_batch, filter_tokens_batch)
+        
         batch_size = logits_batch.shape[0]
         
         # Handle empty batch
@@ -459,15 +525,12 @@ class DCBSSampler(Sampler):
                 selected_token = self.sample(logits, filter_tokens, effective_context)
                 results.append(selected_token)
             except Exception as e:
-                self.debugger.log_debug(f"Batch sampling failed for sequence {i}: {e}")
-                # Fallback to simple selection
-                if filter_tokens:
-                    filter_list = list(filter_tokens)
-                    filter_logits = logits[filter_list]
-                    best_idx = torch.argmax(filter_logits).item()
-                    results.append(filter_list[best_idx])
-                else:
-                    results.append(logits.argmax().item())
+                # CRITICAL FIX: Do not fall back silently - raise explicit error
+                # This ensures DCBS failures are caught rather than hidden
+                self.debugger.log_debug(f"DCBS batch sampling failed for sequence {i}: {e}")
+                raise ValueError(f"DCBS batch sampling failed on sequence {i}/{batch_size}: {e}. "
+                               f"This indicates a problem that must be addressed rather than "
+                               f"falling back to greedy selection.") from e
         
         self.debugger.log_debug(f"Batch DCBS sampling completed for {batch_size} sequences")
         return results 

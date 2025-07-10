@@ -50,6 +50,9 @@ class BatchDCBSProcessor:
         top_n: int = 50,
     ) -> List[int]:
         """Process a batch of logits simultaneously for improved throughput."""
+        # CRITICAL FIX: Validate inputs before processing
+        self._validate_batch_inputs(logits_batch, filter_tokens_batch, context, k, top_n)
+        
         batch_size = logits_batch.shape[0]
 
         if batch_size == 1:
@@ -264,7 +267,13 @@ class BatchDCBSProcessor:
                         new_centroids[i] = centroids[i]
                 centroids = new_centroids
             return assignments.cpu().numpy()
-        except Exception:
+        except Exception as e:
+            # CRITICAL FIX: Log the GPU failure before falling back
+            # This helps identify GPU-specific issues
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"GPU clustering failed, falling back to CPU: {e}")
+            logger.warning("Consider investigating GPU compatibility or memory issues")
             return self._cpu_clustering(embeddings, k)
 
     def _cpu_clustering(self, embeddings: torch.Tensor, k: int) -> np.ndarray:
@@ -319,6 +328,73 @@ class BatchDCBSProcessor:
                 "mixed_precision": self.config.use_mixed_precision,
             },
         }
+
+    def _validate_batch_inputs(
+        self, 
+        logits_batch: torch.Tensor, 
+        filter_tokens_batch: List[Optional[set]], 
+        context: SamplingContext, 
+        k: int, 
+        top_n: int
+    ) -> None:
+        """
+        Validate batch processing inputs to catch errors early.
+        
+        Args:
+            logits_batch: Batch of token logits
+            filter_tokens_batch: List of filter sets
+            context: Sampling context
+            k: Number of clusters
+            top_n: Number of top tokens to consider
+            
+        Raises:
+            ValueError: If inputs are invalid
+        """
+        # Validate tensor
+        if not isinstance(logits_batch, torch.Tensor):
+            raise ValueError(f"logits_batch must be torch.Tensor, got {type(logits_batch)}")
+        
+        if logits_batch.dim() != 2:
+            raise ValueError(f"logits_batch must be 2D, got {logits_batch.dim()}D with shape {logits_batch.shape}")
+        
+        batch_size, vocab_size = logits_batch.shape
+        
+        if batch_size <= 0:
+            raise ValueError(f"Invalid batch_size: {batch_size}")
+        
+        if vocab_size <= 0:
+            raise ValueError(f"Invalid vocab_size: {vocab_size}")
+        
+        # Validate filter_tokens_batch
+        if not isinstance(filter_tokens_batch, list):
+            raise ValueError(f"filter_tokens_batch must be list, got {type(filter_tokens_batch)}")
+        
+        if len(filter_tokens_batch) != batch_size:
+            raise ValueError(f"filter_tokens_batch length ({len(filter_tokens_batch)}) != batch_size ({batch_size})")
+        
+        # Validate context
+        if context is None:
+            raise ValueError("SamplingContext cannot be None")
+        
+        if context.embedding_layer is None:
+            raise ValueError("SamplingContext must have embedding_layer")
+        
+        # Validate parameters
+        if k <= 0:
+            raise ValueError(f"k must be positive, got {k}")
+        
+        if top_n <= 0:
+            raise ValueError(f"top_n must be positive, got {top_n}")
+        
+        # Check device compatibility
+        expected_device = self.device
+        if logits_batch.device != expected_device:
+            raise ValueError(f"logits_batch device ({logits_batch.device}) != expected device ({expected_device})")
+        
+        # Validate embedding layer compatibility
+        embedding_device = next(context.embedding_layer.parameters()).device
+        if embedding_device != expected_device:
+            raise ValueError(f"embedding_layer device ({embedding_device}) != expected device ({expected_device})")
 
     def cleanup(self):
         """Clean up resources."""
