@@ -93,7 +93,10 @@ class TokenGenerator:
         max_new_tokens: int = 500
     ) -> Tuple[List[str], List[Cache]]:
         """
-        Generate responses for multiple conversations in parallel using KV caching.
+        Generate responses for multiple conversations using KV caching.
+        
+        Note: Processes each conversation individually to avoid batch complexity
+        while still using the custom sampler and proper KV caching.
         
         Args:
             messages_batch: List of conversation message lists
@@ -105,54 +108,26 @@ class TokenGenerator:
         """
         logger.debug(f"Starting batch generation for {len(messages_batch)} conversations")
         
-        # STEP 1: Format all prompts
-        batch_prompts = []
-        for messages in messages_batch:
-            prompt = self._format_messages(messages, add_generation_prompt=True)
-            batch_prompts.append(prompt)
-        
-        # STEP 2: Tokenize with padding
-        tokenized = self.tokenizer(
-            batch_prompts,
-            return_tensors="pt",
-            padding=True,  # Pad to same length
-            truncation=True,
-            max_length=self.max_context_length,
-            return_attention_mask=True
-        ).to(self.device)
-        
-        batch_size = len(messages_batch)
-        
-        # STEP 3: Use model.generate for robust batch processing
-        with torch.no_grad():
-            # Use transformers' built-in batch generation which handles KV cache properly
-            outputs = self.model.generate(
-                input_ids=tokenized.input_ids,
-                attention_mask=tokenized.attention_mask,
-                max_new_tokens=max_new_tokens,
-                do_sample=True,
-                pad_token_id=self.tokenizer.pad_token_id,
-                eos_token_id=self.tokenizer.eos_token_id,
-                return_dict_in_generate=True,
-                output_scores=False,  # Don't need scores for basic generation
-                use_cache=True
-            )
-        
-        # STEP 4: Decode responses and create individual caches
         responses = []
         caches = []
         
-        input_length = tokenized.input_ids.shape[1]
-        
-        for i in range(batch_size):
-            # Decode response for this sequence
-            generated_tokens = outputs.sequences[i][input_length:]
-            response = self.tokenizer.decode(generated_tokens, skip_special_tokens=True)
-            responses.append(response.strip())
+        # Process each conversation individually using the proven single-token approach
+        for i, messages in enumerate(messages_batch):
+            logger.debug(f"Processing conversation {i+1}/{len(messages_batch)}")
             
-            # Create a placeholder cache (actual KV cache extraction is complex with model.generate)
-            # For now, return None - the cache continuation method will handle this gracefully
-            caches.append(None)
+            # Use the working generate_with_kv_cache method that properly:
+            # 1. Does token-by-token generation
+            # 2. Uses the custom sampler
+            # 3. Handles KV caching correctly
+            # 4. Calls model() not model.generate()
+            response, cache = self.generate_with_kv_cache(
+                messages, 
+                sampler, 
+                max_new_tokens
+            )
+            
+            responses.append(response)
+            caches.append(cache)
         
         logger.debug(f"Batch generation completed. Generated responses of lengths: {[len(r) for r in responses]}")
         return responses, caches
@@ -184,16 +159,21 @@ class TokenGenerator:
             responses, _ = self.generate_batch_with_kv_cache(messages_batch, sampler, max_new_tokens)
             return responses
         
-        # STEP 1: Format new prompts
-        batch_prompts = []
-        for messages in messages_batch:
-            prompt = self._format_messages(messages, add_generation_prompt=True)
-            batch_prompts.append(prompt)
+        responses = []
         
-        # STEP 2: For simplicity, use standard generation when caches are complex
-        # In a production system, you'd implement proper cache continuation here
-        logger.debug("Cache continuation is complex with model.generate, using fresh generation")
-        responses, _ = self.generate_batch_with_kv_cache(messages_batch, sampler, max_new_tokens)
+        # Process each conversation individually, using the provided cache
+        for i, (messages, cache) in enumerate(zip(messages_batch, caches)):
+            logger.debug(f"Processing cached conversation {i+1}/{len(messages_batch)}")
+            
+            # Use the working generate_with_kv_cache method with the provided cache
+            response, _ = self.generate_with_kv_cache(
+                messages, 
+                sampler, 
+                max_new_tokens,
+                past_key_values=cache  # Use the provided cache!
+            )
+            
+            responses.append(response)
         
         logger.debug(f"Cached batch generation completed. Generated responses of lengths: {[len(r) for r in responses]}")
         return responses
