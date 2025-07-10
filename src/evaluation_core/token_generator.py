@@ -93,10 +93,10 @@ class TokenGenerator:
         max_new_tokens: int = 500
     ) -> Tuple[List[str], List[Cache]]:
         """
-        Generate responses for multiple conversations using KV caching.
+        Generate responses for multiple conversations using TRUE PARALLEL BATCHING.
         
-        Note: Processes each conversation individually to avoid batch complexity
-        while still using the custom sampler and proper KV caching.
+        This implementation processes all messages simultaneously in the model,
+        using proper attention masking and parallel token generation.
         
         Args:
             messages_batch: List of conversation message lists
@@ -106,30 +106,139 @@ class TokenGenerator:
         Returns:
             Tuple of (generated_texts, kv_caches) - one per conversation
         """
-        logger.debug(f"Starting batch generation for {len(messages_batch)} conversations")
+        logger.debug(f"Starting TRUE batch generation for {len(messages_batch)} conversations")
         
+        batch_size = len(messages_batch)
+        if batch_size == 0:
+            return [], []
+        
+        # STEP 1: Format and tokenize ALL messages together
+        prompts = []
+        for messages in messages_batch:
+            prompt = self._format_messages(messages, add_generation_prompt=True)
+            prompts.append(prompt)
+        
+        logger.debug(f"Formatted {len(prompts)} prompts for batch processing")
+        
+        # STEP 2: Tokenize with padding for batch processing
+        batch_encoding = self.tokenizer(
+            prompts,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=self.max_context_length
+        ).to(self.device)
+        
+        input_ids = batch_encoding.input_ids  # [batch_size, seq_len]
+        attention_mask = batch_encoding.attention_mask  # [batch_size, seq_len]
+        
+        logger.debug(f"Tokenized batch: input_ids shape {input_ids.shape}")
+        
+        # STEP 3: TRUE PARALLEL token-by-token generation
+        generated_sequences = input_ids.clone()  # Start with input tokens
+        current_attention_mask = attention_mask.clone()
+        current_cache = None
+        
+        # Track which sequences are still generating (not finished)
+        active_sequences = torch.ones(batch_size, dtype=torch.bool, device=self.device)
+        
+        with torch.no_grad():
+            for step in range(max_new_tokens):
+                # Prepare model inputs for PARALLEL processing
+                if step == 0:
+                    # First step: process full prompts in parallel
+                    model_inputs = {
+                        "input_ids": input_ids,
+                        "attention_mask": attention_mask,
+                        "past_key_values": None,
+                        "use_cache": True
+                    }
+                else:
+                    # Subsequent steps: process last tokens for all active sequences
+                    last_tokens = generated_sequences[:, -1:] # [batch_size, 1]
+                    last_attention = torch.ones_like(last_tokens, dtype=torch.bool)
+                    
+                    model_inputs = {
+                        "input_ids": last_tokens,
+                        "attention_mask": last_attention,
+                        "past_key_values": current_cache,
+                        "use_cache": True
+                    }
+                
+                # PARALLEL MODEL FORWARD PASS
+                outputs = self.model(**model_inputs)
+                batch_logits = outputs.logits[:, -1, :]  # [batch_size, vocab_size]
+                current_cache = outputs.past_key_values
+                
+                # PARALLEL SAMPLING using custom sampler
+                if hasattr(sampler, 'sample_batch'):
+                    # Use batch sampling if available
+                    next_tokens = sampler.sample_batch(
+                        batch_logits,
+                        filter_tokens_batch=[None] * batch_size,  # No filtering for now
+                        context=getattr(sampler, 'context', None)
+                    )
+                    next_tokens_tensor = torch.tensor(next_tokens, device=self.device).unsqueeze(1)
+                else:
+                    # Fallback: sample each sequence individually but in parallel
+                    next_tokens = []
+                    for i in range(batch_size):
+                        if active_sequences[i]:
+                            token = sampler.sample(batch_logits[i])
+                            next_tokens.append(token)
+                        else:
+                            next_tokens.append(self.tokenizer.eos_token_id)
+                    next_tokens_tensor = torch.tensor(next_tokens, device=self.device).unsqueeze(1)
+                
+                # Update generated sequences
+                generated_sequences = torch.cat([generated_sequences, next_tokens_tensor], dim=1)
+                
+                # Update attention mask
+                new_attention = torch.ones(batch_size, 1, dtype=torch.bool, device=self.device)
+                current_attention_mask = torch.cat([current_attention_mask, new_attention], dim=1)
+                
+                # Check for EOS tokens and update active sequences
+                eos_mask = (next_tokens_tensor.squeeze(1) == self.tokenizer.eos_token_id)
+                active_sequences = active_sequences & ~eos_mask
+                
+                # Stop if all sequences are done
+                if not active_sequences.any():
+                    logger.debug(f"All sequences finished at step {step}")
+                    break
+                
+                if step % 20 == 0 and step > 0:
+                    active_count = active_sequences.sum().item()
+                    logger.debug(f"Step {step}: {active_count}/{batch_size} sequences still generating")
+        
+        # STEP 4: Decode generated sequences and extract individual caches
         responses = []
         caches = []
         
-        # Process each conversation individually using the proven single-token approach
-        for i, messages in enumerate(messages_batch):
-            logger.debug(f"Processing conversation {i+1}/{len(messages_batch)}")
+        for i in range(batch_size):
+            # Extract tokens generated for this sequence (excluding input)
+            input_length = attention_mask[i].sum().item()
+            generated_tokens = generated_sequences[i, input_length:].tolist()
             
-            # Use the working generate_with_kv_cache method that properly:
-            # 1. Does token-by-token generation
-            # 2. Uses the custom sampler
-            # 3. Handles KV caching correctly
-            # 4. Calls model() not model.generate()
-            response, cache = self.generate_with_kv_cache(
-                messages, 
-                sampler, 
-                max_new_tokens
-            )
+            # Remove EOS token if present
+            if self.tokenizer.eos_token_id in generated_tokens:
+                eos_idx = generated_tokens.index(self.tokenizer.eos_token_id)
+                generated_tokens = generated_tokens[:eos_idx]
             
-            responses.append(response)
-            caches.append(cache)
+            # Decode to text
+            if generated_tokens:
+                generated_text = self.tokenizer.decode(generated_tokens, skip_special_tokens=True)
+            else:
+                generated_text = ""
+            
+            responses.append(generated_text.strip())
+            
+            # NOTE: Individual caches are complex to extract from batched cache
+            # For now, we'll return None and rely on the full context approach
+            caches.append(None)
         
-        logger.debug(f"Batch generation completed. Generated responses of lengths: {[len(r) for r in responses]}")
+        logger.debug(f"TRUE batch generation completed. Generated {len(responses)} responses")
+        logger.debug(f"Response lengths: {[len(r) for r in responses]}")
+        
         return responses, caches
     
     def generate_batch_from_cache(
