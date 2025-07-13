@@ -5,10 +5,8 @@ This module handles the main evaluation loop with support for:
 - Proper checkpointing and resumption
 - Automatic GPU batch size optimization
 - Multi-GPU support
-- Signal handling for graceful interruption
 """
 
-import signal
 import sys
 import time
 import traceback
@@ -63,17 +61,6 @@ class EvaluationRunner:
         # State tracking
         self.current_state = None
         self.samplers = {}
-        
-        # Setup signal handling for graceful interruption
-        signal.signal(signal.SIGINT, self._signal_handler)
-        signal.signal(signal.SIGTERM, self._signal_handler)
-        
-    def _signal_handler(self, signum, frame):
-        """Handle interruption signals gracefully."""
-        logger.info("Received interruption signal, saving checkpoint...")
-        if self.current_state and self.checkpoint_manager:
-            self.checkpoint_manager.save_checkpoint(self.current_state)
-        sys.exit(0)
         
     def try_resume_from_checkpoint(self) -> Optional[CheckpointState]:
         """Try to resume from existing checkpoint.
