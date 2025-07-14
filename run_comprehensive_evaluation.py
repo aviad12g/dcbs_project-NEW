@@ -86,6 +86,13 @@ def main():
         help="Samplers to include in each compare_methods run (default: greedy dcbs)",
     )
     
+    # NEW: Support for elbow method in k-means clustering
+    parser.add_argument(
+        "--use-elbow-method",
+        action="store_true",
+        help="Use elbow method for k-means clustering (slower but more accurate)"
+    )
+    
     args = parser.parse_args()
     
     # Adjust limit for quick test
@@ -117,6 +124,9 @@ def main():
     print(f"   Datasets: {', '.join(datasets)}")
     print(f"   Clustering methods: {', '.join(clustering_methods)}")
     print(f"   Examples per dataset: {limit}")
+    print(f"   Samplers: {', '.join(args.samplers)}")
+    if args.use_elbow_method:
+        print(f"   Using elbow method for k-means (slower but more accurate)")
     
     # Auto-proceed for unattended runs
     if not args.quick_test:
@@ -157,6 +167,10 @@ def main():
                 "--enable-disagreement-tracking",
                 "--run-id", f"{run_id}_{eval_name}",
             ])
+            
+            # Add elbow method if requested
+            if args.use_elbow_method:
+                cmd.extend(["--use-elbow-method"])
             
             # Add hierarchical-specific parameters
             if clustering_method == "hierarchical":
@@ -222,7 +236,8 @@ def main():
                 "datasets": datasets,
                 "clustering_methods": clustering_methods,
                 "quick_test": args.quick_test,
-                "samplers": args.samplers
+                "samplers": args.samplers,
+                "use_elbow_method": args.use_elbow_method
             },
             "results": all_results,
             "summary": {
