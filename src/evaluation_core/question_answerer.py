@@ -309,9 +309,9 @@ class QuestionAnswerer:
             )
             final_messages_batch.append(final_messages)
         
-        # Generate final answers using cached context
-        final_responses = self.token_generator.generate_batch_from_cache(
-            final_messages_batch, reasoning_caches, sampler, max_new_tokens=50
+        # Generate final answers using fresh batching (since we removed cached version)
+        final_responses, _ = self.token_generator.generate_batch_with_kv_cache(
+            final_messages_batch, sampler, max_new_tokens=50
         )
         
         # STEP 3: Process final answers and get probabilities

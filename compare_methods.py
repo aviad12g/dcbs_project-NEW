@@ -100,7 +100,7 @@ def main():
     try:
         # Load benchmark data
         logger.info(f"Loading benchmark: {config.benchmark_path}")
-        benchmark_data = load_benchmark_data(config.benchmark_path)
+        benchmark_data = load_benchmark_data(config.benchmark_path, limit=config.limit)
         logger.info(f"Loaded {len(benchmark_data)} examples from dataset {config.benchmark_path}")
         
         # Create and run evaluation

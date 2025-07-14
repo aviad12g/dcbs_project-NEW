@@ -71,6 +71,7 @@ class ConfigBuilder:
         debug_mode = yaml_config.get("debug_mode", False)
         enable_cluster_history = yaml_config.get("enable_cluster_history", False)
         batch_size = yaml_config.get("batch_size")  # Default None for auto-detection
+        use_elbow_method = yaml_config.get("use_elbow_method", False)
 
         # Override with command-line arguments using a mapping approach
         arg_overrides = {
@@ -90,6 +91,7 @@ class ConfigBuilder:
             "debug_mode": "debug_mode",
             "enable_cluster_history": "enable_cluster_history",
             "batch_size": "batch_size",  # Add batch_size mapping
+            "use_elbow_method": "use_elbow_method",  # Add elbow method mapping
         }
 
         # Apply overrides from command-line arguments
@@ -110,6 +112,7 @@ class ConfigBuilder:
             "debug_mode": debug_mode,
             "enable_cluster_history": enable_cluster_history,
             "batch_size": batch_size,  # Add batch_size to config values
+            "use_elbow_method": use_elbow_method,  # Add elbow method to config values
         }
 
         for arg_name, config_key in arg_overrides.items():
@@ -147,6 +150,7 @@ class ConfigBuilder:
             debug_mode=config_values["debug_mode"],
             enable_cluster_history=config_values["enable_cluster_history"],
             batch_size=config_values["batch_size"],
+            use_elbow_method=config_values["use_elbow_method"],
         )
 
         logger.info(f"Final configuration created: {final_config}")

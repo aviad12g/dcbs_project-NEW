@@ -81,7 +81,7 @@ class SamplerFactory:
         
         # Create clusterer based on method
         if clustering_method == "kmeans":
-            clusterer = KMeansClusterer(k=config.k)
+            clusterer = KMeansClusterer(k=config.k, use_elbow_method=config.use_elbow_method)
         elif clustering_method == "dbscan":
             clusterer = DBSCANClusterer(
                 eps=dbscan_eps,

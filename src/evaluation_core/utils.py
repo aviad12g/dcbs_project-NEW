@@ -7,12 +7,12 @@ benchmark data and other common operations.
 
 import json
 import os
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from src.errors import DataError, eval_logger as logger
 
 
-def load_benchmark_data(benchmark_path: str) -> List[Dict]:
+def load_benchmark_data(benchmark_path: str, limit: Optional[int] = None) -> List[Dict]:
     """Load benchmark data with validation. Supports both file paths and dataset names."""
     logger.info(f"Loading benchmark: {benchmark_path}")
 
@@ -22,7 +22,7 @@ def load_benchmark_data(benchmark_path: str) -> List[Dict]:
         try:
             from data_loaders import load_dataset
             logger.info(f"Loading dataset: {benchmark_path}")
-            dataset_data = load_dataset(benchmark_path)
+            dataset_data = load_dataset(benchmark_path, limit=limit)
             
             # Convert to the expected format
             converted_data = []
@@ -60,6 +60,11 @@ def load_benchmark_data(benchmark_path: str) -> List[Dict]:
 
         if len(data) == 0:
             raise DataError("Benchmark data is empty")
+
+        # Apply limit if specified
+        if limit is not None:
+            data = data[:limit]
+            logger.info(f"Applied limit: using {len(data)} examples")
 
         # Validate first example has required fields (support both formats)
         first_example = data[0]

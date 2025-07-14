@@ -105,6 +105,12 @@ class ArgumentParserSetup:
             help="Linkage criterion for hierarchical clustering",
         )
 
+        parser.add_argument(
+            "--use-elbow-method",
+            action="store_true",
+            help="Use elbow method for dynamic k-means k selection (more accurate but slower)",
+        )
+
         # Advanced features
         parser.add_argument(
             "--no-cot",

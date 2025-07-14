@@ -1,0 +1,40 @@
+{
+  "run_id": "comprehensive_20250714_124849",
+  "timestamp": "2025-07-14T12:48:49.857022",
+  "parameters": {
+    "limit": 50,
+    "datasets": [
+      "arc_easy"
+    ],
+    "clustering_methods": [
+      "dbscan",
+      "hierarchical"
+    ],
+    "quick_test": false,
+    "samplers": [
+      "enhanced_dcbs",
+      "dcbs",
+      "greedy"
+    ],
+    "use_elbow_method": false
+  },
+  "results": [
+    {
+      "dataset": "arc_easy",
+      "clustering_method": "dbscan",
+      "success": false,
+      "eval_name": "arc_easy_dbscan"
+    },
+    {
+      "dataset": "arc_easy",
+      "clustering_method": "hierarchical",
+      "success": false,
+      "eval_name": "arc_easy_hierarchical"
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "successful": 0,
+    "failed": 2
+  }
+}

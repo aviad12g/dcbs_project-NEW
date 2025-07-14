@@ -33,6 +33,7 @@ class EvaluationConfig:
     temperature: Optional[float] = None # Temperature for sampling
     top_k: Optional[int] = None # Top-K value for sampling
     batch_size: Optional[int] = None  # Batch size for GPU processing (None = auto-detect)
+    use_elbow_method: bool = False  # Use elbow method for dynamic k-means k selection
 
     # Multi-dataset evaluation
     datasets: list = None  # List of datasets to evaluate

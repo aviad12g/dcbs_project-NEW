@@ -81,7 +81,7 @@ def main():
     parser.add_argument(
         "--samplers",
         nargs="+",
-        choices=["greedy", "top_p", "dcbs", "random"],
+        choices=["greedy", "top_p", "dcbs", "enhanced_dcbs", "random"],
         default=["greedy", "dcbs"],
         help="Samplers to include in each compare_methods run (default: greedy dcbs)",
     )

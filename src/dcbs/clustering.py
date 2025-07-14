@@ -59,6 +59,7 @@ class KMeansClusterer(TokenClusterer):
         enable_adaptive_k: bool = True,
         min_k: int = 2,
         max_k: int = 16,
+        use_elbow_method: bool = False,
     ):
         """
         Initialize K-means clusterer with adaptive k selection.
@@ -71,6 +72,7 @@ class KMeansClusterer(TokenClusterer):
             enable_adaptive_k: Whether to adapt k based on candidate set size
             min_k: Minimum number of clusters to use
             max_k: Maximum number of clusters to use
+            use_elbow_method: Whether to use elbow method for k selection (more accurate but slower)
         """
         self.k = k
         self.random_seed = random_seed
@@ -79,14 +81,56 @@ class KMeansClusterer(TokenClusterer):
         self.enable_adaptive_k = enable_adaptive_k
         self.min_k = min_k
         self.max_k = max_k
+        self.use_elbow_method = use_elbow_method
         self._last_effective_k = k  # Track the actual k used in last clustering
 
-    def _calculate_adaptive_k(self, n_candidates: int) -> int:
-        """Calculate optimal k based on candidate set size."""
+    def _calculate_elbow_method_k(self, embeddings_np: np.ndarray, max_k: int = None) -> int:
+        """Calculate optimal k using elbow method with Within-Cluster Sum of Squares (WCSS)."""
+        if max_k is None:
+            max_k = min(self.max_k, len(embeddings_np) // 2)
+        
+        if max_k < 2:
+            return 2
+        
+        # Calculate WCSS for different k values
+        wcss_scores = []
+        k_range = range(2, max_k + 1)
+        
+        for k in k_range:
+            # Use simple k-means for elbow calculation
+            from sklearn.cluster import KMeans
+            kmeans = KMeans(n_clusters=k, random_state=self.random_seed, n_init=1)
+            kmeans.fit(embeddings_np)
+            wcss_scores.append(kmeans.inertia_)
+        
+        # Find elbow point using second derivative
+        if len(wcss_scores) < 3:
+            return 2
+        
+        # Calculate second differences to find elbow
+        second_diffs = []
+        for i in range(1, len(wcss_scores) - 1):
+            second_diff = wcss_scores[i-1] - 2*wcss_scores[i] + wcss_scores[i+1]
+            second_diffs.append(second_diff)
+        
+        # Find the k with maximum second difference (sharpest bend)
+        elbow_idx = np.argmax(second_diffs)
+        elbow_k = k_range[elbow_idx + 1]  # +1 because second_diffs is offset
+        
+        return elbow_k
+
+    def _calculate_adaptive_k(self, n_candidates: int, embeddings_np: np.ndarray = None) -> int:
+        """Calculate optimal k based on candidate set size and optionally elbow method."""
         if not self.enable_adaptive_k:
             return self.k
         
-        # Square root heuristic with bounds
+        # If elbow method is enabled and we have embeddings, use it
+        if embeddings_np is not None and hasattr(self, 'use_elbow_method') and self.use_elbow_method:
+            elbow_k = self._calculate_elbow_method_k(embeddings_np)
+            # Combine elbow method with heuristic bounds
+            return max(self.min_k, min(self.max_k, elbow_k))
+        
+        # Original square root heuristic with bounds
         # For small sets: k = 2
         # For medium sets: k = sqrt(n)  
         # For large sets: k = min(max_k, n//3)
@@ -105,8 +149,8 @@ class KMeansClusterer(TokenClusterer):
         embeddings_np = embeddings.detach().cpu().numpy()
         n_candidates = len(embeddings_np)
         
-        # Calculate adaptive k
-        adaptive_k = self._calculate_adaptive_k(n_candidates)
+        # Calculate adaptive k (pass embeddings for elbow method if enabled)
+        adaptive_k = self._calculate_adaptive_k(n_candidates, embeddings_np if self.use_elbow_method else None)
         effective_k = min(adaptive_k, n_candidates)
         
         # Store for debugging/metrics
@@ -167,6 +211,7 @@ class KMeansClusterer(TokenClusterer):
             "base_k": self.k,
             "last_effective_k": self._last_effective_k,
             "adaptive_enabled": self.enable_adaptive_k,
+            "elbow_method_enabled": self.use_elbow_method,
             "min_k": self.min_k,
             "max_k": self.max_k,
         }
