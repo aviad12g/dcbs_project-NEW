@@ -175,7 +175,7 @@ def main():
             
             # Build command with dynamic sampler list
             cmd = [
-                "python3", "compare_methods.py",
+                "python", "compare_methods.py",
                 "--model", "meta-llama/Llama-3.2-1B-Instruct",
                 "--limit", str(limit),
             ]

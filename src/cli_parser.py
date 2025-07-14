@@ -176,8 +176,8 @@ class ArgumentParserSetup:
         parser.add_argument(
             "--batch-size",
             type=int,
-            default=5,
-            help="Batch size for processing examples",
+            default=None,
+            help="Batch size for processing examples (default: auto-detect)",
         )
 
         parser.add_argument(

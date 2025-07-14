@@ -52,7 +52,7 @@ memory:
   include_details: true
   warning_threshold_mb: 2000
   critical_threshold_mb: 3500
-  batch_size: 5
+  # batch_size: 5  # Commented out to enable auto-detection
 
 # Error handling
 error_handling:
