@@ -93,6 +93,27 @@ def main():
         help="Use elbow method for k-means clustering (slower but more accurate)"
     )
     
+    # NEW: Batch size control
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=None,
+        help="Batch size for GPU processing (default: auto-detect)"
+    )
+    
+    # NEW: Cluster logging control
+    parser.add_argument(
+        "--disable-cluster-history",
+        action="store_true",
+        help="Disable cluster history logging (reduces output verbosity)"
+    )
+    
+    parser.add_argument(
+        "--disable-debug-mode",
+        action="store_true", 
+        help="Disable debug mode (reduces output verbosity)"
+    )
+    
     args = parser.parse_args()
     
     # Adjust limit for quick test
@@ -127,6 +148,10 @@ def main():
     print(f"   Samplers: {', '.join(args.samplers)}")
     if args.use_elbow_method:
         print(f"   Using elbow method for k-means (slower but more accurate)")
+    if args.batch_size:
+        print(f"   Batch size: {args.batch_size}")
+    print(f"   Cluster history: {'Enabled' if not args.disable_cluster_history else 'Disabled'}")
+    print(f"   Debug mode: {'Enabled' if not args.disable_debug_mode else 'Disabled'}")
     
     # Auto-proceed for unattended runs
     if not args.quick_test:
@@ -150,7 +175,7 @@ def main():
             
             # Build command with dynamic sampler list
             cmd = [
-                "python", "compare_methods.py",
+                "python3", "compare_methods.py",
                 "--model", "meta-llama/Llama-3.2-1B-Instruct",
                 "--limit", str(limit),
             ]
@@ -162,11 +187,21 @@ def main():
             cmd.extend([
                 "--datasets", dataset,
                 "--clustering-method", clustering_method,
-                "--enable-cluster-history",
-                "--debug-mode",
                 "--enable-disagreement-tracking",
                 "--run-id", f"{run_id}_{eval_name}",
             ])
+            
+            # Add cluster history unless disabled
+            if not args.disable_cluster_history:
+                cmd.extend(["--enable-cluster-history"])
+            
+            # Add debug mode unless disabled  
+            if not args.disable_debug_mode:
+                cmd.extend(["--debug-mode"])
+            
+            # Add batch size if specified
+            if args.batch_size:
+                cmd.extend(["--batch-size", str(args.batch_size)])
             
             # Add elbow method if requested
             if args.use_elbow_method:
@@ -237,7 +272,10 @@ def main():
                 "clustering_methods": clustering_methods,
                 "quick_test": args.quick_test,
                 "samplers": args.samplers,
-                "use_elbow_method": args.use_elbow_method
+                "use_elbow_method": args.use_elbow_method,
+                "batch_size": args.batch_size,
+                "cluster_history_enabled": not args.disable_cluster_history,
+                "debug_mode_enabled": not args.disable_debug_mode
             },
             "results": all_results,
             "summary": {
