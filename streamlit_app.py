@@ -16,7 +16,7 @@ from typing import Dict, List, Tuple, Optional
 st.set_page_config(
     layout="wide", 
     page_title="DCBS Research Analytics Platform",
-    page_icon="📊",
+    page_icon=None,
     initial_sidebar_state="expanded"
 )
 
