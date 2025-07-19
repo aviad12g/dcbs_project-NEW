@@ -14,6 +14,11 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+import json
+
+import hydra
+from omegaconf import DictConfig, OmegaConf
+import mlflow
 
 
 def run_command(cmd: list, description: str) -> tuple[bool, str]:
@@ -49,169 +54,143 @@ def run_command(cmd: list, description: str) -> tuple[bool, str]:
         return False, str(e)
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Run comprehensive DCBS evaluation")
-    parser.add_argument(
-        "--limit", 
-        type=int, 
-        default=100,
-        help="Number of examples per dataset (default: 100)"
-    )
-    parser.add_argument(
-        "--quick-test", 
-        action="store_true",
-        help="Run quick test with 10 examples per dataset"
-    )
-    parser.add_argument(
-        "--datasets",
-        nargs="+",
-        choices=["arc_easy", "arc_challenge", "hellaswag", "mmlu_stem", "all"],
-        default=["all"],
-        help="Datasets to evaluate (default: all)"
-    )
-    parser.add_argument(
-        "--clustering-methods",
-        nargs="+", 
-        choices=["dbscan", "hierarchical", "kmeans"],
-        default=["dbscan", "hierarchical"],
-        help="Clustering methods to test (default: dbscan, hierarchical)"
-    )
+def run_baseline_evaluation(
+    dataset: str,
+    limit: int,
+    run_id: str,
+    results_dir: Path,
+    batch_size: int,
+) -> Path:
+    """Run baseline evaluation (greedy) and return results file path."""
+    baseline_samplers = ["greedy"]
+    eval_name = f"{dataset}_baseline"
     
-    # NEW: Allow custom sampler sets (e.g. greedy top_p dcbs)
-    parser.add_argument(
-        "--samplers",
-        nargs="+",
-        choices=["greedy", "top_p", "dcbs", "enhanced_dcbs", "random"],
-        default=["greedy", "dcbs"],
-        help="Samplers to include in each compare_methods run (default: greedy dcbs)",
-    )
+    cmd = [
+        "python", "compare_methods.py",
+        "--model", "meta-llama/Llama-3.2-1B-Instruct",
+        "--limit", str(limit),
+        "--samplers", *baseline_samplers,
+        "--datasets", dataset,
+        "--run-id", f"{run_id}_{eval_name}",
+    ]
     
-    # NEW: Support for elbow method in k-means clustering
-    parser.add_argument(
-        "--use-elbow-method",
-        action="store_true",
-        help="Use elbow method for k-means clustering (slower but more accurate)"
-    )
+    if batch_size:
+        cmd.extend(["--batch-size", str(batch_size)])
+        
+    success, _ = run_command(cmd, f"{eval_name.upper()} Evaluation")
     
-    # NEW: Batch size control
-    parser.add_argument(
-        "--batch-size",
-        type=int,
-        default=None,
-        help="Batch size for GPU processing (default: auto-detect)"
-    )
+    if not success:
+        raise RuntimeError(f"Baseline evaluation failed for {dataset}")
+        
+    # Find the results file
+    results_file = results_dir / f"evaluation_results_{run_id}_{eval_name}.json"
+    if not results_file.exists():
+        raise FileNotFoundError(f"Could not find baseline results file: {results_file}")
+        
+    return results_file
+
+
+@hydra.main(version_base=None, config_path="conf", config_name="config")
+def main(cfg: DictConfig):
+    mlflow.start_run()
     
-    # NEW: Cluster logging control
-    parser.add_argument(
-        "--disable-cluster-history",
-        action="store_true",
-        help="Disable cluster history logging (reduces output verbosity)"
-    )
-    
-    parser.add_argument(
-        "--disable-debug-mode",
-        action="store_true", 
-        help="Disable debug mode (reduces output verbosity)"
-    )
-    
-    args = parser.parse_args()
-    
+    # Log Hydra config as MLflow parameters
+    mlflow.log_params(OmegaConf.to_container(cfg, resolve=True))
+
     # Adjust limit for quick test
-    if args.quick_test:
+    if cfg.quick_test:
         limit = 10
         print("QUICK TEST MODE: Using 10 examples per dataset")
     else:
-        limit = args.limit
+        limit = cfg.limit
         print(f"FULL EVALUATION MODE: Using {limit} examples per dataset")
     
-    # Generate run ID
     run_id = datetime.now().strftime("comprehensive_%Y%m%d_%H%M%S")
     print(f"Run ID: {run_id}")
     
-    # Create results directory
-    results_dir = Path("results") / run_id
+    results_dir = Path(cfg.results_dir) / run_id
     results_dir.mkdir(parents=True, exist_ok=True)
     print(f"Results will be saved to: {results_dir}")
     
-    # Determine datasets to run
-    if "all" in args.datasets:
+    if "all" in cfg.datasets:
         datasets = ["arc_easy", "arc_challenge", "hellaswag", "mmlu_stem"]
     else:
-        datasets = args.datasets
+        datasets = cfg.datasets
     
-    clustering_methods = args.clustering_methods
+    clustering_methods = cfg.clustering_methods
     
     print(f"Will evaluate:")
     print(f"   Datasets: {', '.join(datasets)}")
     print(f"   Clustering methods: {', '.join(clustering_methods)}")
     print(f"   Examples per dataset: {limit}")
-    print(f"   Samplers: {', '.join(args.samplers)}")
-    if args.use_elbow_method:
+    print(f"   Samplers: {', '.join(cfg.samplers)}")
+    if cfg.dcbs_params.use_elbow_method:
         print(f"   Using elbow method for k-means (slower but more accurate)")
-    if args.batch_size:
-        print(f"   Batch size: {args.batch_size}")
-    print(f"   Cluster history: {'Enabled' if not args.disable_cluster_history else 'Disabled'}")
-    print(f"   Debug mode: {'Enabled' if not args.disable_debug_mode else 'Disabled'}")
+    if cfg.batch_size:
+        print(f"   Batch size: {cfg.batch_size}")
+    print(f"   Cluster history: {'Enabled' if not cfg.disable_cluster_history else 'Disabled'}")
+    print(f"   Debug mode: {'Enabled' if not cfg.disable_debug_mode else 'Disabled'}")
     
-    # Auto-proceed for unattended runs
-    if not args.quick_test:
+    if not cfg.quick_test:
         print("\nProceeding with full evaluation (unattended mode)")
     else:
         print("\nProceeding with quick test")
     
-    # Track all results
     all_results = []
     
-    # Run evaluations for each dataset and clustering method combination
     for dataset in datasets:
+        
+        baseline_results_file = run_baseline_evaluation(
+            dataset, limit, run_id, results_dir, cfg.batch_size
+        )
+        
         for clustering_method in clustering_methods:
             
-            # Skip if hierarchical with MMLU (might be too slow)
             if dataset == "mmlu_stem" and clustering_method == "hierarchical" and limit > 50:
                 print(f"WARNING: Skipping hierarchical clustering with {dataset} (large dataset)")
                 continue
             
             eval_name = f"{dataset}_{clustering_method}"
             
-            # Build command with dynamic sampler list
             cmd = [
                 "python", "compare_methods.py",
-                "--model", "meta-llama/Llama-3.2-1B-Instruct",
+                "--model", cfg.model_path,
                 "--limit", str(limit),
+                "--baseline-results-file", str(baseline_results_file),
             ]
 
-            # Inject user-requested samplers
-            cmd.extend(["--samplers", *args.samplers])
+            cmd.extend(["--samplers", *cfg.samplers])
 
-            # Remaining parameters
             cmd.extend([
                 "--datasets", dataset,
                 "--clustering-method", clustering_method,
                 "--enable-disagreement-tracking",
                 "--run-id", f"{run_id}_{eval_name}",
+                "--dbscan-eps", str(cfg.dcbs_params.dbscan_eps),
+                "--dbscan-min-samples", str(cfg.dcbs_params.dbscan_min_samples),
+                "--hierarchical-linkage", cfg.dcbs_params.hierarchical_linkage,
+                "--k", str(cfg.dcbs_params.k),
+                "--top-n", str(cfg.dcbs_params.top_n),
+                "--dominance-weight", str(cfg.dcbs_params.dominance_weight),
+                "--min-cluster-size", str(cfg.dcbs_params.min_cluster_size),
             ])
             
-            # Add cluster history unless disabled
-            if not args.disable_cluster_history:
+            if cfg.disable_cluster_history:
+                cmd.extend(["--disable-cluster-history"])
+            else:
                 cmd.extend(["--enable-cluster-history"])
             
-            # Add debug mode unless disabled  
-            if not args.disable_debug_mode:
+            if cfg.disable_debug_mode:
+                cmd.extend(["--disable-debug-mode"])
+            else:
                 cmd.extend(["--debug-mode"])
             
-            # Add batch size if specified
-            if args.batch_size:
-                cmd.extend(["--batch-size", str(args.batch_size)])
+            if cfg.batch_size:
+                cmd.extend(["--batch-size", str(cfg.batch_size)])
             
-            # Add elbow method if requested
-            if args.use_elbow_method:
+            if cfg.dcbs_params.use_elbow_method:
                 cmd.extend(["--use-elbow-method"])
             
-            # Add hierarchical-specific parameters
-            if clustering_method == "hierarchical":
-                cmd.extend(["--hierarchical-linkage", "average"])
-            
-            # Run evaluation
             success, output = run_command(cmd, f"{eval_name.upper()} Evaluation")
             
             all_results.append({
@@ -224,7 +203,6 @@ def main():
             if not success:
                 print(f"WARNING: {eval_name} failed, continuing with next evaluation...")
     
-    # Summary report
     print(f"\n{'='*80}")
     print("COMPREHENSIVE EVALUATION SUMMARY")
     print(f"{'='*80}")
@@ -247,7 +225,6 @@ def main():
         for result in failed:
             print(f"   • {result['eval_name']}")
     
-    # Generate analysis commands
     print(f"\nANALYSIS COMMANDS:")
     print(f"To analyze results, run:")
     
@@ -259,24 +236,12 @@ def main():
     print(f"   ls results/{run_id}*/")
     print(f"   python -c \"import json; print(json.dumps(json.load(open('results/evaluation_results_*.json')), indent=2))\"")
     
-    # Create summary file
     summary_file = results_dir / "evaluation_summary.json"
-    import json
     with open(summary_file, 'w') as f:
         json.dump({
             "run_id": run_id,
             "timestamp": datetime.now().isoformat(),
-            "parameters": {
-                "limit": limit,
-                "datasets": datasets,
-                "clustering_methods": clustering_methods,
-                "quick_test": args.quick_test,
-                "samplers": args.samplers,
-                "use_elbow_method": args.use_elbow_method,
-                "batch_size": args.batch_size,
-                "cluster_history_enabled": not args.disable_cluster_history,
-                "debug_mode_enabled": not args.disable_debug_mode
-            },
+            "parameters": OmegaConf.to_container(cfg, resolve=True),
             "results": all_results,
             "summary": {
                 "total": len(all_results),
@@ -287,13 +252,22 @@ def main():
     
     print(f"\nSummary saved to: {summary_file}")
     
+    mlflow.log_artifact(str(summary_file))
+    mlflow.log_metrics({
+        "total_evaluations": len(all_results),
+        "successful_evaluations": len(successful),
+        "failed_evaluations": len(failed)
+    })
+
     if len(successful) == len(all_results):
         print("\nALL EVALUATIONS COMPLETED SUCCESSFULLY!")
+        mlflow.end_run(status="FINISHED")
         return 0
     else:
         print(f"\nWARNING: {len(failed)} evaluations failed.")
+        mlflow.end_run(status="FAILED")
         return 1
 
 
 if __name__ == "__main__":
-    sys.exit(main()) 
+    sys.exit(main())

@@ -42,4 +42,8 @@ class Sampler(ABC):
         Returns:
             Selected token ID
         """
-        pass 
+        pass
+
+    def get_params(self) -> dict:
+        """Return the parameters of the sampler."""
+        return {} 

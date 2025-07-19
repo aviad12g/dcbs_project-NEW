@@ -448,6 +448,7 @@ class EvaluationRunner:
 
         results = {
             "statistics": statistics,
+            "sampler_parameters": {name: sampler.get_params() for name, sampler in self.samplers.items()},
             "config": {
                 "model": self.config.model_name,
                 "total_examples": len(benchmark_data),

@@ -2,10 +2,10 @@
 
 | Method | Accuracy (%) | 95% CI | Correct/Total | Avg Time (ms) |
 |--------|--------------|--------|---------------|---------------|
-| Greedy | 68.00 | (48.4, 82.8) | 17/25 | 601.47 |
+| Greedy | 100.00 | (56.6, 100.0) | 5/5 | 887.78 |
 
-**Total Examples:** 25
-**Model:** meta-llama/Llama-3.2-1B-Instruct
+**Total Examples:** 5
+**Model:** microsoft/Phi-3.5-mini-instruct
 
 **Notes:**
 - CI = Confidence Interval (binomial proportion)

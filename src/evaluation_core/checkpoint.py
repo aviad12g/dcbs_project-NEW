@@ -14,6 +14,7 @@ from dataclasses import dataclass, asdict
 from datetime import datetime
 
 from src.errors import eval_logger as logger
+from src.utils.serialization import SerializationUtils, SerializationError
 
 
 @dataclass
@@ -29,8 +30,22 @@ class CheckpointState:
     config: Dict
     
     def to_dict(self) -> Dict:
-        """Convert to dictionary for JSON serialization."""
-        return asdict(self)
+        """Convert to dictionary for JSON serialization with enhanced type handling."""
+        try:
+            # Use enhanced serialization to handle numpy types and other non-JSON objects
+            return SerializationUtils.convert_to_json_serializable(asdict(self))
+        except SerializationError as e:
+            logger.error(f"Failed to serialize checkpoint state: {e}")
+            # Return minimal state for recovery
+            return {
+                "serialization_error": str(e),
+                "error_type": e.obj_type,
+                "error_path": e.obj_path,
+                "run_id": getattr(self, 'run_id', None),
+                "timestamp": getattr(self, 'timestamp', None),
+                "total_examples": getattr(self, 'total_examples', 0),
+                "completed_examples": getattr(self, 'completed_examples', 0),
+            }
     
     @classmethod
     def from_dict(cls, data: Dict) -> 'CheckpointState':
@@ -59,14 +74,17 @@ class CheckpointManager:
         return self.checkpoint_dir / f"checkpoint_{run_id}.json"
     
     def save_checkpoint(self, state: CheckpointState) -> None:
-        """Save checkpoint state to disk."""
+        """Save checkpoint state to disk with enhanced serialization."""
         checkpoint_path = self.get_checkpoint_path(state.run_id)
         
         try:
+            # Convert state to JSON-serializable format
+            serializable_state = state.to_dict()
+            
             # Save to temporary file first, then atomic rename
             temp_path = checkpoint_path.with_suffix('.tmp')
             with open(temp_path, 'w') as f:
-                json.dump(state.to_dict(), f, indent=2)
+                json.dump(serializable_state, f, indent=2)
             
             # Atomic rename (with Windows fallback)
             try:
@@ -83,6 +101,31 @@ class CheckpointManager:
             logger.info(f"Checkpoint saved: {state.completed_examples}/{state.total_examples} examples")
             self.last_save_time = time.time()
             
+        except SerializationError as e:
+            logger.error(f"Failed to serialize checkpoint state: {e}")
+            logger.error(f"Problematic object type: {e.obj_type} at path: {e.obj_path}")
+            
+            # Try to save minimal checkpoint for recovery
+            try:
+                minimal_state = {
+                    "serialization_error": str(e),
+                    "run_id": state.run_id,
+                    "timestamp": state.timestamp,
+                    "total_examples": state.total_examples,
+                    "completed_examples": state.completed_examples,
+                    "current_example_idx": state.current_example_idx,
+                }
+                
+                temp_path = checkpoint_path.with_suffix('.tmp')
+                with open(temp_path, 'w') as f:
+                    json.dump(minimal_state, f, indent=2)
+                temp_path.rename(checkpoint_path)
+                
+                logger.info(f"Minimal checkpoint saved for recovery: {state.completed_examples}/{state.total_examples} examples")
+                
+            except Exception as recovery_error:
+                logger.error(f"Failed to save even minimal checkpoint: {recovery_error}")
+                
         except Exception as e:
             logger.error(f"Failed to save checkpoint: {e}")
             # Still log what temp files exist for debugging
@@ -101,7 +144,24 @@ class CheckpointManager:
             with open(checkpoint_path, 'r') as f:
                 data = json.load(f)
             
-            state = CheckpointState.from_dict(data)
+            # Check if this is a recovery checkpoint from serialization error
+            if "serialization_error" in data:
+                logger.warning(f"Loading recovery checkpoint due to previous serialization error: {data['serialization_error']}")
+                # Create minimal checkpoint state from recovery data
+                state = CheckpointState(
+                    run_id=data.get("run_id", "unknown"),
+                    timestamp=data.get("timestamp", "unknown"),
+                    total_examples=data.get("total_examples", 0),
+                    completed_examples=data.get("completed_examples", 0),
+                    current_example_idx=data.get("current_example_idx", 0),
+                    sampler_states={},
+                    results=[],
+                    config={}
+                )
+            else:
+                # Normal checkpoint loading
+                state = CheckpointState.from_dict(data)
+            
             logger.info(f"Checkpoint loaded: {state.completed_examples}/{state.total_examples} examples")
             return state
             

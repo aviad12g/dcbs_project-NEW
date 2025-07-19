@@ -77,4 +77,8 @@ class TopPSampler(Sampler):
             return torch.argmax(logits).item()
             
         token_id = torch.multinomial(probabilities, 1).item()
-        return token_id 
+        return token_id
+
+    def get_params(self) -> dict:
+        """Return the parameters of the sampler."""
+        return {"p": self.p} 

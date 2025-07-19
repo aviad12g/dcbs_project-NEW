@@ -13,11 +13,15 @@ from unittest.mock import Mock, patch
 # Add parent directory to path to allow imports from src
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from src.chat_eval import create_cot_messages, create_final_answer_messages
+from src.evaluation_core.message_templates import MessageTemplateGenerator
 
 
 class TestChainOfThoughtPrompts(unittest.TestCase):
     """Test chain-of-thought prompting functionality."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.generator = MessageTemplateGenerator()
 
     def test_cot_prompt_construction(self):
         """Test that chain-of-thought prompts are constructed correctly."""
@@ -25,7 +29,7 @@ class TestChainOfThoughtPrompts(unittest.TestCase):
         options = ["red", "blue", "green", "yellow"]
         
         # Test CoT message creation
-        cot_messages = create_cot_messages(sentence, options)
+        cot_messages = self.generator.create_reasoning_messages(sentence, options)
         
         # Verify structure
         self.assertEqual(len(cot_messages), 2)
@@ -47,20 +51,28 @@ class TestChainOfThoughtPrompts(unittest.TestCase):
         options = ["red", "blue", "green", "yellow"]
         reasoning = "The sky appears blue due to light scattering in the atmosphere."
         
-        # Test final answer message creation
-        final_messages = create_final_answer_messages(reasoning, sentence, options)
+        # First create reasoning messages
+        reasoning_messages = self.generator.create_reasoning_messages(sentence, options)
         
-        # Verify structure
-        self.assertEqual(len(final_messages), 2)
+        # Test final answer message creation
+        final_messages = self.generator.create_final_answer_messages(reasoning_messages, reasoning)
+        
+        # Verify structure: system, user, assistant, user
+        self.assertEqual(len(final_messages), 4)
         self.assertEqual(final_messages[0]["role"], "system")
         self.assertEqual(final_messages[1]["role"], "user")
+        self.assertEqual(final_messages[2]["role"], "assistant")
+        self.assertEqual(final_messages[3]["role"], "user")
         
-        # Verify content includes reasoning
-        user_content = final_messages[1]["content"]
-        self.assertIn(reasoning, user_content)
-        self.assertIn(sentence, user_content)
+        # Verify content includes reasoning in assistant message
+        assistant_content = final_messages[2]["content"]
+        self.assertIn(reasoning, assistant_content)
+        
+        # Verify initial user message includes question and options
+        initial_user_content = final_messages[1]["content"]
+        self.assertIn(sentence, initial_user_content)
         for option in options:
-            self.assertIn(option, user_content)
+            self.assertIn(option, initial_user_content)
 
     def test_prompt_format_consistency(self):
         """Test that prompts maintain consistent formatting."""
@@ -76,7 +88,7 @@ class TestChainOfThoughtPrompts(unittest.TestCase):
         ]
         
         for case in test_cases:
-            cot_messages = create_cot_messages(case["sentence"], case["options"])
+            cot_messages = self.generator.create_reasoning_messages(case["sentence"], case["options"])
             
             # Verify consistent role structure
             self.assertEqual(cot_messages[0]["role"], "system")

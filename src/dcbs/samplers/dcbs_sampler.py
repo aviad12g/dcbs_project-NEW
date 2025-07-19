@@ -469,6 +469,15 @@ class DCBSSampler(Sampler):
         """Clear debug data and statistics."""
         self.debugger.clear_debug_data()
 
+    def get_params(self) -> dict:
+        """Return the parameters of the sampler."""
+        return {
+            "clusterer": self.clusterer.__class__.__name__,
+            "candidate_selector": self.candidate_selector.__class__.__name__,
+            "category_sampler": self.category_sampler.__class__.__name__,
+            "enable_caching": self.enable_caching,
+        }
+
     def sample_batch(
         self,
         logits_batch: torch.Tensor,

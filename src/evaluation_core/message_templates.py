@@ -15,14 +15,16 @@ class MessageTemplateGenerator:
         """Create messages for the reasoning step."""
         options_str = self._format_options(options)
         
+        # FIXED: Better system prompt that's less likely to be echoed
+        # and provides clear instructions for reasoning
         return [
             {
                 "role": "system", 
-                "content": "You are an LLM that thinks step by step before answering."
+                "content": "You are a helpful assistant. When answering multiple choice questions, first explain your reasoning clearly, then state your final answer."
             },
             {
                 "role": "user",
-                "content": f"{sentence}\n\n{options_str}"
+                "content": f"{sentence}\n\n{options_str}\n\nPlease explain your reasoning step by step, then give your final answer."
             }
         ]
 
@@ -41,10 +43,10 @@ class MessageTemplateGenerator:
             "content": reasoning_response
         })
         
-        # Add the user's final question
+        # FIXED: More specific final answer prompt
         messages.append({
             "role": "user", 
-            "content": "So what's the final answer?"
+            "content": "Based on your reasoning above, what is the correct answer? Please respond with just the letter (A, B, C, or D)."
         })
         
         return messages

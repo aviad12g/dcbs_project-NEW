@@ -44,4 +44,8 @@ class GreedySampler(Sampler):
             allowed_mask[allowed_indices] = logits[allowed_indices]
             return allowed_mask.argmax().item()
 
-        return logits.argmax().item() 
+        return logits.argmax().item()
+
+    def get_params(self) -> dict:
+        """Return the parameters of the sampler."""
+        return {} 

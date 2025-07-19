@@ -13,10 +13,13 @@ import torch
 from src.dcbs import SamplingContext
 from src.errors import eval_logger as logger
 from src.token_utils import AnswerTokenResolver
+from src.utils.cot_parser import CoTResponseParser
 
 from .message_templates import MessageTemplateGenerator
 from .token_generator import TokenGenerator
 
+
+import re
 
 class QuestionAnswerer:
     """Orchestrates question answering with various samplers."""
@@ -37,6 +40,7 @@ class QuestionAnswerer:
         self.message_generator = MessageTemplateGenerator()
         self.token_generator = TokenGenerator(model, tokenizer, self.device)
         self.token_resolver = AnswerTokenResolver(tokenizer)
+        self.cot_parser = CoTResponseParser()
     
     def _format_prompt(self, messages: List[Dict[str, str]], add_generation_prompt: bool = True) -> str:
         """
@@ -75,6 +79,8 @@ class QuestionAnswerer:
             
         return prompt
     
+
+
     def answer_question(
         self,
         question: str,
@@ -155,13 +161,18 @@ class QuestionAnswerer:
         """Answer with chain-of-thought reasoning."""
         # Step 1: Generate reasoning
         reasoning_messages = self.message_generator.create_reasoning_messages(question, options)
-        reasoning_response, reasoning_cache = self.token_generator.generate_with_kv_cache(
-            reasoning_messages, sampler, max_new_tokens=500
+        # FIXED: Increased max_new_tokens and better error handling
+        reasoning_responses, reasoning_caches = self.token_generator.generate_batch_with_kv_cache(
+            [reasoning_messages], sampler, max_new_tokens=800
         )
+        reasoning_response = reasoning_responses[0]
         
+        # Clean the reasoning response using the CoT parser
+        cleaned_reasoning = self.cot_parser.extract_reasoning(reasoning_response)
+
         # Step 2: Generate final answer
         final_messages = self.message_generator.create_final_answer_messages(
-            reasoning_messages, reasoning_response
+            reasoning_messages, cleaned_reasoning
         )
         
         # Log final chat for debugging
@@ -199,9 +210,25 @@ class QuestionAnswerer:
                 selected_answer = answer_text
                 break
 
+        # Extract final answer from generated text
+        generated_text = self.tokenizer.decode(pred_token_id)
+        final_answer = self._extract_final_answer(generated_text)
+
+        # Parse and clean the reasoning response
+        parsed_reasoning = self.cot_parser.parse_cot_response(reasoning_response)
+        cleaned_reasoning = parsed_reasoning['reasoning']
+        
+        # Log if reasoning appears to be template text (debug level to reduce noise)
+        if parsed_reasoning['is_template']:
+            logger.debug(f"CoT response appears to be template text: {reasoning_response[:100]}...")
+        elif not parsed_reasoning['is_valid']:
+            logger.debug(f"CoT response quality is low: {reasoning_response[:100]}...")
+        
         return {
-            'selected_answer': selected_answer,
-            'reasoning': reasoning_response,
+            'selected_answer': final_answer or selected_answer,
+            'reasoning': cleaned_reasoning,  # Use cleaned reasoning
+            'raw_reasoning': reasoning_response,  # Keep original for debugging
+            'reasoning_quality': parsed_reasoning,  # Include quality metrics
             'answer_probs': answer_probs,
             'pred_token_id': pred_token_id,
             'answer_ids': answer_ids,
@@ -297,15 +324,17 @@ class QuestionAnswerer:
             reasoning_messages_batch.append(reasoning_messages)
         
         # Generate reasoning responses in parallel
+        # FIXED: Increased max_new_tokens for batch processing
         reasoning_responses, reasoning_caches = self.token_generator.generate_batch_with_kv_cache(
-            reasoning_messages_batch, sampler, max_new_tokens=500
+            reasoning_messages_batch, sampler, max_new_tokens=800
         )
         
         # STEP 2: Batch final answer generation
         final_messages_batch = []
         for reasoning_msgs, reasoning_resp in zip(reasoning_messages_batch, reasoning_responses):
+            cleaned_reasoning = self.cot_parser.extract_reasoning(reasoning_resp)
             final_messages = self.message_generator.create_final_answer_messages(
-                reasoning_msgs, reasoning_resp
+                reasoning_msgs, cleaned_reasoning
             )
             final_messages_batch.append(final_messages)
         
@@ -343,9 +372,26 @@ class QuestionAnswerer:
                 if token_id == pred_token_id:
                     selected_answer = answer_text
                     break
+
+            # Extract final answer from generated text
+            generated_text = self.tokenizer.decode(pred_token_id)
+            final_answer = self._extract_final_answer(generated_text)
+
+            # Parse and clean the reasoning response
+            parsed_reasoning = self.cot_parser.parse_cot_response(reasoning_resp)
+            cleaned_reasoning = parsed_reasoning['reasoning']
+            
+            # Log if reasoning appears to be template text
+            if parsed_reasoning['is_template']:
+                logger.warning(f"Batch CoT response appears to be template text: {reasoning_resp[:100]}...")
+            elif not parsed_reasoning['is_valid']:
+                logger.warning(f"Batch CoT response quality is low: {reasoning_resp[:100]}...")
+            
             result = {
-                'selected_answer': selected_answer,
-                'reasoning': reasoning_resp,
+                'selected_answer': final_answer or selected_answer,
+                'reasoning': cleaned_reasoning,  # Use cleaned reasoning
+                'raw_reasoning': reasoning_resp,  # Keep original for debugging
+                'reasoning_quality': parsed_reasoning,  # Include quality metrics
                 'answer_probs': answer_probs,
                 'pred_token_id': pred_token_id,
                 'answer_ids': answer_ids,
@@ -375,6 +421,27 @@ class QuestionAnswerer:
             results.append(result)
         
         logger.debug(f"Batch direct answering completed for {len(results)} questions")
-        return results 
+        return results
+    
+    def _extract_final_answer(self, generated_text: str) -> Optional[str]:
+        """
+        Extract final answer from generated text.
+        
+        Args:
+            generated_text: Text generated by the model
+            
+        Returns:
+            Extracted answer or None if not found
+        """
+        # First try regex pattern matching for "The final answer is option X"
+        match = re.search(r"The final answer is option ([A-D])", generated_text)
+        if match:
+            return match.group(1)
+        
+        # Fallback: if it's a single token, return it
+        if generated_text and len(generated_text.strip()) <= 3:
+            return generated_text.strip()
+        
+        return None
 
  

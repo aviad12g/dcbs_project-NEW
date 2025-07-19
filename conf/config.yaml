@@ -1,0 +1,46 @@
+# @package _global_
+
+# Default configuration for comprehensive evaluation
+
+# Evaluation parameters
+limit: 100 # Number of examples per dataset (default: 100)
+quick_test: false # Run quick test with 10 examples per dataset
+
+# Datasets to evaluate
+datasets:
+  - all # Choices: arc_easy, arc_challenge, hellaswag, mmlu_stem, all
+
+# Clustering methods to test
+clustering_methods:
+  - dbscan # Choices: dbscan, hierarchical, kmeans
+  - hierarchical
+
+# Samplers to include in each compare_methods run
+samplers:
+  - greedy # Choices: greedy, top_p, dcbs, enhanced_dcbs, random
+  - dcbs
+
+# Model configuration
+model_path: "meta-llama/Llama-3.2-1B-Instruct"
+
+# GPU and batching
+batch_size: null # Batch size for GPU processing (default: auto-detect)
+
+# DCBS specific parameters (defaults, can be overridden)
+dcbs_params:
+  k: 8
+  top_n: 50
+  dominance_weight: 0.5
+  min_cluster_size: 2
+  dbscan_eps: 0.3
+  dbscan_min_samples: 2
+  hierarchical_linkage: "average"
+  use_elbow_method: false
+
+# Logging and debugging
+disable_cluster_history: false # Disable cluster history logging (reduces output verbosity)
+disable_debug_mode: false # Disable debug mode (reduces output verbosity)
+
+# Paths
+results_dir: "results" # Base directory for saving results
+checkpoints_dir: "checkpoints" # Directory for saving checkpoints
