@@ -1,31 +1,32 @@
 """
-Deterministic Category Based Sampling implementation.
+Deterministic Category Based Sampling (DCBS) implementation.
+
+This module implements the core DCBS algorithm with clustering abstractions,
+caching, and comprehensive error handling.
 """
 
-from typing import List, Optional, Set
+from typing import Optional, Set, List
+import time
 
 import numpy as np
 import torch
 
 from .base import Sampler, SamplingContext
-from ..cache_manager import CacheConfig, get_cache_manager
-from ..clustering import (
-    CandidateSelector,
-    TokenClusterer,
-)
-from ..category_sampling import (
-    CategorySampler, 
-    greedy_category_sampler,
-)
+from ..clustering import TokenClusterer, CandidateSelector, SingleCluster
+from ..category_sampling import CategorySampler, greedy_category_sampler
+from ..cache_manager import CacheConfig, DCBSCacheManager, get_cache_manager
 from ..constants import (
-    MIN_TOKENS_FOR_CLUSTERING,
     DEFAULT_K_CLUSTERS,
     DEFAULT_TOP_N,
     DEFAULT_EMBEDDING_CACHE_SIZE,
     DEFAULT_CLUSTER_CACHE_SIZE,
+    MIN_TOKENS_FOR_CLUSTERING,
+    PROB_EPSILON,
 )
 from ..debug import DCBSDebugger
 from ..embedding_ops import EmbeddingOperations
+
+# Note: BatchDCBSProcessor import moved to avoid circular dependency
 
 
 class DCBSSampler(Sampler):
@@ -48,6 +49,8 @@ class DCBSSampler(Sampler):
         debug_mode: Optional[bool] = None,
         enable_cluster_history: Optional[bool] = None,
         debug_output_file: Optional[str] = None,
+        enable_batch_processing: bool = True,
+        batch_processing_threshold: int = 4,
     ):
         """
         Initialize the DCBS sampler.
@@ -62,12 +65,16 @@ class DCBSSampler(Sampler):
             debug_mode: Enable debug logging (default: False)
             enable_cluster_history: Track cluster decisions (default: False)
             debug_output_file: File path for debug output
+            enable_batch_processing: Enable GPU parallel batch processing (default: True)
+            batch_processing_threshold: Minimum batch size for parallel processing (default: 4)
         """
         self.clusterer = clusterer
         self.candidate_selector = candidate_selector
         self.category_sampler = category_sampler or greedy_category_sampler
         self.context = context
         self.enable_caching = enable_caching
+        self.enable_batch_processing = enable_batch_processing
+        self.batch_processing_threshold = batch_processing_threshold
 
         # Initialize cache manager only if caching is enabled
         if self.enable_caching:
@@ -80,9 +87,42 @@ class DCBSSampler(Sampler):
                     cluster_cache_size=DEFAULT_CLUSTER_CACHE_SIZE, 
                     enable_metrics=True
                 )
+            
+            # Get thread-safe cache manager instance
             self.cache_manager = get_cache_manager(config)
         else:
             self.cache_manager = None
+
+        # Initialize GPU-optimized batch processor if enabled
+        if self.enable_batch_processing and torch.cuda.is_available():
+            # Lazy import to avoid circular dependency
+            from ..batch_processor import BatchDCBSProcessor, OptimizationConfig
+            
+            optimization_config = OptimizationConfig(
+                batch_size=32,
+                use_gpu_clustering=True,
+                enable_parallel_processing=True,
+                max_workers=min(4, torch.cuda.device_count() * 2),  # GPU-aware worker count
+                use_mixed_precision=True,
+                memory_efficient_mode=False,
+            )
+            self.batch_processor = BatchDCBSProcessor(optimization_config, self.cache_manager)
+        elif self.enable_batch_processing:
+            # Lazy import to avoid circular dependency
+            from ..batch_processor import BatchDCBSProcessor, OptimizationConfig
+            
+            # CPU-optimized configuration
+            optimization_config = OptimizationConfig(
+                batch_size=16,
+                use_gpu_clustering=False,
+                enable_parallel_processing=True,
+                max_workers=min(4, 8),  # CPU core count
+                use_mixed_precision=False,
+                memory_efficient_mode=True,
+            )
+            self.batch_processor = BatchDCBSProcessor(optimization_config, self.cache_manager)
+        else:
+            self.batch_processor = None
 
         # Initialize debugging
         self.debugger = DCBSDebugger(debug_mode, enable_cluster_history, debug_output_file)
@@ -522,9 +562,41 @@ class DCBSSampler(Sampler):
         
         self.debugger.log_debug(f"Starting batch DCBS sampling for {batch_size} sequences")
         
-        # Process each sequence in the batch
-        # Note: For now, we process sequentially for simplicity and stability
-        # Future optimization could implement true parallel batch processing
+        # 🚀 NEW: Use GPU-optimized parallel batch processing for large batches
+        if (self.enable_batch_processing and 
+            self.batch_processor is not None and 
+            batch_size >= self.batch_processing_threshold):
+            
+            self.debugger.log_debug(f"Using parallel GPU batch processing for {batch_size} sequences")
+            
+            try:
+                # Convert filter tokens to the format expected by BatchDCBSProcessor
+                filter_tokens_sets = []
+                for filter_tokens in filter_tokens_batch:
+                    if filter_tokens is None:
+                        filter_tokens_sets.append(None)
+                    else:
+                        filter_tokens_sets.append(set(filter_tokens) if not isinstance(filter_tokens, set) else filter_tokens)
+                
+                # Use the high-performance parallel batch processor
+                results = self.batch_processor.batch_sample(
+                    logits_batch=logits_batch,
+                    filter_tokens_batch=filter_tokens_sets,
+                    context=effective_context,
+                    k=self.clusterer.num_clusters if hasattr(self.clusterer, 'num_clusters') else DEFAULT_K_CLUSTERS,
+                    top_n=self.candidate_selector.top_n if hasattr(self.candidate_selector, 'top_n') else DEFAULT_TOP_N,
+                )
+                
+                self.debugger.log_debug(f"Parallel batch DCBS sampling completed for {batch_size} sequences")
+                return results
+                
+            except Exception as e:
+                self.debugger.log_debug(f"Parallel batch processing failed, falling back to sequential: {e}")
+                # Fall through to sequential processing
+        
+        # Fallback: Sequential processing for small batches or when parallel processing fails
+        self.debugger.log_debug(f"Using sequential processing for {batch_size} sequences")
+        
         results = []
         for i in range(batch_size):
             logits = logits_batch[i]
@@ -541,5 +613,39 @@ class DCBSSampler(Sampler):
                                f"This indicates a problem that must be addressed rather than "
                                f"falling back to greedy selection.") from e
         
-        self.debugger.log_debug(f"Batch DCBS sampling completed for {batch_size} sequences")
+        self.debugger.log_debug(f"Sequential batch DCBS sampling completed for {batch_size} sequences")
         return results 
+
+    def cleanup(self) -> None:
+        """Clean up resources used by the sampler."""
+        if self.batch_processor is not None:
+            self.batch_processor.cleanup()
+        
+        if self.cache_manager is not None:
+            # Clear caches to free memory
+            self.cache_manager.clear_all_caches()
+    
+    def get_batch_processing_stats(self) -> dict:
+        """Get statistics about batch processing performance."""
+        if self.batch_processor is not None:
+            return {
+                "batch_processing_enabled": True,
+                "gpu_available": torch.cuda.is_available(),
+                "parallel_processing": self.batch_processor.config.enable_parallel_processing,
+                "max_workers": self.batch_processor.config.max_workers,
+                "gpu_clustering": self.batch_processor.config.use_gpu_clustering,
+                "mixed_precision": self.batch_processor.config.use_mixed_precision,
+            }
+        else:
+            return {
+                "batch_processing_enabled": False,
+                "reason": "Batch processing disabled in sampler configuration"
+            }
+    
+    def __del__(self):
+        """Cleanup when sampler is destroyed."""
+        try:
+            self.cleanup()
+        except Exception:
+            # Ignore errors during cleanup
+            pass 

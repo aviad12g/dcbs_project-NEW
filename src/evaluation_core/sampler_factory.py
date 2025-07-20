@@ -103,6 +103,8 @@ class SamplerFactory:
             enable_caching=config.enable_caching,
             debug_mode=debug_mode,
             enable_cluster_history=enable_cluster_history,
+            enable_batch_processing=True,  # 🚀 Enable GPU parallel batch processing
+            batch_processing_threshold=4,  # Use parallel processing for batches >= 4
         )
 
     @staticmethod
