@@ -562,7 +562,7 @@ class DCBSSampler(Sampler):
         
         self.debugger.log_debug(f"Starting batch DCBS sampling for {batch_size} sequences")
         
-        # 🚀 NEW: Use GPU-optimized parallel batch processing for large batches
+        # NEW: Use GPU-optimized parallel batch processing for large batches
         if (self.enable_batch_processing and 
             self.batch_processor is not None and 
             batch_size >= self.batch_processing_threshold):
