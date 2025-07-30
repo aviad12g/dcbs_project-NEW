@@ -29,6 +29,7 @@ from .clustering import (
     SingleCluster,
     TokenClusterer,
     TopNCandidateSelector,
+    AdaptiveDBSCANClusterer,
 )
 from .constants import (
     DEFAULT_K_CLUSTERS,
@@ -49,6 +50,7 @@ from .samplers import (
     TopPSampler,
     TemperatureSampler,
     TopKSampler,
+    DeterministicHierLoopSampler,
 )
 from .factory import DCBSSamplerFactory
 
@@ -62,6 +64,7 @@ __all__ = [
     "RandomSampler",
     "TemperatureSampler",
     "TopKSampler",
+    "DeterministicHierLoopSampler",
     # Factory classes
     "DCBSSamplerFactory",
     # Base classes and interfaces
@@ -77,6 +80,7 @@ __all__ = [
     "DBSCANClusterer",
     "HierarchicalClusterer",
     "SingleCluster",
+    "AdaptiveDBSCANClusterer",
     # Candidate selection implementations
     "TopNCandidateSelector",
     "FilteredCandidateSelector",

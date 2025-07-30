@@ -414,3 +414,82 @@ class FilteredCandidateSelector(CandidateSelector):
         else:
             # If no filter provided, use all tokens (not recommended for large vocabularies)
             return list(range(logits.shape[0]))
+
+
+class AdaptiveDBSCANClusterer(TokenClusterer):
+    """Adaptive DBSCAN that chooses eps from k-distance statistics (deterministic)."""
+
+    def __init__(
+        self,
+        neighbor_k: int = 5,
+        min_samples: int = 2,
+        metric: str = "cosine",
+        eps_scale: float = 1.0,
+        n_jobs: int = 1,
+        eps: float | None = None,  # compatibility placeholder
+    ) -> None:
+        """Create an adaptive DBSCAN clusterer.
+
+        Args:
+            neighbor_k: k for the k-distance graph used to set eps.
+            min_samples: Base min_samples fed to DBSCAN.
+            metric: Distance metric for neighbors / DBSCAN.
+            eps_scale: Constant multiplier applied to the median k-distance.
+            n_jobs: parallel jobs for sklearn routines.
+        """
+        self.neighbor_k = neighbor_k
+        self.min_samples = max(2, min_samples)
+        self.metric = metric
+        self.eps_scale = eps_scale
+        self.n_jobs = n_jobs
+        self._last_n_clusters = 1
+        self._last_eps = None
+
+    def _determine_eps(self, embeddings_np: "np.ndarray") -> float:
+        from sklearn.neighbors import NearestNeighbors
+
+        neigh = NearestNeighbors(n_neighbors=min(self.neighbor_k + 1, len(embeddings_np)), metric=self.metric, n_jobs=self.n_jobs)
+        neigh.fit(embeddings_np)
+        distances, _ = neigh.kneighbors(embeddings_np)
+        # distances[:,0] is 0 (distance to itself). Take k-th neighbor distance.
+        k_dists = distances[:, -1]
+        median_k_dist = float(np.median(k_dists))
+        # Fallback for degenerate case
+        if median_k_dist <= 0:
+            median_k_dist = float(np.mean(k_dists[k_dists > 0])) if np.any(k_dists > 0) else 0.5
+        return median_k_dist * self.eps_scale
+
+    def cluster(self, embeddings: "torch.Tensor") -> "np.ndarray":
+        embeddings_np = embeddings.detach().cpu().numpy()
+        if len(embeddings_np) == 0:
+            return np.array([], dtype=int)
+
+        eps = self._determine_eps(embeddings_np)
+        self._last_eps = eps
+
+        dbscan = DBSCAN(
+            eps=eps,
+            min_samples=self.min_samples,
+            metric=self.metric,
+            n_jobs=self.n_jobs,
+        )
+        labels = dbscan.fit_predict(embeddings_np)
+
+        # Map noise (-1) to unique cluster ids so downstream code can handle deterministically
+        if -1 in labels:
+            noise_mask = labels == -1
+            max_label = labels.max()
+            noise_indices = np.where(noise_mask)[0]
+            for i, idx in enumerate(noise_indices):
+                labels[idx] = max_label + 1 + i
+
+        self._last_n_clusters = len(np.unique(labels))
+        return labels
+
+    @property
+    def num_clusters(self) -> int:  # noqa: D401
+        return self._last_n_clusters
+
+    # Introspection helper
+    def get_last_eps(self):
+        return self._last_eps

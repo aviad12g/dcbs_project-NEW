@@ -315,6 +315,11 @@ class EvaluationRunner:
                     _evaluate_with_all_samplers(processed_batch, batch_start)
 
                 completed_examples = batch_end  # number processed so far
+
+                if completed_examples % 10 == 0 or completed_examples == len(benchmark_data):
+                    logger.info(
+                        f"Progress: {completed_examples}/{len(benchmark_data)} examples completed"
+                    )
                 
                 # Always update current state for signal handler
                 config_dict = self.config.__dict__.copy()
@@ -436,7 +441,18 @@ class EvaluationRunner:
         differences = []
         for ex_id, preds in prediction_map.items():
             if "dcbs" in preds and "greedy" in preds:
-                if preds["dcbs"].get("pred_id") != preds["greedy"].get("pred_id"):
+                dcbs_pred_id = preds["dcbs"].get("pred_id")
+                greedy_pred_id = preds["greedy"].get("pred_id")
+
+                # Fallback to answer strings when token ids are not available (open-ended datasets)
+                if dcbs_pred_id is None or greedy_pred_id is None:
+                    dcbs_ans = preds["dcbs"].get("predicted_answer")
+                    greedy_ans = preds["greedy"].get("predicted_answer")
+                    differ = dcbs_ans != greedy_ans
+                else:
+                    differ = dcbs_pred_id != greedy_pred_id
+
+                if differ:
                     differences.append({
                         "id": ex_id,
                         "sentence": preds["dcbs"].get("sentence"),
@@ -455,7 +471,7 @@ class EvaluationRunner:
                 "methods": list(self.samplers.keys()),
                 "include_cot": self.config.include_cot,
                 "enable_caching": self.config.enable_caching,
-                "clustering_method": getattr(self.config, 'clustering_method', 'dbscan'),
+                "clustering_method": getattr(self.config, 'clustering_method', 'kmeans'),
                 "batch_size": getattr(self.config, 'batch_size', 'auto'),
                 "gpu_info": [str(gpu) for gpu in self.gpu_optimizer.available_gpus],
             },

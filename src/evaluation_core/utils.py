@@ -17,7 +17,7 @@ def load_benchmark_data(benchmark_path: str, limit: Optional[int] = None) -> Lis
     logger.info(f"Loading benchmark: {benchmark_path}")
 
     # Check if this is a dataset name (like 'arc_challenge') rather than a file path
-    if not os.path.exists(benchmark_path) and not benchmark_path.endswith('.json'):
+    if not os.path.exists(benchmark_path) and not (benchmark_path.endswith('.json') or benchmark_path.endswith('.jsonl')):
         # Try to load as a dataset name
         try:
             from data_loaders import load_dataset
@@ -51,8 +51,13 @@ def load_benchmark_data(benchmark_path: str, limit: Optional[int] = None) -> Lis
         raise FileNotFoundError(f"Benchmark file not found: {benchmark_path}")
 
     try:
-        with open(benchmark_path, "r") as f:
-            data = json.load(f)
+        # Support line-delimited JSON (.jsonl) as well as regular JSON files
+        if benchmark_path.endswith(".jsonl"):
+            with open(benchmark_path, "r", encoding="utf-8") as f:
+                data = [json.loads(line) for line in f if line.strip()]
+        else:
+            with open(benchmark_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
 
         # Validate data structure
         if not isinstance(data, list):
@@ -69,17 +74,17 @@ def load_benchmark_data(benchmark_path: str, limit: Optional[int] = None) -> Lis
         # Validate first example has required fields (support both formats)
         first_example = data[0]
 
-        # Check for ARC Easy format
-        arc_fields = ["question", "options"]
-        has_arc = all(field in first_example for field in arc_fields)
-
-        if not has_arc:
-            raise DataError(
-                f"Benchmark examples must contain ARC Easy fields {arc_fields}"
-            )
-
-        # Log which format was detected
-        logger.info(f"Detected ARC Easy format dataset")
+        # If examples contain "options", treat as multiple-choice (ARC style); otherwise accept open-ended format
+        if "options" in first_example:
+            arc_fields = ["question", "options"]
+            if not all(field in first_example for field in arc_fields):
+                raise DataError(f"Benchmark examples must contain ARC Easy fields {arc_fields}")
+            logger.info("Detected ARC Easy format dataset")
+        else:
+            open_fields = ["question", "answer"]
+            if not all(field in first_example for field in open_fields):
+                raise DataError(f"Open-ended examples must contain fields {open_fields}")
+            logger.info("Detected open-ended QA dataset")
 
         logger.info(f"Loaded {len(data)} examples")
         return data

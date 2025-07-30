@@ -78,7 +78,7 @@ class ArgumentParserSetup:
         parser.add_argument(
             "--clustering-method",
             type=str,
-            choices=["kmeans", "dbscan", "hierarchical"],
+            choices=["kmeans", "dbscan", "hierarchical", "adbscan"],
             default=None,
             help="Clustering method for DCBS (uses config default if not specified)",
         )
@@ -224,7 +224,7 @@ class ArgumentParserSetup:
         parser.add_argument(
             "--samplers",
             nargs="+",
-            choices=["greedy", "top_p", "dcbs", "enhanced_dcbs", "random"],
+            choices=["greedy", "top_p", "dcbs", "enhanced_dcbs", "hier_loop", "random"],
             help="Specify which samplers to evaluate (default: all). 'enhanced_dcbs' uses 50% confidence threshold for hierarchical selection.",
         )
 

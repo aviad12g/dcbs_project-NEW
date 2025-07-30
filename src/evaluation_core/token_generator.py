@@ -91,7 +91,7 @@ class TokenGenerator:
         messages_batch: List[List[Dict[str, str]]], 
         sampler, 
         max_new_tokens: int = 500
-    ) -> Tuple[List[str], List[Cache]]:
+    ) -> Tuple[List[str], List[Optional[Cache]], torch.Tensor]:
         """
         Generate responses for multiple conversations using TRUE PARALLEL BATCHING.
         
@@ -134,112 +134,87 @@ class TokenGenerator:
         
         logger.debug(f"Tokenized batch: input_ids shape {input_ids.shape}")
         
-        # STEP 3: TRUE PARALLEL token-by-token generation
-        generated_sequences = input_ids.clone()  # Start with input tokens
+        # STEP 3: Pre-computation to get initial logits
+        with torch.no_grad():
+            initial_outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, use_cache=True)
+            batch_logits = initial_outputs.logits[:, -1, :]
+            current_cache = initial_outputs.past_key_values
+
+        # Initialize sequences and attention mask
+        generated_sequences = input_ids.clone()
         current_attention_mask = attention_mask.clone()
-        current_cache = None
-        
-        # Track which sequences are still generating (not finished)
+
+        # Track which sequences are still generating and store final logits
         active_sequences = torch.ones(batch_size, dtype=torch.bool, device=self.device)
-        
+        final_logits = torch.zeros_like(batch_logits)
+
         with torch.no_grad():
             for step in range(max_new_tokens):
-                # Prepare model inputs for PARALLEL processing
-                if step == 0:
-                    # First step: process full prompts in parallel
-                    model_inputs = {
-                        "input_ids": input_ids,
-                        "attention_mask": attention_mask,
-                        "past_key_values": None,
-                        "use_cache": True
-                    }
-                else:
-                    # Subsequent steps: process last tokens for all active sequences
-                    last_tokens = generated_sequences[:, -1:] # [batch_size, 1]
-                    last_attention = torch.ones_like(last_tokens, dtype=torch.bool)
-                    
+                # In the first step (step=0), we use the pre-computed logits.
+                # For subsequent steps, we compute them inside the loop.
+                if step > 0:
+                    last_tokens = generated_sequences[:, -1:]
                     model_inputs = {
                         "input_ids": last_tokens,
-                        "attention_mask": last_attention,
+                        "attention_mask": current_attention_mask,
                         "past_key_values": current_cache,
                         "use_cache": True
                     }
+                    outputs = self.model(**model_inputs)
+                    batch_logits = outputs.logits[:, -1, :]
+                    current_cache = outputs.past_key_values
                 
-                # PARALLEL MODEL FORWARD PASS
-                outputs = self.model(**model_inputs)
-                batch_logits = outputs.logits[:, -1, :]  # [batch_size, vocab_size]
-                current_cache = outputs.past_key_values
+                # PARALLEL SAMPLING
+                next_tokens = torch.zeros(batch_size, 1, dtype=torch.long, device=self.device)
+                active_logits = batch_logits[active_sequences]
                 
-                # PARALLEL SAMPLING using custom sampler
                 if hasattr(sampler, 'sample_batch'):
-                    # Use batch sampling if available
-                    next_tokens = sampler.sample_batch(
-                        batch_logits,
-                        filter_tokens_batch=[None] * batch_size,  # No filtering for now
-                        context=getattr(sampler, 'context', None)
-                    )
-                    next_tokens_tensor = torch.tensor(next_tokens, device=self.device).unsqueeze(1)
+                    sampled_tokens = sampler.sample_batch(active_logits)
+                    next_tokens[active_sequences] = torch.tensor(
+                        sampled_tokens, device=self.device
+                    ).unsqueeze(1)
                 else:
-                    # Fallback: sample each sequence individually but in parallel
-                    next_tokens = []
-                    for i in range(batch_size):
-                        if active_sequences[i]:
-                            token = sampler.sample(batch_logits[i])
-                            next_tokens.append(token)
-                        else:
-                            next_tokens.append(self.tokenizer.eos_token_id)
-                    next_tokens_tensor = torch.tensor(next_tokens, device=self.device).unsqueeze(1)
+                    # Fallback for non-batch samplers
+                    for i, logit_tensor in enumerate(active_logits):
+                        active_idx = torch.where(active_sequences)[0][i]
+                        token = sampler.sample(logit_tensor)
+                        next_tokens[active_idx] = token
                 
-                # Update generated sequences
-                generated_sequences = torch.cat([generated_sequences, next_tokens_tensor], dim=1)
-                
-                # Update attention mask
-                new_attention = torch.ones(batch_size, 1, dtype=torch.bool, device=self.device)
+                # Update generated sequences and attention mask
+                generated_sequences = torch.cat([generated_sequences, next_tokens], dim=1)
+                new_attention = torch.ones(batch_size, 1, dtype=torch.long, device=self.device)
                 current_attention_mask = torch.cat([current_attention_mask, new_attention], dim=1)
                 
-                # Check for EOS tokens and update active sequences
-                eos_mask = (next_tokens_tensor.squeeze(1) == self.tokenizer.eos_token_id)
-                active_sequences = active_sequences & ~eos_mask
+                # Store logits for sequences that just finished
+                just_finished_mask = active_sequences & (next_tokens.squeeze(1) == self.tokenizer.eos_token_id)
+                if just_finished_mask.any():
+                    final_logits[just_finished_mask] = batch_logits[just_finished_mask]
                 
-                # Stop if all sequences are done
+                active_sequences &= ~just_finished_mask
+                
                 if not active_sequences.any():
                     logger.debug(f"All sequences finished at step {step}")
                     break
-                
-                if step % 20 == 0 and step > 0:
-                    active_count = active_sequences.sum().item()
-                    logger.debug(f"Step {step}: {active_count}/{batch_size} sequences still generating")
+            
+            # Store logits for any sequences that were still active when the loop ended
+            if active_sequences.any():
+                final_logits[active_sequences] = batch_logits[active_sequences]
         
-        # STEP 4: Decode generated sequences and extract individual caches
+        # STEP 4: Decode generated sequences
         responses = []
-        caches = []
-        
         for i in range(batch_size):
-            # Extract tokens generated for this sequence (excluding input)
             input_length = attention_mask[i].sum().item()
-            generated_tokens = generated_sequences[i, input_length:].tolist()
+            generated_ids = generated_sequences[i, input_length:].tolist()
             
-            # Remove EOS token if present
-            if self.tokenizer.eos_token_id in generated_tokens:
-                eos_idx = generated_tokens.index(self.tokenizer.eos_token_id)
-                generated_tokens = generated_tokens[:eos_idx]
+            if self.tokenizer.eos_token_id in generated_ids:
+                eos_idx = generated_ids.index(self.tokenizer.eos_token_id)
+                generated_ids = generated_ids[:eos_idx]
             
-            # Decode to text
-            if generated_tokens:
-                generated_text = self.tokenizer.decode(generated_tokens, skip_special_tokens=True)
-            else:
-                generated_text = ""
-            
-            responses.append(generated_text.strip())
-            
-            # NOTE: Individual caches are complex to extract from batched cache
-            # For now, we'll return None and rely on the full context approach
-            caches.append(None)
+            responses.append(self.tokenizer.decode(generated_ids, skip_special_tokens=True).strip())
         
         logger.debug(f"TRUE batch generation completed. Generated {len(responses)} responses")
-        logger.debug(f"Response lengths: {[len(r) for r in responses]}")
         
-        return responses, caches
+        return responses, [None] * batch_size, final_logits
 
     def get_logits_for_prompt(
         self,

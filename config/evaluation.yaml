@@ -30,8 +30,8 @@ dcbs_params:
   top_n: 50      # Top-n tokens to consider
   cache_size: 1000
 
-# Clustering configuration (DBSCAN like original!)
-clustering_method: "dbscan"  # DBSCAN clustering like the original 40-example eval
+# Clustering configuration (K-means for proper clustering!)
+clustering_method: "kmeans"  # K-means clustering - DBSCAN creates trivial clusters for MCQs
 dbscan_eps: 0.3
 dbscan_min_samples: 2
 hierarchical_linkage: "average"

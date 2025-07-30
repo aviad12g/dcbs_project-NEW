@@ -24,6 +24,8 @@ from src.dcbs import (
     TemperatureSampler,
     TopKSampler,
     DCBSSamplerFactory,
+    DeterministicHierLoopSampler,
+    AdaptiveDBSCANClusterer,
 )
 from .config import EvaluationConfig
 
@@ -35,7 +37,7 @@ class SamplerFactory:
     def create_dcbs_sampler(
         config: EvaluationConfig, 
         context: Optional[SamplingContext] = None,
-        clustering_method: str = "dbscan",
+        clustering_method: str = "kmeans",
         dbscan_eps: float = 0.3,
         dbscan_min_samples: int = 2,
         hierarchical_linkage: str = "average",
@@ -92,6 +94,11 @@ class SamplerFactory:
                 k=config.k,
                 linkage=hierarchical_linkage
             )
+        elif clustering_method == "adbscan":
+            clusterer = AdaptiveDBSCANClusterer(
+                min_samples=dbscan_min_samples,
+                metric="cosine",
+            )
         else:
             raise ValueError(f"Unknown clustering method: {clustering_method}")
         
@@ -103,8 +110,7 @@ class SamplerFactory:
             enable_caching=config.enable_caching,
             debug_mode=debug_mode,
             enable_cluster_history=enable_cluster_history,
-            enable_batch_processing=True,  # Enable GPU parallel batch processing
-            batch_processing_threshold=4,  # Use parallel processing for batches >= 4
+
         )
 
     @staticmethod
@@ -141,7 +147,7 @@ class SamplerFactory:
             Dictionary mapping sampler names to sampler instances
         """
         # Use config's clustering method if none specified
-        effective_clustering_method = clustering_method or getattr(config, 'clustering_method', 'dbscan')
+        effective_clustering_method = clustering_method or getattr(config, 'clustering_method', 'kmeans')
         
         # Define all available samplers
         all_samplers = {
@@ -160,7 +166,7 @@ class SamplerFactory:
                 kl_threshold=kl_threshold,
             ),
             "enhanced_dcbs": lambda: DCBSSamplerFactory.create_enhanced_hierarchical(
-                k=config.k,
+                clusterer=KMeansClusterer(k=config.k),
                 top_n=config.top_n,
                 dominance_weight=0.5,  # Pure Algorithm dominance weight
                 min_cluster_size=2,   # Pure Algorithm minimum cluster size
@@ -170,6 +176,17 @@ class SamplerFactory:
                 enable_cluster_history=enable_cluster_history,
             ),
             "random": lambda: RandomSampler(),
+            "hier_loop": lambda: DCBSSamplerFactory.create_hier_loop(
+                top_n=config.top_n,
+                initial_eps=0.3,
+                eps_decay=0.5,
+                initial_min_samples=2,
+                min_samples_step=1,
+                max_iters=4,
+                context=context,
+                enable_caching=config.enable_caching,
+                debug_mode=debug_mode,
+            ),
         }
 
         # Add TemperatureSampler if temperature is specified

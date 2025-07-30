@@ -12,6 +12,7 @@ from .random_sampler import RandomSampler
 from .dcbs_sampler import DCBSSampler
 from .temperature_sampler import TemperatureSampler
 from .top_k_sampler import TopKSampler
+from .hier_loop_sampler import DeterministicHierLoopSampler
 
 __all__ = [
     "Sampler",
@@ -22,4 +23,5 @@ __all__ = [
     "DCBSSampler",
     "TemperatureSampler",
     "TopKSampler",
+    "DeterministicHierLoopSampler",
 ] 

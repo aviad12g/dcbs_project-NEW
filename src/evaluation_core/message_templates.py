@@ -12,44 +12,43 @@ class MessageTemplateGenerator:
     """Generates message templates for LLM interactions."""
     
     def create_reasoning_messages(self, sentence: str, options: List[str]) -> List[Dict[str, str]]:
-        """Create messages for the reasoning step."""
+        """Create a simple, direct prompt for reasoning using a few-shot example."""
         options_str = self._format_options(options)
-        
-        # FIXED: Better system prompt that's less likely to be echoed
-        # and provides clear instructions for reasoning
+
+        # A few-shot prompt provides a high-quality example to guide the model.
+        # This is a standard and effective technique for improving CoT reasoning.
+        few_shot_example = """
+Example Question:
+What is the primary function of the mitochondria in an animal cell?
+A. To store water
+B. To produce energy
+C. To control the cell's growth
+D. To protect the cell from invaders
+
+Reasoning:
+1.  Analyze the question: The question asks for the primary function of mitochondria.
+2.  Evaluate the options:
+    A. Water storage is primarily handled by vacuoles, which are small in animal cells. This is not the primary function.
+    B. Mitochondria are known as the "powerhouses" of the cell. They perform cellular respiration to generate ATP, which is the main energy currency. This is a strong candidate.
+    C. The cell's growth and activities are controlled by the nucleus.
+    D. Protection is primarily the function of the cell membrane and, in some organisms, the cell wall.
+3.  Conclusion: Based on biological principles, the primary function of mitochondria is energy production.
+
+The final answer is B.
+"""
+
         return [
             {
-                "role": "system", 
-                "content": "You are a helpful assistant. When answering multiple choice questions, first explain your reasoning clearly, then state your final answer."
+                "role": "system",
+                "content": "You are an expert at solving multiple-choice questions. Follow the user's format exactly."
             },
             {
                 "role": "user",
-                "content": f"{sentence}\n\n{options_str}\n\nPlease explain your reasoning step by step, then give your final answer."
+                "content": f"{few_shot_example}\n---\nNew Question:\n{sentence}\n\n{options_str}"
             }
         ]
 
-    def create_final_answer_messages(
-        self, 
-        reasoning_messages: List[Dict[str, str]], 
-        reasoning_response: str
-    ) -> List[Dict[str, str]]:
-        """Create messages for the final answer step."""
-        # Build on the previous conversation
-        messages = reasoning_messages.copy()
-        
-        # Add the assistant's reasoning response
-        messages.append({
-            "role": "assistant",
-            "content": reasoning_response
-        })
-        
-        # FIXED: More specific final answer prompt
-        messages.append({
-            "role": "user", 
-            "content": "Based on your reasoning above, what is the correct answer? Please respond with just the letter (A, B, C, or D)."
-        })
-        
-        return messages
+
 
     def create_direct_answer_messages(self, sentence: str, options: List[str]) -> List[Dict[str, str]]:
         """Create messages for direct answer without reasoning."""

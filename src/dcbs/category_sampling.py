@@ -315,24 +315,8 @@ class CategorySampler:
                 # Standard selector (GreedyCategorySelector, InformationGainCategorySelector)
                 selected_cluster_idx = self.category_selector.select_category(cluster_probs)
         else:
-            # Select cluster using the category selector
-            # Check if selector supports extended parameters
-            if hasattr(self.category_selector, 'select_category'):
-                selector_params = self.category_selector.select_category.__code__.co_varnames
-                if 'candidate_probs' in selector_params and 'candidate_ids' in selector_params:
-                    # Enhanced selector that needs additional parameters
-                    selected_cluster_idx = self.category_selector.select_category(
-                        cluster_probs, clusters, candidate_probs, candidate_ids
-                    )
-                elif len(selector_params) > 2:
-                    # Confidence-aware selector that accepts clusters parameter
-                    selected_cluster_idx = self.category_selector.select_category(cluster_probs, clusters)
-                else:
-                    # Standard selector (GreedyCategorySelector, InformationGainCategorySelector)
-                    selected_cluster_idx = self.category_selector.select_category(cluster_probs)
-            else:
-                # Fallback for any unexpected selector type
-                selected_cluster_idx = 0
+            # Fallback for unexpected selector type (no select_category method)
+            selected_cluster_idx = 0
         
         # Safety check: ensure cluster index is valid
         if selected_cluster_idx >= len(clusters):

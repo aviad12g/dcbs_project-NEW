@@ -5,10 +5,9 @@
 model_path: "meta-llama/Llama-3.2-1B-Instruct"
 
 # DCBS clustering configuration
-clustering:
-  method: "dbscan"              # CRITICAL: Use DBSCAN clustering
-  dbscan_eps: 0.3               # DBSCAN epsilon parameter
-  dbscan_min_samples: 2         # DBSCAN minimum samples
+clustering_method: "kmeans"    # CRITICAL: Use K-means clustering (DBSCAN creates trivial clusters)
+dbscan_eps: 0.3               # DBSCAN epsilon parameter
+dbscan_min_samples: 2         # DBSCAN minimum samples
 
 # Main DCBS parameters
 clusters: 8                     # Number of clusters for K-means (fallback)

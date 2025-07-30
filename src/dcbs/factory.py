@@ -9,7 +9,7 @@ to avoid the main sampler classes having to import their dependencies.
 from typing import Optional
 
 from .cache_manager import CacheConfig
-from .clustering import KMeansClusterer, HierarchicalClusterer, DBSCANClusterer, TopNCandidateSelector
+from .clustering import KMeansClusterer, HierarchicalClusterer, DBSCANClusterer, TopNCandidateSelector, TokenClusterer
 from .category_sampling import CategorySampler, ConfidenceAwareCategorySelector, GreedyTokenSelector, DuelingAlgorithmCategorySelector
 from .constants import DEFAULT_K_CLUSTERS, DEFAULT_TOP_N, DEFAULT_EMBEDDING_CACHE_SIZE, DEFAULT_CLUSTER_CACHE_SIZE
 from .samplers.base import SamplingContext
@@ -101,7 +101,7 @@ class DCBSSamplerFactory:
 
     @staticmethod
     def create_enhanced_hierarchical(
-        k: int = DEFAULT_K_CLUSTERS,
+        clusterer: "TokenClusterer",  # Accept a clusterer object
         top_n: int = DEFAULT_TOP_N,
         dominance_weight: float = 0.5,
         min_cluster_size: int = 2,
@@ -124,7 +124,7 @@ class DCBSSamplerFactory:
         primary factor and dominance a weighted refinement bonus.
         
         Args:
-            k: Number of clusters for hierarchical clustering (default: 8)
+            clusterer: The clustering algorithm to use (e.g., KMeansClusterer)
             top_n: Number of top tokens to consider (default: 50)
             dominance_weight: Weight for dominance bonus (default: 0.5)
             min_cluster_size: Minimum tokens for valid cluster (default: 2)
@@ -137,7 +137,6 @@ class DCBSSamplerFactory:
         Returns:
             Configured DCBSSampler with Pure Algorithm enhanced hierarchical selection
         """
-        clusterer = DBSCANClusterer(eps=0.4, min_samples=2)
         candidate_selector = TopNCandidateSelector(top_n=top_n)
         category_sampler = CategorySampler(
             category_selector=DuelingAlgorithmCategorySelector(
@@ -156,4 +155,31 @@ class DCBSSamplerFactory:
             enable_caching=enable_caching,
             debug_mode=debug_mode,
             enable_cluster_history=enable_cluster_history
+        ) 
+
+    @staticmethod
+    def create_hier_loop(
+        top_n: int = DEFAULT_TOP_N,
+        initial_eps: float = 0.3,
+        eps_decay: float = 0.5,
+        initial_min_samples: int = 2,
+        min_samples_step: int = 1,
+        max_iters: int = 4,
+        context: Optional[SamplingContext] = None,
+        enable_caching: bool = True,
+        debug_mode: Optional[bool] = None,
+    ) -> DCBSSampler:
+        """Create the deterministic hierarchical‐loop sampler."""
+        from .samplers.hier_loop_sampler import DeterministicHierLoopSampler
+
+        return DeterministicHierLoopSampler(
+            top_n=top_n,
+            initial_eps=initial_eps,
+            eps_decay=eps_decay,
+            initial_min_samples=initial_min_samples,
+            min_samples_step=min_samples_step,
+            max_iters=max_iters,
+            context=context,
+            enable_caching=enable_caching,
+            debug_mode=debug_mode,
         ) 

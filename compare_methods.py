@@ -116,17 +116,23 @@ def main():
             
             # Save results with timestamp (convert numpy types first)
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            results_file = f"results/evaluation_results_{timestamp}.json"
             
-            Path("results").mkdir(exist_ok=True)
+            # Sanitize run_id for use in filename (critical for Windows)
+            sanitized_run_id = run_id.replace(":", "-").replace(" ", "_")
+            
+            results_dir = Path("results") / sanitized_run_id
+            results_dir.mkdir(parents=True, exist_ok=True)
+            
+            results_file = results_dir / f"evaluation_results_{timestamp}.json"
+            
             SerializationUtils.safe_json_dump(results, results_file, indent=2)
             
             logger.info(f"JSON results saved to: {results_file}")
-            mlflow.log_artifact(results_file)
+            mlflow.log_artifact(str(results_file))
             
             # Generate visualizations
             logger.info("Generating visualizations...")
-            generate_all_visualizations(results, "results")
+            generate_all_visualizations(results, str(results_dir))
             
             # Display summary
             statistics = results["statistics"]

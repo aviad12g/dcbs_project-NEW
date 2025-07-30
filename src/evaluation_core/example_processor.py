@@ -35,9 +35,13 @@ class ExampleProcessor:
         self.device = context.device
         self.question_answerer = QuestionAnswerer(model, tokenizer, context)
 
+    def _normalize_answer(self, ans: str) -> str:
+        """Lower-case, strip and remove trailing punctuation for exact-match scoring."""
+        return ans.strip().lower().rstrip(". ")
+
     def process_example(self, example: Dict, sampler, include_cot: bool = True) -> Dict:
         """
-        Process a single example using the improved two-step conversation flow with optimized KV caching.
+        Process a single example – works for both multiple-choice (ARC) and open-ended (GSM8K) formats.
         
         Args:
             example: Example data
@@ -49,30 +53,44 @@ class ExampleProcessor:
         """
         start_time = time.time()
         
-        # Extract example data
-        if "question" in example:
-            sentence = example["question"]
+        # Determine dataset format (MCQ vs open-ended)
+        sentence = example.get("question")
+        if sentence is None:
+            raise ValueError("Example must have a 'question' field")
+
+        if "options" in example:
+            # Multiple-choice format (ARC-style)
             options = example["options"]
             correct_option = example.get("correct_option", "1")
             correct_idx = int(correct_option) - 1
             correct_answer = options[correct_idx]
         else:
-            raise ValueError("Example must have 'question' field")
+            # Open-ended format (e.g., GSM8K)
+            options = None
+            correct_answer = example["answer"].strip()
+
 
         result = {
             "id": example.get("id", "unknown"),
             "sentence": sentence,
             "options": options,
             "correct_answer": correct_answer,
-            "correct_option": correct_option,
         }
 
         # Use QuestionAnswerer to get the answer
         answer_result = self.question_answerer.answer_question(
             sentence, options, sampler, include_cot
         )
-        
-        # Extract results
+
+        if options is None:
+            # Open-ended: compare strings
+            pred_ans = answer_result["generated_answer"]
+            result["predicted_answer"] = pred_ans
+            result["correct"] = self._normalize_answer(pred_ans) == self._normalize_answer(correct_answer)
+            result["elapsed_ms"] = (time.time() - start_time) * 1000
+            return result
+
+        # Multiple-choice extraction (unchanged)
         result["cot_reasoning"] = answer_result.get("reasoning")
         result["answer_ids"] = answer_result["answer_ids"]
         result["filter_tokens"] = answer_result["filter_tokens"]
@@ -102,10 +120,15 @@ class ExampleProcessor:
         """
         start_time = time.time()
         logger.debug(f"Starting batch processing for {len(examples)} examples")
-        
+
         if not examples:
             return []
-        
+
+        # If dataset is open-ended (no 'options' field) fallback to per-example processing
+        if "options" not in examples[0]:
+            logger.debug("Open-ended dataset detected in batch – processing sequentially.")
+            return [self.process_example(ex, sampler, include_cot=False) for ex in examples]
+
         # STEP 1: Extract questions and options from all examples
         questions = []
         options_list = []
@@ -177,27 +200,37 @@ class ExampleProcessor:
         """
         start_time = time.time()
         
-        # REVERTED: Generate fresh logits for each sampler independently
+        # Generate fresh logits / answers for each sampler independently
         sentence = processed_result["sentence"]
-        options = processed_result["options"]
-        include_cot = processed_result.get("cot_reasoning") is not None
-        
-        # Get fresh answer result for this sampler
+        options = processed_result["options"]  # None for open-ended datasets
+        include_cot = processed_result.get("cot_reasoning") is not None and options is not None
+
         answer_result = self.question_answerer.answer_question(
             sentence, options, sampler, include_cot
         )
         
+        # Open-ended branch
+        if options is None:
+            pred_answer = answer_result["generated_answer"]
+            correct = self._normalize_answer(pred_answer) == self._normalize_answer(processed_result["correct_answer"])
+            elapsed_ms = (time.time() - start_time) * 1000
+            return {
+                "sampler": sampler_name,
+                "pred_id": None,
+                "predicted_answer": pred_answer,
+                "correct": correct,
+                "elapsed_ms": elapsed_ms,
+                "cluster_info": None,
+            }
+
+        # Multiple-choice branch (existing logic)
         logits = answer_result["logits"]
         filter_tokens = answer_result["filter_tokens"]
         correct_id = processed_result["correct_id"]
 
         predicted_answer = answer_result.get("selected_answer")
         
-        # Use the prediction from answer_question instead of calling sampler again
-        # This preserves the cluster history from the actual sampling decision
         pred_id = answer_result.get("pred_token_id")
-        
-        # Fallback: if pred_token_id is None, sample again (but this shouldn't happen)
         if pred_id is None:
             logger.warning("pred_token_id is None, falling back to direct sampling")
             pred_id = sampler.sample(logits, filter_tokens=filter_tokens)
@@ -207,16 +240,12 @@ class ExampleProcessor:
             history = sampler.get_cluster_history()
             if history:
                 cluster_info = history[-1]
-        
-        # Clear debug data AFTER extracting cluster info
         if hasattr(sampler, "clear_debug_data"):
             sampler.clear_debug_data()
-        
-        # Check correctness
+
         correct = (pred_id == correct_id)
-        
         elapsed_ms = (time.time() - start_time) * 1000
-        
+
         return {
             "sampler": sampler_name,
             "pred_id": pred_id,
@@ -248,6 +277,11 @@ class ExampleProcessor:
         
         if not processed_results:
             return []
+
+        # If open-ended dataset, evaluate one by one using evaluate_with_sampler
+        if processed_results[0]["options"] is None:
+            logger.debug("Open-ended batch detected – falling back to per-example evaluation for sampler batch.")
+            return [self.evaluate_with_sampler(pr, sampler, sampler_name) for pr in processed_results]
         
         # Extract questions and options for batch processing
         questions = []

@@ -93,36 +93,10 @@ class DCBSSampler(Sampler):
         else:
             self.cache_manager = None
 
-        # Initialize GPU-optimized batch processor if enabled
-        if self.enable_batch_processing and torch.cuda.is_available():
-            # Lazy import to avoid circular dependency
-            from ..batch_processor import BatchDCBSProcessor, OptimizationConfig
-            
-            optimization_config = OptimizationConfig(
-                batch_size=32,
-                use_gpu_clustering=True,
-                enable_parallel_processing=True,
-                max_workers=min(4, torch.cuda.device_count() * 2),  # GPU-aware worker count
-                use_mixed_precision=True,
-                memory_efficient_mode=False,
-            )
-            self.batch_processor = BatchDCBSProcessor(optimization_config, self.cache_manager)
-        elif self.enable_batch_processing:
-            # Lazy import to avoid circular dependency
-            from ..batch_processor import BatchDCBSProcessor, OptimizationConfig
-            
-            # CPU-optimized configuration
-            optimization_config = OptimizationConfig(
-                batch_size=16,
-                use_gpu_clustering=False,
-                enable_parallel_processing=True,
-                max_workers=min(4, 8),  # CPU core count
-                use_mixed_precision=False,
-                memory_efficient_mode=True,
-            )
-            self.batch_processor = BatchDCBSProcessor(optimization_config, self.cache_manager)
-        else:
-            self.batch_processor = None
+        # BUGFIX: Removed the faulty BatchDCBSProcessor initialization.
+        # This component was overriding the intended clusterer and causing silent failures.
+        # The sampler will now correctly use the clusterer it is given.
+        self.batch_processor = None
 
         # Initialize debugging
         self.debugger = DCBSDebugger(debug_mode, enable_cluster_history, debug_output_file)
@@ -223,9 +197,14 @@ class DCBSSampler(Sampler):
         # For multiple-choice questions, proceed with the unified CategorySampler path
         # This ensures Enhanced DCBS uses proper DuelingAlgorithmCategorySelector
 
-        # Original logic for general text generation (non-multiple choice)
-        # Get candidate tokens using strategy
-        candidate_ids = self.candidate_selector.select_candidates(logits, filter_tokens)
+        # CRITICAL FIX: If filter_tokens are provided (i.e., for multiple-choice questions),
+        # they MUST be used as the candidate set. Ignoring them causes the sampler to
+        # consider irrelevant tokens, leading to a collapse in performance.
+        if filter_tokens:
+            candidate_ids = list(filter_tokens)
+        else:
+            # For open-ended generation, use the candidate selector
+            candidate_ids = self.candidate_selector.select_candidates(logits, None)
 
         # Handle insufficient candidates for clustering
         if len(candidate_ids) <= MIN_TOKENS_FOR_CLUSTERING:
@@ -562,38 +541,6 @@ class DCBSSampler(Sampler):
         
         self.debugger.log_debug(f"Starting batch DCBS sampling for {batch_size} sequences")
         
-        # NEW: Use GPU-optimized parallel batch processing for large batches
-        if (self.enable_batch_processing and 
-            self.batch_processor is not None and 
-            batch_size >= self.batch_processing_threshold):
-            
-            self.debugger.log_debug(f"Using parallel GPU batch processing for {batch_size} sequences")
-            
-            try:
-                # Convert filter tokens to the format expected by BatchDCBSProcessor
-                filter_tokens_sets = []
-                for filter_tokens in filter_tokens_batch:
-                    if filter_tokens is None:
-                        filter_tokens_sets.append(None)
-                    else:
-                        filter_tokens_sets.append(set(filter_tokens) if not isinstance(filter_tokens, set) else filter_tokens)
-                
-                # Use the high-performance parallel batch processor
-                results = self.batch_processor.batch_sample(
-                    logits_batch=logits_batch,
-                    filter_tokens_batch=filter_tokens_sets,
-                    context=effective_context,
-                    k=self.clusterer.num_clusters if hasattr(self.clusterer, 'num_clusters') else DEFAULT_K_CLUSTERS,
-                    top_n=self.candidate_selector.top_n if hasattr(self.candidate_selector, 'top_n') else DEFAULT_TOP_N,
-                )
-                
-                self.debugger.log_debug(f"Parallel batch DCBS sampling completed for {batch_size} sequences")
-                return results
-                
-            except Exception as e:
-                self.debugger.log_debug(f"Parallel batch processing failed, falling back to sequential: {e}")
-                # Fall through to sequential processing
-        
         # Fallback: Sequential processing for small batches or when parallel processing fails
         self.debugger.log_debug(f"Using sequential processing for {batch_size} sequences")
         
@@ -627,20 +574,10 @@ class DCBSSampler(Sampler):
     
     def get_batch_processing_stats(self) -> dict:
         """Get statistics about batch processing performance."""
-        if self.batch_processor is not None:
-            return {
-                "batch_processing_enabled": True,
-                "gpu_available": torch.cuda.is_available(),
-                "parallel_processing": self.batch_processor.config.enable_parallel_processing,
-                "max_workers": self.batch_processor.config.max_workers,
-                "gpu_clustering": self.batch_processor.config.use_gpu_clustering,
-                "mixed_precision": self.batch_processor.config.use_mixed_precision,
-            }
-        else:
-            return {
-                "batch_processing_enabled": False,
-                "reason": "Batch processing disabled in sampler configuration"
-            }
+        return {
+            "batch_processing_enabled": False,
+            "reason": "Batch processing has been disabled to fix a configuration override bug."
+        }
     
     def __del__(self):
         """Cleanup when sampler is destroyed."""
