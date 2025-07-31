@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  dcbs:
+    build: .
+    container_name: dcbs-project
+    volumes:
+      # Mount data directory for datasets
+      - ./data:/app/data
+      - ./datasets:/app/datasets
+      # Mount results directory to persist outputs
+      - ./results:/app/results
+      - ./mlruns:/app/mlruns
+      # Mount configs for easy modification
+      - ./config:/app/config
+      - ./configs:/app/configs
+    environment:
+      - PYTHONPATH=/app
+      - TRANSFORMERS_CACHE=/app/temp_cache
+      - HF_HOME=/app/temp_cache
+    # Override default command for different use cases
+    command: ["python", "compare_methods.py", "--limit", "10", "--samplers", "greedy", "dcbs", "hier_loop"]
+    
+  # Streamlit web interface service
+  streamlit:
+    build: .
+    container_name: dcbs-streamlit
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+      - ./results:/app/results
+      - ./mlruns:/app/mlruns
+    environment:
+      - PYTHONPATH=/app
+    command: ["streamlit", "run", "streamlit_app.py", "--server.address", "0.0.0.0"]
+
+  # Jupyter notebook service for analysis
+  jupyter:
+    build: .
+    container_name: dcbs-jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./:/app
+    environment:
+      - PYTHONPATH=/app
+    command: ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token=''"]

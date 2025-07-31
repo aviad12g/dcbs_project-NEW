@@ -1,0 +1,55 @@
+# Git and version control
+.git/
+.gitignore
+
+# Python cache and bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Model cache (will be downloaded fresh)
+temp_cache/
+checkpoints/
+
+# Results and logs (will be generated fresh)
+results/
+mlruns/
+*.log
+
+# Documentation build
+docs/_build/
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Test coverage
+.coverage
+.pytest_cache/
+
+# Large datasets (mount as volume instead)
+data/*.json
+datasets/*.jsonl
+
+# Development files
+README.md
+LICENSE
+*.md
