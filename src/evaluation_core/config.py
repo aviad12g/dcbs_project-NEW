@@ -34,6 +34,9 @@ class EvaluationConfig:
     top_k: Optional[int] = None # Top-K value for sampling
     batch_size: Optional[int] = None  # Batch size for GPU processing (None = auto-detect)
     use_elbow_method: bool = False  # Use elbow method for dynamic k-means k selection
+    
+    # Cluster weighting strategy for category selection
+    weighting_strategy: str = "prob_mass"  # Options: prob_mass, size, sqrt_size, uniform
 
     # Multi-dataset evaluation
     datasets: list = None  # List of datasets to evaluate

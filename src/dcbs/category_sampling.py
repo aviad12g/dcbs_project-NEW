@@ -248,6 +248,7 @@ class CategorySampler:
         self,
         category_selector: CategorySelector = None,
         token_selector: TokenSelector = None,
+        weighting_strategy: str = "prob_mass",
     ):
         """
         Initialize with selection strategies.
@@ -255,9 +256,15 @@ class CategorySampler:
         Args:
             category_selector: Strategy for selecting categories
             token_selector: Strategy for selecting tokens within categories
+            weighting_strategy: How to weight clusters when selecting categories.
+                - "prob_mass": use total probability mass (default, original behaviour)
+                - "size": probability mass × cluster size
+                - "sqrt_size": probability mass × sqrt(cluster size)
+                - "uniform": ignore probabilities, treat all clusters equally
         """
         self.category_selector = category_selector or GreedyCategorySelector()
         self.token_selector = token_selector or GreedyTokenSelector()
+        self.weighting_strategy = weighting_strategy
     
     def sample_from_clusters(
         self,
@@ -278,13 +285,23 @@ class CategorySampler:
         Returns:
             Selected token ID
         """
-        # Calculate cluster probabilities
+        # Calculate raw cluster probability mass (baseline weights)
         cluster_probs = [
             candidate_probs[cluster].sum().item() if cluster else 0.0
             for cluster in clusters
         ]
+
+        # Derive weighting based on selected strategy
+        if self.weighting_strategy == "size":
+            cluster_scores = [p * len(cluster) for p, cluster in zip(cluster_probs, clusters)]
+        elif self.weighting_strategy == "sqrt_size":
+            cluster_scores = [p * (len(cluster) ** 0.5) for p, cluster in zip(cluster_probs, clusters)]
+        elif self.weighting_strategy == "uniform":
+            cluster_scores = [1.0 for _ in cluster_probs]
+        else:  # "prob_mass" or unknown -> fallback to original behaviour
+            cluster_scores = cluster_probs
         
-        # No valid clusters
+        # No valid clusters based on scores
         if sum(cluster_probs) == 0:
             # Fall back to first filtered token
             if filter_tokens:
@@ -306,14 +323,14 @@ class CategorySampler:
             if 'candidate_probs' in selector_params and 'candidate_ids' in selector_params:
                 # Enhanced selector that needs additional parameters
                 selected_cluster_idx = self.category_selector.select_category(
-                    cluster_probs, clusters, candidate_probs, candidate_ids
+                    cluster_scores, clusters, candidate_probs, candidate_ids
                 )
             elif len(selector_params) > 2:
                 # Confidence-aware selector that accepts clusters parameter
-                selected_cluster_idx = self.category_selector.select_category(cluster_probs, clusters)
+                selected_cluster_idx = self.category_selector.select_category(cluster_scores, clusters)
             else:
                 # Standard selector (GreedyCategorySelector, InformationGainCategorySelector)
-                selected_cluster_idx = self.category_selector.select_category(cluster_probs)
+                selected_cluster_idx = self.category_selector.select_category(cluster_scores)
         else:
             # Fallback for unexpected selector type (no select_category method)
             selected_cluster_idx = 0

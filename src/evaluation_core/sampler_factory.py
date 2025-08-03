@@ -78,7 +78,8 @@ class SamplerFactory:
         
         category_sampler = CategorySampler(
             category_selector=category_selector,
-            token_selector=GreedyTokenSelector()
+            token_selector=GreedyTokenSelector(),
+            weighting_strategy=getattr(config, 'weighting_strategy', 'prob_mass')
         )
         
         # Create clusterer based on method
