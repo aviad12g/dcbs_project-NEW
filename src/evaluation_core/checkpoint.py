@@ -56,7 +56,7 @@ class CheckpointState:
 class CheckpointManager:
     """Manages checkpointing for evaluation runs."""
     
-    def __init__(self, checkpoint_dir: str = "checkpoints", save_interval: int = 5):
+    def __init__(self, checkpoint_dir: str = "checkpoints", save_interval_examples: int = 5, save_interval_seconds: int = 300):
         """
         Initialize checkpoint manager.
         
@@ -66,7 +66,8 @@ class CheckpointManager:
         """
         self.checkpoint_dir = Path(checkpoint_dir)
         self.checkpoint_dir.mkdir(exist_ok=True)
-        self.save_interval = save_interval
+        self.save_interval_examples = save_interval_examples
+        self.save_interval_seconds = save_interval_seconds
         self.last_save_time = time.time()
         
     def get_checkpoint_path(self, run_id: str) -> Path:
@@ -170,8 +171,12 @@ class CheckpointManager:
             return None
     
     def should_save_checkpoint(self, examples_since_last_save: int) -> bool:
-        """Determine if it's time to save a checkpoint."""
-        return examples_since_last_save >= self.save_interval
+        """Return True if either example or time threshold reached."""
+        time_elapsed = time.time() - self.last_save_time
+        return (
+            examples_since_last_save >= self.save_interval_examples or
+            time_elapsed >= self.save_interval_seconds
+        )
     
     def cleanup_checkpoint(self, run_id: str) -> None:
         """Remove checkpoint file after successful completion."""
