@@ -17,7 +17,7 @@ from typing import Optional, Set, List
 import torch
 
 from .base import Sampler, SamplingContext
-from ..clustering import TopNCandidateSelector, AdaptiveDBSCANClusterer
+from ..clustering import TopNCandidateSelector, DBSCANClusterer
 from ..embedding_ops import EmbeddingOperations
 from ..constants import DEFAULT_TOP_N, PROB_EPSILON
 
@@ -93,7 +93,7 @@ class DeterministicHierLoopSampler(Sampler):
 
             # Cluster current subset
             subset_embeddings = embeddings[working_indices]
-            clusterer = AdaptiveDBSCANClusterer(eps=eps, min_samples=min_samples, metric="cosine")
+            clusterer = DBSCANClusterer(eps=eps, min_samples=min_samples, metric="cosine")
             labels = clusterer.cluster(subset_embeddings)
             n_clusters = clusterer.num_clusters
 
