@@ -3,6 +3,8 @@ FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app
+RUN chmod -R 777 .
+
 
 # Install system dependencies needed for ML libraries
 RUN apt-get update && apt-get install -y \
@@ -21,7 +23,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create necessary directories
-RUN mkdir -p results temp_cache checkpoints mlruns
+#RUN mkdir -p results temp_cache checkpoints mlruns
 
 # Set environment variables
 ENV PYTHONPATH=/app
@@ -32,4 +34,4 @@ ENV HF_HOME=/app/temp_cache
 EXPOSE 8501
 
 # Default command (can be overridden)
-CMD ["python", "compare_methods.py", "--limit", "5", "--samplers", "greedy", "dcbs"]
+CMD ["python", "compare_methods.py", "--limit", "100", "--samplers", "greedy", "dcbs", "hier_loop", "--clustering-method", "kmeans"]

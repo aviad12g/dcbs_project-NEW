@@ -2,7 +2,7 @@
 # Verified settings from debugging session
 
 # Model configuration  
-model_path: "meta-llama/Llama-3.2-1B-Instruct"
+model_path: "HuggingFaceTB/SmolLM-135M-Instruct"
 
 # DCBS clustering configuration
 clustering_method: "kmeans"    # CRITICAL: Use K-means clustering (DBSCAN creates trivial clusters)

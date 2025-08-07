@@ -1,0 +1,56 @@
+{
+  "run_id": "comprehensive_20250716_131439",
+  "timestamp": "2025-07-16T13:14:56.667947",
+  "parameters": {
+    "limit": 10000,
+    "datasets": [
+      "arc_easy",
+      "arc_challenge",
+      "hellaswag",
+      "mmlu_stem"
+    ],
+    "clustering_methods": [
+      "dbscan"
+    ],
+    "quick_test": false,
+    "samplers": [
+      "greedy",
+      "dcbs"
+    ],
+    "use_elbow_method": false,
+    "batch_size": 100,
+    "cluster_history_enabled": true,
+    "debug_mode_enabled": true
+  },
+  "results": [
+    {
+      "dataset": "arc_easy",
+      "clustering_method": "dbscan",
+      "success": false,
+      "eval_name": "arc_easy_dbscan"
+    },
+    {
+      "dataset": "arc_challenge",
+      "clustering_method": "dbscan",
+      "success": false,
+      "eval_name": "arc_challenge_dbscan"
+    },
+    {
+      "dataset": "hellaswag",
+      "clustering_method": "dbscan",
+      "success": false,
+      "eval_name": "hellaswag_dbscan"
+    },
+    {
+      "dataset": "mmlu_stem",
+      "clustering_method": "dbscan",
+      "success": false,
+      "eval_name": "mmlu_stem_dbscan"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "successful": 0,
+    "failed": 4
+  }
+}

@@ -22,7 +22,7 @@ class MessageTemplateGenerator:
             },
             {
                 "role": "user",
-                "content": f"Question:\n{sentence}\n\nOptions:\n{options_str}\n\nPlease think step-by-step and answer with the letter only."
+                "content": f"Question:\n{sentence}\n\nOptions:\n{options_str}\n\nPlease think step-by-step and then give the final answer."
             }
         ]
 

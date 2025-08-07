@@ -46,8 +46,8 @@ docs/_build/
 .pytest_cache/
 
 # Large datasets (mount as volume instead)
-data/*.json
-datasets/*.jsonl
+# data/*.json
+# datasets/*.jsonl
 
 # Development files
 README.md
