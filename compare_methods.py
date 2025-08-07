@@ -52,12 +52,6 @@ def list_available_checkpoints():
 
 
 def main():
-    import os
-    
-    for file in os.listdir('.'):
-      if os.path.isfile(file):
-          print(file)
-
     """Main evaluation function with enhanced capabilities."""
     # Parse arguments
     args = ArgumentParserSetup.parse_args()
