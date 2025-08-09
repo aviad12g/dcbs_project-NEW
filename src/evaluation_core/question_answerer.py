@@ -86,36 +86,30 @@ class QuestionAnswerer:
         question: str,
         options: Optional[List[str]],
         sampler,
-        include_cot: bool = True
+        include_cot: bool = True,
     ) -> Dict:
+        """Compatibility wrapper that executes a one-item batch.
+
+        Uses the batched implementations under the hood to keep a single
+        high-throughput code path, while preserving the old API for callers.
         """
-        Answer a multiple choice question.
-        
-        Args:
-            question: The question text
-            options: List of answer options
-            sampler: Sampler to use for generation
-            include_cot: Whether to include chain-of-thought reasoning
-            
-        Returns:
-            Dictionary with answer details including:
-            - selected_answer: The chosen answer letter
-            - reasoning: The reasoning text (if include_cot is True)
-            - answer_probs: Probabilities for each answer option
-            - pred_token_id: The predicted token ID
-        """
-        start_time = time.time()
-        
-        if options is None:
-            # Open-ended answer (e.g., GSM8K)
-            result = self._answer_open_ended(question, sampler)
-        elif include_cot:
-            result = self._answer_with_reasoning(question, options, sampler)
-        else:
-            result = self._answer_directly(question, options, sampler)
-        
-        result['processing_time'] = time.time() - start_time
-        return result
+        # Multiple-choice path via batch API
+        if options is not None:
+            results = self.answer_questions_batch([question], [options], sampler, include_cot)
+            return results[0]
+
+        # Open-ended path (single), still uses batched generator with batch size = 1
+        messages_batch = [[{"role": "user", "content": question.strip() + "\nAnswer:"}]]
+        responses, _, _ = self.token_generator.generate_batch_with_kv_cache(
+            messages_batch, sampler, max_new_tokens=64
+        )
+        return {
+            "generated_answer": responses[0].strip(),
+            "pred_token_id": None,
+            "answer_ids": None,
+            "filter_tokens": None,
+            "logits": None,
+        }
     
     def answer_questions_batch(
         self,
@@ -219,82 +213,9 @@ class QuestionAnswerer:
             'logits': logits
         }
     
-    def _answer_open_ended(
-        self,
-        question: str,
-        sampler,
-        max_new_tokens: int = 64,
-    ) -> Dict:
-        """Answer an open-ended question by iterative token sampling."""
-        prompt = question.strip() + "\nAnswer:"  # simple prompt
+    # Removed single open-ended flow; use batched APIs instead
 
-        generated_ids: List[int] = []
-        for _ in range(max_new_tokens):
-            logits = self.token_generator.get_logits_for_prompt(prompt)
-            next_id = sampler.sample(logits)
-            if next_id == self.tokenizer.eos_token_id:
-                break
-            token_str = self.tokenizer.decode([next_id])
-            if token_str.startswith("\n"):
-                break
-            generated_ids.append(next_id)
-            prompt += token_str
-        answer_text = self.tokenizer.decode(generated_ids).strip()
-        return {
-            "generated_answer": answer_text,
-            "pred_token_id": None,
-            "answer_ids": None,
-            "filter_tokens": None,
-            "logits": None,
-        }
-
-    def _answer_directly(
-        self,
-        question: str,
-        options: List[str],
-        sampler
-    ) -> Dict:
-        """Answer directly without reasoning."""
-        # Create messages for direct answer
-        messages = self.message_generator.create_direct_answer_messages(question, options)
-        
-        # Use our flexible prompt formatter
-        prompt = self._format_prompt(messages, add_generation_prompt=True)
-        
-        # Add the answer prompt to the assistant's message
-        prompt += "The correct answer is option"
-        
-        logger.debug(f"Direct answer prompt: {prompt[-100:]}")
-        
-        # Get logits
-        logits = self.token_generator.get_logits_for_prompt(prompt)
-        
-        # Get answer token IDs using the original label-based approach
-        answer_ids = self.token_resolver.get_answer_token_ids(options)
-
-        # Calculate probabilities
-        answer_probs = self._calculate_answer_probabilities(logits, answer_ids)
-
-        # Sample using the label tokens (A/B/C/D)
-        filter_tokens = set(answer_ids.values())
-        pred_token_id = sampler.sample(logits, filter_tokens=filter_tokens)
-
-        # Find which answer was selected
-        selected_answer = None
-        for answer_text, token_id in answer_ids.items():
-            if token_id == pred_token_id:
-                selected_answer = answer_text
-                break
-
-        return {
-            'selected_answer': selected_answer,
-            'reasoning': None,
-            'answer_probs': answer_probs,
-            'pred_token_id': pred_token_id,
-            'answer_ids': answer_ids,
-            'filter_tokens': filter_tokens,
-            'logits': logits
-        }
+    # Removed direct single-question path; rely on batch APIs
     
 
 
@@ -326,16 +247,74 @@ class QuestionAnswerer:
         options_list: List[List[str]],
         sampler
     ) -> List[Dict]:
-        """Answer multiple questions with reasoning (uses individual processing for correct answer extraction)."""
-        logger.debug(f"Starting batch reasoning for {len(questions)} questions")
-        
-        # For correct answer selection, process each question individually
-        # since each needs a specific final answer prompt after reasoning
-        results = []
-        for question, options in zip(questions, options_list):
-            result = self._answer_with_reasoning(question, options, sampler)
-            results.append(result)
-        
+        """Answer multiple questions with reasoning using batched generation and batched selection."""
+        logger.debug(f"Starting batch reasoning for {len(questions)} questions (batched)")
+
+        # Step 1: Batched reasoning generation
+        reasoning_messages_batch = [
+            self.message_generator.create_reasoning_messages(q, opts)
+            for q, opts in zip(questions, options_list)
+        ]
+        gen_out = self.token_generator.generate_batch_with_kv_cache(
+            reasoning_messages_batch, sampler, max_new_tokens=800
+        )
+        # Back-compat: allow 2- or 3-tuple returns
+        if isinstance(gen_out, tuple) and len(gen_out) == 3:
+            reasoning_responses, _, _ = gen_out
+        else:
+            reasoning_responses, _ = gen_out
+
+        # Step 2: Build final prompts and get batched logits
+        final_prompts: List[str] = []
+        for rr, msgs in zip(reasoning_responses, reasoning_messages_batch):
+            final_messages = msgs + [
+                {"role": "assistant", "content": rr},
+                {"role": "user", "content": "What is your final answer? Respond with just the letter (A, B, C, or D)."},
+            ]
+            final_prompts.append(self._format_prompt(final_messages, add_generation_prompt=True))
+
+        logits_batch = self.token_generator.get_logits_for_prompts_batch(final_prompts)
+
+        # Step 3: Resolve answer tokens and select with batch sampling (or fallback)
+        answer_ids_list = [self.token_resolver.get_answer_token_ids(opts) for opts in options_list]
+        filter_tokens_batch = [set(d.values()) for d in answer_ids_list]
+
+        if hasattr(sampler, "sample_batch"):
+            pred_ids = sampler.sample_batch(logits_batch, filter_tokens_batch)
+        else:
+            pred_ids = []
+            for i in range(len(questions)):
+                pred_ids.append(sampler.sample(logits_batch[i], filter_tokens=filter_tokens_batch[i]))
+
+        # Step 4: Build results
+        results: List[Dict] = []
+        for i, (options, answer_ids, pred_id, rr) in enumerate(
+            zip(options_list, answer_ids_list, pred_ids, reasoning_responses)
+        ):
+            # Probabilities per option (restricted softmax) for this row
+            answer_probs = self._calculate_answer_probabilities(logits_batch[i], answer_ids)
+
+            selected_answer = None
+            for answer_text, token_id in answer_ids.items():
+                if token_id == pred_id:
+                    selected_answer = answer_text
+                    break
+
+            parsed_reasoning = self.cot_parser.parse_cot_response(rr)
+            results.append(
+                {
+                    "selected_answer": selected_answer,
+                    "reasoning": parsed_reasoning["reasoning"],
+                    "raw_reasoning": rr,
+                    "reasoning_quality": parsed_reasoning,
+                    "answer_probs": answer_probs,
+                    "pred_token_id": pred_id,
+                    "answer_ids": answer_ids,
+                    "filter_tokens": filter_tokens_batch[i],
+                    "logits": logits_batch[i],
+                }
+            )
+
         return results
     
     def _answer_batch_directly(
@@ -344,17 +323,56 @@ class QuestionAnswerer:
         options_list: List[List[str]],
         sampler
     ) -> List[Dict]:
-        """Answer multiple questions directly without reasoning."""
-        logger.debug("Starting batch direct answering")
-        
-        results = []
-        
-        # Process each question individually for direct answers
-        # (Batching direct answers is simpler as no multi-step reasoning needed)
-        for question, options in zip(questions, options_list):
-            result = self._answer_directly(question, options, sampler)
-            results.append(result)
-        
+        """Answer multiple questions directly using batched logits and batched sampling."""
+        logger.debug("Starting batch direct answering (batched)")
+
+        # Build prompts
+        prompts: List[str] = []
+        for q, opts in zip(questions, options_list):
+            msgs = self.message_generator.create_direct_answer_messages(q, opts)
+            prompt = self._format_prompt(msgs, add_generation_prompt=True)
+            prompt += "The correct answer is option"
+            prompts.append(prompt)
+
+        # Batched logits
+        logits_batch = self.token_generator.get_logits_for_prompts_batch(prompts)
+
+        # Resolve answer tokens and build filter sets
+        answer_ids_list = [self.token_resolver.get_answer_token_ids(opts) for opts in options_list]
+        filter_tokens_batch = [set(d.values()) for d in answer_ids_list]
+
+        # Batch sampling (preferred), fallback to per-row if sampler lacks batch API
+        if hasattr(sampler, "sample_batch"):
+            pred_ids = sampler.sample_batch(logits_batch, filter_tokens_batch)
+        else:
+            pred_ids = []
+            for i in range(len(questions)):
+                pred_ids.append(sampler.sample(logits_batch[i], filter_tokens=filter_tokens_batch[i]))
+
+        # Build results
+        results: List[Dict] = []
+        for i, (answer_ids, pred_id) in enumerate(zip(answer_ids_list, pred_ids)):
+            # Calculate per-option probabilities from restricted logits
+            answer_probs = self._calculate_answer_probabilities(logits_batch[i], answer_ids)
+
+            selected_answer = None
+            for answer_text, token_id in answer_ids.items():
+                if token_id == pred_id:
+                    selected_answer = answer_text
+                    break
+
+            results.append(
+                {
+                    "selected_answer": selected_answer,
+                    "reasoning": None,
+                    "answer_probs": answer_probs,
+                    "pred_token_id": pred_id,
+                    "answer_ids": answer_ids,
+                    "filter_tokens": filter_tokens_batch[i],
+                    "logits": logits_batch[i],
+                }
+            )
+
         logger.debug(f"Batch direct answering completed for {len(results)} questions")
         return results
     

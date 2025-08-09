@@ -15,7 +15,7 @@ class EvaluationConfig:
 
     model_name: str
     benchmark_path: str
-    output_dir: str
+    output_dir: str = "results"
     limit: Optional[int] = None
     top_p: float = 0.9
     k: int = 8

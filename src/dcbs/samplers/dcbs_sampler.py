@@ -5,7 +5,9 @@ This module implements the core DCBS algorithm with clustering abstractions,
 caching, and comprehensive error handling.
 """
 
-from typing import Optional, Set, List
+from typing import Optional, Set, List, Tuple, Dict, Any
+import concurrent.futures
+import os
 import time
 
 import numpy as np
@@ -28,6 +30,48 @@ from ..embedding_ops import EmbeddingOperations
 
 # Note: BatchDCBSProcessor import moved to avoid circular dependency
 
+
+def _dcbs_parallel_cluster_job(payload: Tuple[np.ndarray, Dict[str, Any]]) -> List[int]:
+    """Top-level function for ProcessPoolExecutor to run clustering.
+
+    Args:
+        payload: Tuple of (embeddings_np, clusterer_spec)
+    Returns:
+        labels as a list of ints
+    """
+    embeddings_np, spec = payload
+    # Reconstruct clusterer locally to avoid cross-process state
+    from src.dcbs.clustering import (
+        KMeansClusterer,
+        DBSCANClusterer,
+        HierarchicalClusterer,
+    )
+    import torch as _torch
+
+    clusterer_type = spec["type"]
+    params = spec.get("params", {})
+    if clusterer_type == "kmeans":
+        clusterer = KMeansClusterer(**params)
+    elif clusterer_type == "dbscan":
+        clusterer = DBSCANClusterer(**params)
+    elif clusterer_type == "hierarchical":
+        clusterer = HierarchicalClusterer(**params)
+    else:
+        clusterer = KMeansClusterer(k=params.get("k", 8))
+    labels = clusterer.cluster(_torch.from_numpy(embeddings_np))
+    return labels.tolist()
+
+
+def _init_dcbs_worker_env() -> None:
+    """Initializer for process-pool workers to avoid CPU oversubscription.
+
+    Limits BLAS/OpenMP threads per worker so N processes do not multiply threads.
+    """
+    os.environ.setdefault("OMP_NUM_THREADS", "1")
+    os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+    os.environ.setdefault("MKL_NUM_THREADS", "1")
+    os.environ.setdefault("VECLIB_MAXIMUM_THREADS", "1")
+    os.environ.setdefault("NUMEXPR_NUM_THREADS", "1")
 
 class DCBSSampler(Sampler):
     """
@@ -70,6 +114,11 @@ class DCBSSampler(Sampler):
         """
         self.clusterer = clusterer
         self.candidate_selector = candidate_selector
+        # Backwards-compat: if third positional was actually cache_config dict
+        if isinstance(category_sampler, dict) and context is None and cache_config is None:
+            cache_config = category_sampler
+            category_sampler = None
+
         self.category_sampler = category_sampler or greedy_category_sampler
         self.context = context
         self.enable_caching = enable_caching
@@ -541,26 +590,159 @@ class DCBSSampler(Sampler):
         
         self.debugger.log_debug(f"Starting batch DCBS sampling for {batch_size} sequences")
         
-        # Fallback: Sequential processing for small batches or when parallel processing fails
-        self.debugger.log_debug(f"Using sequential processing for {batch_size} sequences")
-        
-        results = []
+        # Parallelized batch DCBS using process pool for clustering (CPU-bound)
+        # 1) Build candidate sets and compute candidate probabilities / embeddings on main process
+        device = effective_context.embedding_layer.weight.device
+        candidate_sets: List[List[int]] = []
+        candidate_probs_list: List[torch.Tensor] = []
+        embeddings_list: List[torch.Tensor] = []
+        simple_indices: List[int] = []
+        simple_results: Dict[int, int] = {}
+
         for i in range(batch_size):
             logits = logits_batch[i]
             filter_tokens = filter_tokens_batch[i]
             
-            try:
-                selected_token = self.sample(logits, filter_tokens, effective_context)
-                results.append(selected_token)
-            except Exception as e:
-                # CRITICAL FIX: Do not fall back silently - raise explicit error
-                # This ensures DCBS failures are caught rather than hidden
-                self.debugger.log_debug(f"DCBS batch sampling failed for sequence {i}: {e}")
-                raise ValueError(f"DCBS batch sampling failed on sequence {i}/{batch_size}: {e}. "
-                               f"This indicates a problem that must be addressed rather than "
-                               f"falling back to greedy selection.") from e
-        
-        self.debugger.log_debug(f"Sequential batch DCBS sampling completed for {batch_size} sequences")
+            # Candidate ids
+            if filter_tokens:
+                candidate_ids = list(filter_tokens)
+            else:
+                candidate_ids = self.candidate_selector.select_candidates(logits, None)
+
+            # Handle insufficient candidates without clustering
+            if len(candidate_ids) <= MIN_TOKENS_FOR_CLUSTERING:
+                simple_results[i] = self._simple_selection(logits, candidate_ids)
+                simple_indices.append(i)
+                continue
+
+            # Invalid logits guard for candidates
+            if self._has_invalid_logits(logits, candidate_ids):
+                raise ValueError(
+                    f"Invalid logits detected in batch sequence {i}: contains NaN/Inf"
+                )
+
+            # Candidate probabilities and embeddings
+            cand_ids_tensor = torch.tensor(candidate_ids, device=logits.device)
+            cand_logits = logits[cand_ids_tensor]
+            cand_probs = torch.softmax(cand_logits, dim=-1)
+
+            # Embeddings on embedding device, then move to CPU for subprocess
+            cand_ids_for_embed = torch.tensor(candidate_ids, device=device)
+            norm_embeddings = self.embedding_ops.get_normalized_embeddings(
+                cand_ids_for_embed, effective_context.embedding_layer
+            )
+
+            candidate_sets.append(candidate_ids)
+            candidate_probs_list.append(cand_probs)
+            embeddings_list.append(norm_embeddings)
+
+        # If all were simple, return aggregated results
+        if len(simple_results) == batch_size:
+            return [simple_results[i] for i in range(batch_size)]
+
+        # 2) Prepare clustering jobs for remaining sequences
+        jobs: List[Tuple[np.ndarray, Dict[str, Any]]] = []
+        index_mapping: List[int] = []  # map job order -> original index
+
+        # Build clusterer spec from self.clusterer
+        def _build_clusterer_spec() -> Dict[str, Any]:
+            from ..clustering import KMeansClusterer, DBSCANClusterer, HierarchicalClusterer
+            if isinstance(self.clusterer, KMeansClusterer):
+                return {
+                    "type": "kmeans",
+                    "params": {
+                        "k": self.clusterer.k,
+                        "random_seed": self.clusterer.random_seed,
+                        "max_iterations": self.clusterer.max_iterations,
+                        "min_batch_size": self.clusterer.min_batch_size,
+                        "enable_adaptive_k": self.clusterer.enable_adaptive_k,
+                        "min_k": self.clusterer.min_k,
+                        "max_k": self.clusterer.max_k,
+                        "use_elbow_method": getattr(self.clusterer, "use_elbow_method", False),
+                    },
+                }
+            if isinstance(self.clusterer, DBSCANClusterer):
+                return {
+                    "type": "dbscan",
+                    "params": {
+                        "eps": self.clusterer.eps,
+                        "min_samples": self.clusterer.min_samples,
+                        "metric": self.clusterer.metric,
+                        "n_jobs": self.clusterer.n_jobs,
+                    },
+                }
+            if isinstance(self.clusterer, HierarchicalClusterer):
+                return {
+                    "type": "hierarchical",
+                    "params": {
+                        "k": self.clusterer.k,
+                        "linkage": self.clusterer.linkage,
+                        "metric": self.clusterer.metric,
+                    },
+                }
+            # Fallback: treat as kmeans with configured default k
+            return {"type": "kmeans", "params": {"k": DEFAULT_K_CLUSTERS}}
+
+        clusterer_spec = _build_clusterer_spec()
+
+        for i in range(batch_size):
+            if i in simple_results:
+                continue
+            emb_cpu = embeddings_list[len(index_mapping)].detach().cpu().numpy()
+            jobs.append((emb_cpu, clusterer_spec))
+            index_mapping.append(i)
+
+        # 3) Run clustering in parallel processes
+        labels_results: Dict[int, List[int]] = {}
+        if jobs:
+            # Decide pool size and initialize worker environment
+            max_workers_cfg = int(os.environ.get("DCBS_MAX_CLUSTER_WORKERS", "0") or 0)
+            auto_workers = max(1, min(os.cpu_count() or 1, len(jobs)))
+            max_workers = auto_workers if max_workers_cfg <= 0 else min(max_workers_cfg, auto_workers)
+            with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers, initializer=_init_dcbs_worker_env) as executor:
+                future_to_index = {
+                    executor.submit(_dcbs_parallel_cluster_job, job): index_mapping[j_idx]
+                    for j_idx, job in enumerate(jobs)
+                }
+                for fut in concurrent.futures.as_completed(future_to_index):
+                    labels = fut.result()
+                    original_i = future_to_index[fut]
+                    labels_results[original_i] = labels
+
+        # 4) Final selection on main process using category sampler for consistency
+        results: List[int] = [0] * batch_size
+        # Fill simple first
+        for i, tok in simple_results.items():
+            results[i] = tok
+
+        # Iterate over non-simple
+        non_simple_counter = 0
+        for i in range(batch_size):
+            if i in simple_results:
+                continue
+            candidate_ids = candidate_sets[non_simple_counter]
+            candidate_probs = candidate_probs_list[non_simple_counter]
+            labels = labels_results.get(i)
+            if labels is None:
+                # Safety: fallback to local clustering if a job failed silently
+                local_labels = self._perform_clustering(embeddings_list[non_simple_counter])
+                labels = local_labels.tolist() if hasattr(local_labels, 'tolist') else list(local_labels)
+
+            # Group points by cluster labels (ignore negative labels if any)
+            unique_labels = sorted({l for l in labels if l >= 0})
+            clusters: List[List[int]] = []
+            for lbl in unique_labels:
+                clusters.append([idx for idx, v in enumerate(labels) if v == lbl])
+            if not clusters:
+                clusters = [list(range(len(labels)))]
+
+            filter_tokens = filter_tokens_batch[i]
+            selected_token, _cluster_probs = self._select_token_from_clusters(
+                candidate_ids, candidate_probs, clusters, filter_tokens
+            )
+            results[i] = selected_token
+            non_simple_counter += 1
+
         return results 
 
     def cleanup(self) -> None:

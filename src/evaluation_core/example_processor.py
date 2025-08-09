@@ -39,67 +39,10 @@ class ExampleProcessor:
         """Lower-case, strip and remove trailing punctuation for exact-match scoring."""
         return ans.strip().lower().rstrip(". ")
 
+    # Back-compat wrapper that routes single example through the batched path
     def process_example(self, example: Dict, sampler, include_cot: bool = True) -> Dict:
-        """
-        Process a single example – works for both multiple-choice (ARC) and open-ended (GSM8K) formats.
-        
-        Args:
-            example: Example data
-            sampler: Sampler to use for generation
-            include_cot: Whether to include chain-of-thought reasoning
-            
-        Returns:
-            Processed example with results
-        """
-        start_time = time.time()
-        
-        # Determine dataset format (MCQ vs open-ended)
-        sentence = example.get("question")
-        if sentence is None:
-            raise ValueError("Example must have a 'question' field")
-
-        if "options" in example:
-            # Multiple-choice format (ARC-style)
-            options = example["options"]
-            correct_option = example.get("correct_option", "1")
-            correct_idx = int(correct_option) - 1
-            correct_answer = options[correct_idx]
-        else:
-            # Open-ended format (e.g., GSM8K)
-            options = None
-            correct_answer = example["answer"].strip()
-
-
-        result = {
-            "id": example.get("id", "unknown"),
-            "sentence": sentence,
-            "options": options,
-            "correct_answer": correct_answer,
-        }
-
-        # Use QuestionAnswerer to get the answer
-        answer_result = self.question_answerer.answer_question(
-            sentence, options, sampler, include_cot
-        )
-
-        if options is None:
-            # Open-ended: compare strings
-            pred_ans = answer_result["generated_answer"]
-            result["predicted_answer"] = pred_ans
-            result["correct"] = self._normalize_answer(pred_ans) == self._normalize_answer(correct_answer)
-            result["elapsed_ms"] = (time.time() - start_time) * 1000
-            return result
-
-        # Multiple-choice extraction (unchanged)
-        result["cot_reasoning"] = answer_result.get("reasoning")
-        result["answer_ids"] = answer_result["answer_ids"]
-        result["filter_tokens"] = answer_result["filter_tokens"]
-        result["correct_id"] = answer_result["answer_ids"][correct_answer]
-        result["logits"] = answer_result["logits"]
-        result["answer_probs"] = answer_result["answer_probs"]
-        result["processing_time"] = time.time() - start_time
-
-        return result
+        results = self.process_examples_batch([example], sampler, include_cot)
+        return results[0] if results else {}
 
     def process_examples_batch(
         self, 
@@ -124,10 +67,29 @@ class ExampleProcessor:
         if not examples:
             return []
 
-        # If dataset is open-ended (no 'options' field) fallback to per-example processing
+        # If dataset is open-ended, handle via batched prompt construction too
         if "options" not in examples[0]:
-            logger.debug("Open-ended dataset detected in batch – processing sequentially.")
-            return [self.process_example(ex, sampler, include_cot=False) for ex in examples]
+            questions = [ex["question"] for ex in examples]
+            # Build messages batch
+            messages_batch = [[{"role": "user", "content": q + "\nAnswer:"}] for q in questions]
+            # Use batched generation
+            gen_out = self.question_answerer.token_generator.generate_batch_with_kv_cache(
+                messages_batch, sampler, max_new_tokens=64
+            )
+            if isinstance(gen_out, tuple) and len(gen_out) == 3:
+                responses, _, _ = gen_out
+            else:
+                responses, _ = gen_out
+            processed = []
+            for ex, ans in zip(examples, responses):
+                processed.append({
+                    "id": ex.get("id", "unknown"),
+                    "sentence": ex["question"],
+                    "options": None,
+                    "correct_answer": ex["answer"].strip(),
+                    "generated_answer": ans,
+                })
+            return processed
 
         # STEP 1: Extract questions and options from all examples
         questions = []
@@ -181,6 +143,13 @@ class ExampleProcessor:
         logger.debug(f"Batch processing completed for {len(processed_examples)} examples in {total_time:.2f}s")
         return processed_examples
 
+    # Shims for tests expecting these helpers on ExampleProcessor
+    def create_reasoning_messages(self, sentence: str, options: List[str]) -> List[Dict[str, str]]:
+        return self.question_answerer.message_generator.create_reasoning_messages(sentence, options)
+
+    def _get_answer_token_ids(self, options: List[str]) -> Dict[str, int]:
+        return self.question_answerer.token_resolver.get_answer_token_ids(options)
+
     def evaluate_with_sampler(
         self, processed_result: Dict, sampler, sampler_name: str
     ) -> Dict:
@@ -200,18 +169,18 @@ class ExampleProcessor:
         """
         start_time = time.time()
         
-        # Generate fresh logits / answers for each sampler independently
+        # Generate fresh logits / answers for each sampler independently using batch API
         sentence = processed_result["sentence"]
         options = processed_result["options"]  # None for open-ended datasets
         include_cot = processed_result.get("cot_reasoning") is not None and options is not None
 
-        answer_result = self.question_answerer.answer_question(
-            sentence, options, sampler, include_cot
-        )
-        
-        # Open-ended branch
         if options is None:
-            pred_answer = answer_result["generated_answer"]
+            # Open-ended single example via batched generation
+            messages_batch = [[{"role": "user", "content": sentence + "\nAnswer:"}]]
+            responses, _, _ = self.question_answerer.token_generator.generate_batch_with_kv_cache(
+                messages_batch, sampler, max_new_tokens=64
+            )
+            pred_answer = responses[0]
             correct = self._normalize_answer(pred_answer) == self._normalize_answer(processed_result["correct_answer"])
             elapsed_ms = (time.time() - start_time) * 1000
             return {
@@ -223,6 +192,12 @@ class ExampleProcessor:
                 "cluster_info": None,
             }
 
+        # Multiple-choice: use batched direct/with-reasoning pipeline over one item
+        batch_answers = self.question_answerer.answer_questions_batch(
+            [sentence], [options], sampler, include_cot
+        )
+        answer_result = batch_answers[0]
+        
         # Multiple-choice branch (existing logic)
         logits = answer_result["logits"]
         filter_tokens = answer_result["filter_tokens"]

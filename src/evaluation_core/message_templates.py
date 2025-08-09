@@ -18,12 +18,19 @@ class MessageTemplateGenerator:
         return [
             {
                 "role": "system",
-                "content": "You are an expert at solving multiple-choice questions. Provide step-by-step reasoning, then state the final answer letter (A, B, C, or D)."
+                "content": "You are an expert at solving multiple-choice questions. Provide step by step reasoning, then state the final answer letter (A, B, C, or D)."
             },
             {
                 "role": "user",
-                "content": f"Question:\n{sentence}\n\nOptions:\n{options_str}\n\nPlease think step-by-step and then give the final answer."
+                "content": f"Question:\n{sentence}\n\nOptions:\n{options_str}\n\nPlease think step by step and then give the final answer."
             }
+        ]
+
+    def create_final_answer_messages(self, reasoning_messages: List[Dict[str, str]], reasoning: str) -> List[Dict[str, str]]:
+        """Compatibility helper used in tests to build final answer prompts."""
+        return reasoning_messages + [
+            {"role": "assistant", "content": reasoning},
+            {"role": "user", "content": "What is your final answer? Respond with just the letter (A, B, C, or D)."},
         ]
 
 

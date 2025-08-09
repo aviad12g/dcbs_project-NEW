@@ -7,12 +7,29 @@ This module provides validation logic for configuration values and schemas.
 from typing import Any, Dict, List
 
 from src.errors import ValidationError, eval_logger as logger
+from typing import Optional
+
+ConfigSchemaRef = None
+try:
+    # Local import guarded to avoid circular during some test imports
+    from src.config_schema import ConfigSchema as _ConfigSchema  # type: ignore
+    ConfigSchemaRef = _ConfigSchema
+except Exception:  # pragma: no cover
+    ConfigSchemaRef = None  # Fallback during import-time cycles
 
 
 class ConfigValidator:
     """Validates configuration against schema."""
 
-    def __init__(self, schema: Dict[str, Any]):
+    def __init__(self, schema: Optional[Dict[str, Any]] = None):
+        # Default to project schema if none provided
+        # If no schema provided, import lazily to avoid cycles
+        if schema is None:
+            try:
+                from src.config_schema import ConfigSchema as _LateConfigSchema  # type: ignore
+                schema = _LateConfigSchema.SCHEMA
+            except Exception:
+                raise TypeError("ConfigValidator requires a schema when ConfigSchema is unavailable")
         self.schema = schema
 
     def validate(self, config: Dict[str, Any]) -> Dict[str, Any]:

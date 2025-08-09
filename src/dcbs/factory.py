@@ -168,8 +168,15 @@ class DCBSSamplerFactory:
         context: Optional[SamplingContext] = None,
         enable_caching: bool = True,
         debug_mode: Optional[bool] = None,
+        clusterer: Optional[TokenClusterer] = None,
     ) -> DCBSSampler:
-        """Create the deterministic hierarchical‐loop sampler."""
+        """Create the deterministic hierarchical‐loop sampler.
+
+        The sampler will use the provided clusterer (DBSCAN or KMeans). If a
+        DBSCAN clusterer is supplied, its parameters (eps, min_samples) will be
+        updated each iteration according to the tightening schedule. If no
+        clusterer is provided, a DBSCAN-based loop is used by default.
+        """
         from .samplers.hier_loop_sampler import DeterministicHierLoopSampler
 
         return DeterministicHierLoopSampler(
@@ -182,4 +189,5 @@ class DCBSSamplerFactory:
             context=context,
             enable_caching=enable_caching,
             debug_mode=debug_mode,
-        ) 
+            clusterer=clusterer,
+        )

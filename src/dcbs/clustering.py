@@ -426,7 +426,7 @@ class AdaptiveDBSCANClusterer(TokenClusterer):
         metric: str = "cosine",
         eps_scale: float = 1.0,
         n_jobs: int = 1,
-        eps: float | None = None,  # compatibility placeholder
+        eps: Optional[float] = None,  # compatibility placeholder
     ) -> None:
         """Create an adaptive DBSCAN clusterer.
 

@@ -238,3 +238,23 @@ class TokenGenerator:
             logits = outputs.logits[:, -1, :].squeeze(0)
         
         return logits 
+
+    def get_logits_for_prompts_batch(
+        self,
+        prompts: List[str],
+    ) -> torch.Tensor:
+        """Get next-token logits for a batch of prompts.
+
+        Args:
+            prompts: List of input prompts
+
+        Returns:
+            Tensor of shape [batch_size, vocab_size] with next-token logits
+        """
+        batch = self.tokenizer(
+            prompts, return_tensors="pt", padding=True, truncation=True, max_length=self.max_context_length
+        ).to(self.device)
+        with torch.no_grad():
+            outputs = self.model(**batch)
+            logits = outputs.logits[:, -1, :]
+        return logits

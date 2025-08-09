@@ -17,7 +17,7 @@ from typing import Optional, Set, List
 import torch
 
 from .base import Sampler, SamplingContext
-from ..clustering import TopNCandidateSelector, DBSCANClusterer
+from ..clustering import TopNCandidateSelector, DBSCANClusterer, TokenClusterer
 from ..embedding_ops import EmbeddingOperations
 from ..constants import DEFAULT_TOP_N, PROB_EPSILON
 
@@ -36,6 +36,7 @@ class DeterministicHierLoopSampler(Sampler):
         context: Optional[SamplingContext] = None,
         enable_caching: bool = True,
         debug_mode: bool = False,
+        clusterer: Optional[TokenClusterer] = None,
     ) -> None:
         self.top_n = top_n
         self.initial_eps = initial_eps
@@ -44,6 +45,9 @@ class DeterministicHierLoopSampler(Sampler):
         self.min_samples_step = min_samples_step
         self.max_iters = max_iters
         self.context = context
+
+        # Injected clusterer (can be DBSCANClusterer or KMeansClusterer)
+        self.clusterer = clusterer
 
         # Reuse existing utilities
         self.candidate_selector = TopNCandidateSelector(top_n=top_n)
@@ -91,18 +95,29 @@ class DeterministicHierLoopSampler(Sampler):
             if len(working_indices) == 1:
                 break  # single token left
 
-            # Cluster current subset
+            # Cluster current subset using the provided clusterer (DBSCAN or KMeans)
             subset_embeddings = embeddings[working_indices]
-            clusterer = DBSCANClusterer(eps=eps, min_samples=min_samples, metric="cosine")
-            labels = clusterer.cluster(subset_embeddings)
-            n_clusters = clusterer.num_clusters
 
-            # Fallback: if DBSCAN produced a single cluster, try deterministic 2-means split
-            if n_clusters <= 1 and len(working_indices) > 1:
-                from ..clustering import KMeansClusterer
-                kmeans = KMeansClusterer(k=2, enable_adaptive_k=False)
-                labels = kmeans.cluster(subset_embeddings)
-                n_clusters = kmeans.num_clusters
+            if self.clusterer is None:
+                # Default to DBSCAN semantics if no clusterer was provided
+                effective_clusterer: TokenClusterer = DBSCANClusterer(
+                    eps=eps, min_samples=min_samples, metric="cosine"
+                )
+            else:
+                # Use the injected clusterer; if it's DBSCAN, construct a fresh instance with updated params
+                base_clusterer = self.clusterer
+                if isinstance(base_clusterer, DBSCANClusterer):
+                    effective_clusterer = DBSCANClusterer(
+                        eps=eps,
+                        min_samples=min_samples,
+                        metric=base_clusterer.metric,
+                        n_jobs=base_clusterer.n_jobs,
+                    )
+                else:
+                    effective_clusterer = base_clusterer
+
+            labels = effective_clusterer.cluster(subset_embeddings)
+            n_clusters = effective_clusterer.num_clusters
 
             # All points noise or single cluster ⇒ cannot split further
             if n_clusters <= 1:
@@ -127,7 +142,7 @@ class DeterministicHierLoopSampler(Sampler):
             last_working_indices = working_indices
             working_indices = new_working_indices
 
-            # Tighten parameters for next round
+            # Tighten parameters for next round (only meaningful for DBSCAN)
             eps *= self.eps_decay
             min_samples += self.min_samples_step
 
@@ -194,4 +209,5 @@ class DeterministicHierLoopSampler(Sampler):
             "initial_min_samples": self.initial_min_samples,
             "min_samples_step": self.min_samples_step,
             "max_iters": self.max_iters,
+            "clusterer": type(self.clusterer).__name__ if self.clusterer is not None else "DBSCANClusterer",
         } 
