@@ -38,6 +38,11 @@ class EvaluationConfig:
     # Cluster weighting strategy for category selection
     weighting_strategy: str = "prob_mass"  # Options: prob_mass, size, sqrt_size, uniform
 
+    # Clustering weighting mode (how to weight the clustering step itself)
+    # none: unweighted clustering (current default behaviour)
+    # prob: weight samples by their token probabilities during clustering
+    cluster_weighting: str = "none"
+
     # Multi-dataset evaluation
     datasets: list = None  # List of datasets to evaluate
     

@@ -46,6 +46,12 @@ class TokenClusterer(ABC):
         """Return the number of clusters this clusterer produces."""
         pass
 
+    # Optional hook: clusterers may accept per-sample weights
+    def set_sample_weights(self, weights: Optional["np.ndarray"]):
+        """Set per-sample weights for the next clustering call (optional)."""
+        # Default no-op for clusterers that don't support weighting
+        return
+
 
 class KMeansClusterer(TokenClusterer):
     """K-means clustering implementation with adaptive k selection."""
@@ -145,8 +151,17 @@ class KMeansClusterer(TokenClusterer):
         return min(adaptive_k, self.k)
 
     def cluster(self, embeddings: torch.Tensor) -> np.ndarray:
-        """Cluster embeddings using k-means with cosine similarity and adaptive k selection."""
+        """Cluster embeddings using k-means with cosine similarity and adaptive k selection.
+
+        Supports optional per-sample weights previously set via set_sample_weights()."""
         embeddings_np = embeddings.detach().cpu().numpy()
+        weights = getattr(self, "_sample_weights", None)
+        if weights is not None:
+            # Ensure correct shape and dtype
+            weights = np.asarray(weights, dtype=np.float64)
+            if weights.shape[0] != embeddings_np.shape[0]:
+                # Ignore malformed weights
+                weights = None
         n_candidates = len(embeddings_np)
         
         # Calculate adaptive k (pass embeddings for elbow method if enabled)
@@ -170,7 +185,7 @@ class KMeansClusterer(TokenClusterer):
         centroid_indices = np.random.choice(n_candidates, effective_k, replace=False)
         centroids = embeddings_normalized[centroid_indices].copy()
         
-        # Iterative clustering with cosine similarity
+        # Iterative clustering with cosine similarity (weighted centroid updates if provided)
         labels = np.zeros(n_candidates, dtype=int)
         
         for iteration in range(self.max_iterations):
@@ -185,11 +200,19 @@ class KMeansClusterer(TokenClusterer):
                 
             labels = new_labels
             
-            # Update centroids (mean of assigned points, then normalize)
+            # Update centroids (weighted mean of assigned points if weights provided, then normalize)
             for k in range(effective_k):
                 cluster_mask = labels == k
                 if np.any(cluster_mask):
-                    centroid = np.mean(embeddings_normalized[cluster_mask], axis=0)
+                    if weights is None:
+                        centroid = np.mean(embeddings_normalized[cluster_mask], axis=0)
+                    else:
+                        w = weights[cluster_mask]
+                        w_sum = float(np.sum(w))
+                        if w_sum <= 0:
+                            centroid = np.mean(embeddings_normalized[cluster_mask], axis=0)
+                        else:
+                            centroid = np.average(embeddings_normalized[cluster_mask], axis=0, weights=w)
                     # Normalize centroid
                     norm = np.linalg.norm(centroid)
                     if norm > 0:
@@ -243,8 +266,12 @@ class DBSCANClusterer(TokenClusterer):
         self._last_n_clusters = 1  # Track actual number of clusters found
 
     def cluster(self, embeddings: torch.Tensor) -> np.ndarray:
-        """Cluster embeddings using DBSCAN."""
+        """Cluster embeddings using DBSCAN.
+
+        If sample weights were provided via set_sample_weights(), they will be used
+        to determine core points (weighted min_samples)."""
         embeddings_np = embeddings.detach().cpu().numpy()
+        weights = getattr(self, "_sample_weights", None)
         
         # DBSCAN with cosine distance
         dbscan = DBSCAN(
@@ -254,7 +281,16 @@ class DBSCANClusterer(TokenClusterer):
             n_jobs=self.n_jobs,
         )
         
-        labels = dbscan.fit_predict(embeddings_np)
+        # Use fit + labels_ to allow passing weights across sklearn versions
+        try:
+            dbscan.fit(embeddings_np, sample_weight=weights)
+        except TypeError:
+            # Fallback if sklearn version doesn't support sample_weight here
+            dbscan.fit(embeddings_np)
+        labels = getattr(dbscan, "labels_", None)
+        if labels is None:
+            # Fallback: fit_predict without weights
+            labels = dbscan.fit_predict(embeddings_np)
         
         # DBSCAN may produce -1 for noise points, map them to their own cluster
         unique_labels = np.unique(labels)
@@ -275,6 +311,9 @@ class DBSCANClusterer(TokenClusterer):
     def num_clusters(self) -> int:
         """Return the last observed number of clusters (DBSCAN finds this dynamically)."""
         return self._last_n_clusters
+
+    def set_sample_weights(self, weights: Optional["np.ndarray"]):
+        self._sample_weights = None if weights is None else np.asarray(weights, dtype=float)
 
 
 class HierarchicalClusterer(TokenClusterer):
@@ -317,6 +356,10 @@ class HierarchicalClusterer(TokenClusterer):
     @property
     def num_clusters(self) -> int:
         return self.k
+
+    # AgglomerativeClustering does not support sample weights; ignore
+    def set_sample_weights(self, weights: Optional["np.ndarray"]):
+        self._sample_weights = None
 
 
 class SingleCluster(TokenClusterer):

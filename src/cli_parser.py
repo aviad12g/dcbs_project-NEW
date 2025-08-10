@@ -83,6 +83,15 @@ class ArgumentParserSetup:
             help="Clustering method for DCBS (uses config default if not specified)",
         )
 
+        # Clustering weighting (intra-cluster) options
+        parser.add_argument(
+            "--cluster-weighting",
+            type=str,
+            choices=["none", "prob"],
+            default=None,
+            help="Weight clustering by token probabilities (prob) or leave unweighted (none)",
+        )
+
         parser.add_argument(
             "--dbscan-eps",
             type=float,

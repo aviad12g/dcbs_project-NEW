@@ -116,6 +116,13 @@ class DeterministicHierLoopSampler(Sampler):
                 else:
                     effective_clusterer = base_clusterer
 
+            # Optional weighting by candidate probabilities if supported (only when enabled on sampler)
+            if hasattr(effective_clusterer, "set_sample_weights") and getattr(self, 'cluster_weighting', 'none') == 'prob':
+                try:
+                    weights_np = cand_probs[working_indices].detach().cpu().numpy()
+                    effective_clusterer.set_sample_weights(weights_np)
+                except Exception:
+                    pass
             labels = effective_clusterer.cluster(subset_embeddings)
             n_clusters = effective_clusterer.num_clusters
 

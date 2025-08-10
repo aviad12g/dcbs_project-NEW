@@ -103,7 +103,7 @@ class SamplerFactory:
         else:
             raise ValueError(f"Unknown clustering method: {clustering_method}")
         
-        return DCBSSampler(
+        sampler = DCBSSampler(
             clusterer=clusterer,
             candidate_selector=candidate_selector,
             category_sampler=category_sampler,
@@ -113,6 +113,13 @@ class SamplerFactory:
             enable_cluster_history=enable_cluster_history,
 
         )
+
+        # Configure clustering weighting mode on the sampler ("none" | "prob")
+        try:
+            setattr(sampler, 'cluster_weighting', getattr(config, 'cluster_weighting', 'none'))
+        except Exception:
+            pass
+        return sampler
 
     @staticmethod
     def create_samplers(

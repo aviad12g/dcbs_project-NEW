@@ -31,7 +31,7 @@ from ..embedding_ops import EmbeddingOperations
 # Note: BatchDCBSProcessor import moved to avoid circular dependency
 
 
-def _dcbs_parallel_cluster_job(payload: Tuple[np.ndarray, Dict[str, Any]]) -> List[int]:
+def _dcbs_parallel_cluster_job(payload: Tuple[np.ndarray, Dict[str, Any], Optional[np.ndarray]]) -> List[int]:
     """Top-level function for ProcessPoolExecutor to run clustering.
 
     Args:
@@ -39,7 +39,12 @@ def _dcbs_parallel_cluster_job(payload: Tuple[np.ndarray, Dict[str, Any]]) -> Li
     Returns:
         labels as a list of ints
     """
-    embeddings_np, spec = payload
+    # Backward compatible payload handling: (embeddings_np, spec) or (embeddings_np, spec, weights_np)
+    if len(payload) == 2:
+        embeddings_np, spec = payload
+        weights_np = None
+    else:
+        embeddings_np, spec, weights_np = payload
     # Reconstruct clusterer locally to avoid cross-process state
     from src.dcbs.clustering import (
         KMeansClusterer,
@@ -58,6 +63,12 @@ def _dcbs_parallel_cluster_job(payload: Tuple[np.ndarray, Dict[str, Any]]) -> Li
         clusterer = HierarchicalClusterer(**params)
     else:
         clusterer = KMeansClusterer(k=params.get("k", 8))
+    # If the clusterer supports sample weights and weights were provided, set them
+    if weights_np is not None and hasattr(clusterer, 'set_sample_weights'):
+        try:
+            clusterer.set_sample_weights(weights_np)
+        except Exception:
+            pass
     labels = clusterer.cluster(_torch.from_numpy(embeddings_np))
     return labels.tolist()
 
@@ -372,7 +383,7 @@ class DCBSSampler(Sampler):
         candidate_data = self._prepare_candidate_data(logits, candidate_ids)
         
         # Get normalized embeddings and perform clustering
-        clusters = self._cluster_candidates(candidate_ids, embedding)
+        clusters = self._cluster_candidates(candidate_ids, embedding, candidate_data["probs"])
         
         # Select token using category sampler
         selected_token, cluster_probs = self._select_token_from_clusters(
@@ -401,7 +412,7 @@ class DCBSSampler(Sampler):
             "probs": candidate_probs
         }
     
-    def _cluster_candidates(self, candidate_ids: list, embedding: torch.nn.Embedding) -> dict:
+    def _cluster_candidates(self, candidate_ids: list, embedding: torch.nn.Embedding, candidate_probs: Optional[torch.Tensor] = None) -> dict:
         """Perform clustering on candidate embeddings."""
         # CRITICAL FIX: Ensure device consistency throughout the pipeline
         # Use the embedding layer's device as the authoritative device
@@ -413,7 +424,24 @@ class DCBSSampler(Sampler):
             candidate_ids_tensor, embedding
         )
 
-        # Perform clustering
+        # Perform clustering (optionally with probability weights for clusterers that support it)
+        weighting_mode = getattr(self, 'cluster_weighting', 'none')
+        if weighting_mode == 'prob' and candidate_probs is not None and hasattr(self.clusterer, "set_sample_weights"):
+            try:
+                # Align weights to CPU numpy if needed; softmax already computed
+                weights_np = candidate_probs.detach().cpu().numpy()
+                # Scale so that total weight ≈ number of candidates, keeping DBSCAN min_samples meaningful
+                total = float(weights_np.sum())
+                if total > 0:
+                    scale = len(candidate_ids) / total
+                    weights_np = weights_np * scale
+                # Avoid zeros-only weights that may break DBSCAN min_samples interpretation
+                if np.all(weights_np == 0):
+                    weights_np = None
+                self.clusterer.set_sample_weights(weights_np)
+            except Exception:
+                # Ignore weighting failure; proceed unweighted
+                pass
         labels = self._perform_clustering(norm_embeddings)
         
         # Group tokens by cluster
@@ -641,7 +669,7 @@ class DCBSSampler(Sampler):
             return [simple_results[i] for i in range(batch_size)]
 
         # 2) Prepare clustering jobs for remaining sequences
-        jobs: List[Tuple[np.ndarray, Dict[str, Any]]] = []
+        jobs: List[Tuple[np.ndarray, Dict[str, Any], Optional[np.ndarray]]] = []
         index_mapping: List[int] = []  # map job order -> original index
 
         # Build clusterer spec from self.clusterer
@@ -689,7 +717,18 @@ class DCBSSampler(Sampler):
             if i in simple_results:
                 continue
             emb_cpu = embeddings_list[len(index_mapping)].detach().cpu().numpy()
-            jobs.append((emb_cpu, clusterer_spec))
+            # Prepare optional weights for this sequence if enabled
+            weights_np = None
+            if getattr(self, 'cluster_weighting', 'none') == 'prob':
+                try:
+                    w = candidate_probs_list[len(index_mapping)].detach().cpu().numpy()
+                    total = float(w.sum())
+                    if total > 0:
+                        w = w * (len(w) / total)
+                    weights_np = w
+                except Exception:
+                    weights_np = None
+            jobs.append((emb_cpu, clusterer_spec, weights_np))
             index_mapping.append(i)
 
         # 3) Run clustering in parallel processes

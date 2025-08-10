@@ -62,6 +62,7 @@ class ConfigBuilder:
         dbscan_eps = yaml_config.get("dbscan_eps", 0.3)
         dbscan_min_samples = yaml_config.get("dbscan_min_samples", 2)
         hierarchical_linkage = yaml_config.get("hierarchical_linkage", "average")
+        cluster_weighting = yaml_config.get("cluster_weighting", "none")
 
         # Other parameters from validated config
         include_cot = yaml_config.get("include_cot", True)
@@ -92,6 +93,7 @@ class ConfigBuilder:
             "enable_cluster_history": "enable_cluster_history",
             "batch_size": "batch_size",  # Add batch_size mapping
             "use_elbow_method": "use_elbow_method",  # Add elbow method mapping
+            "cluster_weighting": "cluster_weighting",
         }
 
         # Apply overrides from command-line arguments
@@ -109,6 +111,7 @@ class ConfigBuilder:
             "dbscan_eps": dbscan_eps,
             "dbscan_min_samples": dbscan_min_samples,
             "hierarchical_linkage": hierarchical_linkage,
+            "cluster_weighting": cluster_weighting,
             "debug_mode": debug_mode,
             "enable_cluster_history": enable_cluster_history,
             "batch_size": batch_size,  # Add batch_size to config values
@@ -147,6 +150,7 @@ class ConfigBuilder:
             dbscan_eps=config_values["dbscan_eps"],
             dbscan_min_samples=config_values["dbscan_min_samples"],
             hierarchical_linkage=config_values["hierarchical_linkage"],
+            cluster_weighting=config_values["cluster_weighting"],
             debug_mode=config_values["debug_mode"],
             enable_cluster_history=config_values["enable_cluster_history"],
             batch_size=config_values["batch_size"],
