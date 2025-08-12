@@ -164,8 +164,7 @@ class QuestionAnswerer:
         )
         reasoning_response = reasoning_responses[0]
 
-        # Step 2: Create final answer prompt 
-        # Add the reasoning to the conversation and prompt for final answer
+        # Step 2: Create final answer prompt with an explicit anchor
         final_messages = reasoning_messages + [
             {"role": "assistant", "content": reasoning_response},
             {"role": "user", "content": "What is your final answer? Respond with just the letter (A, B, C, or D)."}
@@ -175,10 +174,14 @@ class QuestionAnswerer:
         final_prompt = self._format_prompt(final_messages, add_generation_prompt=True)
         
         # Get logits for answer selection at the specific prompt position
+        # Ensure add_generation_prompt positions the logits at the next assistant token (the final letter)
         logits = self.token_generator.get_logits_for_prompt(final_prompt)
         
         # Step 3: Sample from answer tokens
         answer_ids = self.token_resolver.get_answer_token_ids(options)
+        # Sanity: enforce 4 distinct token IDs to avoid degenerate selection
+        if len(set(answer_ids.values())) != len(answer_ids):
+            logger.warning(f"Duplicate answer token IDs detected: {answer_ids}")
         answer_probs = self._calculate_answer_probabilities(logits, answer_ids)
 
         filter_tokens = set(answer_ids.values())

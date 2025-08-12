@@ -97,7 +97,7 @@ def build_eval_config(base_cfg: EvaluationConfig, overrides: Dict[str, object]) 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Grid search DCBS clustering parameters")
-    parser.add_argument("--config", default="configs/dcbs_config.yaml", help="Base YAML config path")
+    parser.add_argument("--config", default="conf/config.yaml", help="Hydra YAML config path (canonical)")
     parser.add_argument("--benchmark", default=None, help="Override benchmark JSON path or dataset key (e.g. arc_challenge)")
     parser.add_argument("--model", default=None, help="HuggingFace model name or path to load (overrides YAML)")
     parser.add_argument("--limit", type=int, default=50, help="Limit examples for quick sweeps")

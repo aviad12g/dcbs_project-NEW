@@ -61,9 +61,11 @@ def main():
         list_available_checkpoints()
         return 0
     
-    # Load configuration
-    yaml_config_path = "configs/dcbs_config.yaml"
-    config = ConfigBuilder.from_yaml_and_args(yaml_config_path, args)
+    # Load configuration (Hydra becomes canonical; route through ConfigBuilder using a single YAML)
+    # Prefer Hydra-style config; fall back to legacy path if present
+    hydra_config_path = "conf/config.yaml"
+    cfg_path = hydra_config_path
+    config = ConfigBuilder.from_yaml_and_args(cfg_path, args)
     
     # Initialize GPU optimizer early
     gpu_optimizer = get_gpu_optimizer()

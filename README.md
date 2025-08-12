@@ -272,26 +272,26 @@ pip install -e .
 ### Quick Start
 
 ```bash
-# Run comparative evaluation on ARC Easy (default)
-python compare_methods.py
+# Run comparative evaluation (Hydra is canonical config)
+python compare_methods.py --model "meta-llama/Llama-3.2-1B-Instruct" --benchmark arc_easy --limit 100 --samplers dcbs greedy
 
-# Specify custom model and dataset
-python compare_methods.py \
-    --model "meta-llama/Llama-3.2-1B-Instruct" \
-    --benchmark "data/arc_easy_full.json" \
-    --limit 500
+# Control clustering weighting and parallelism
+python compare_methods.py --cluster-weighting prob  # use probability weights (sum to 1)
 
-# Run with 4-bit quantization for faster inference
-python compare_methods.py \
-    --model "meta-llama/Llama-3.2-1B-Instruct" \
-    --load-in-4bit \
-    --limit 100
+# Or via Hydra conf/config.yaml (dcbs_params)
+# dcbs_params:
+#   cluster_weighting: prob   # none|prob|uniform
+#   max_cluster_workers: 4    # cap process pool size
 
-# Run specific samplers only
-python compare_methods.py \
-    --samplers dcbs greedy \
-    --limit 50
+# Environment override precedence remains (optional)
+export DCBS_MAX_CLUSTER_WORKERS=4
 ```
+
+### Weighted clustering behavior
+
+- KMeans: uses probability-weighted centroids when `cluster_weighting=prob`; weights are normalized to sum to 1. `uniform` sets weights to 1/n per candidate.
+- DBSCAN: accepts normalized weights; internally rescales by n (number of candidates) so `min_samples` semantics remain consistent across different candidate set sizes.
+- Selection remains on probability mass (unchanged).
 
 ### Advanced Features
 

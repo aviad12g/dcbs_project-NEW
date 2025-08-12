@@ -1,6 +1,16 @@
-"""Compatibility layer importing optimization utilities."""
+"""Optimization utilities (legacy batch processor removed)."""
 
-from .batch_processor import BatchDCBSProcessor, OptimizationConfig
+from dataclasses import dataclass
+
 from .memory_efficient import MemoryEfficientDCBS
 
-__all__ = ["BatchDCBSProcessor", "OptimizationConfig", "MemoryEfficientDCBS"]
+
+@dataclass
+class OptimizationConfig:
+    enable_parallel_processing: bool = True
+    max_workers: int = 0
+    use_gpu_clustering: bool = False
+    use_mixed_precision: bool = False
+
+
+__all__ = ["OptimizationConfig", "MemoryEfficientDCBS"]

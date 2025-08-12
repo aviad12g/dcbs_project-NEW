@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/aivad/anaconda3/dcbs_project-NEW/mlruns/0/a1d2cc2fc9604a7c8cf924969a36200a/artifacts
+end_time: 1755030208334
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: a1d2cc2fc9604a7c8cf924969a36200a
+run_name: eval_20250812_232311
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1755030191915
+status: 4
+tags: []
+user_id: mazalcohen

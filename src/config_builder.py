@@ -31,7 +31,18 @@ class ConfigBuilder:
             ConfigurationError: If file cannot be loaded
             ValidationError: If validation fails
         """
-        return validate_config_file(config_path)
+        # Defer strict validation until AFTER CLI/env overrides are applied.
+        # Here we parse the YAML leniently and let merge_config_with_args fill
+        # in required fields from CLI args (e.g., --model, --benchmark).
+        try:
+            from src.config_schema import yaml as _yaml  # type: ignore
+        except Exception:
+            import yaml as _yaml  # fallback if direct import fails
+        with open(config_path, 'r') as f:
+            raw = _yaml.safe_load(f) or {}
+        if not isinstance(raw, dict):
+            raw = {}
+        return raw
 
     @staticmethod
     def merge_config_with_args(yaml_config: Dict, args: argparse.Namespace) -> EvaluationConfig:
@@ -45,9 +56,9 @@ class ConfigBuilder:
         Returns:
             EvaluationConfig instance with merged configuration
         """
-        # Start with validated YAML config values
-        model_name = yaml_config.get("model_path", "meta-llama/Llama-3.2-1B")
-        benchmark_path = yaml_config.get("benchmark", "data/arc_easy_full.json")
+        # Start with YAML values (lenient), CLI will override next
+        model_name = yaml_config.get("model_path")
+        benchmark_path = yaml_config.get("benchmark")
         output_dir = yaml_config.get("output_dir", "results")
         limit = yaml_config.get("limit")
 
@@ -132,6 +143,13 @@ class ConfigBuilder:
         if hasattr(args, "disable_cache") and args.disable_cache:
             enable_caching = False
             logger.info("Command-line override: enable_caching = False")
+
+        # Finalize required fields defaults if still missing after overrides
+        if not config_values["model_name"]:
+            config_values["model_name"] = "meta-llama/Llama-3.2-1B-Instruct"
+        if not config_values["benchmark_path"]:
+            # default to ARC Easy HF dataset key
+            config_values["benchmark_path"] = "arc_easy"
 
         # Validate final configuration values
         final_config = EvaluationConfig(

@@ -10,6 +10,7 @@ from unittest.mock import MagicMock, patch
 
 from src.evaluation_core.question_answerer import QuestionAnswerer
 from src.dcbs import SamplingContext
+from src.token_utils import AnswerTokenResolver
 
 
 class TestCoTIntegration(unittest.TestCase):
@@ -41,6 +42,60 @@ class TestCoTIntegration(unittest.TestCase):
             type(self.question_answerer.cot_parser).__name__, 
             'CoTResponseParser'
         )
+
+    def test_answer_token_resolver_hardening(self):
+        """Ensure resolver returns 4 distinct tokens for A-D where possible."""
+        # Mock tokenizer encode/decode behavior
+        tok = self.mock_tokenizer
+        # Simulate that " A", " B", " C", " D" each map to a unique single token id 100..103
+        mapping = {" A": [100], " B": [101], " C": [102], " D": [103]}
+        def encode_side_effect(text, add_special_tokens=False):
+            return mapping.get(text, [200])
+        tok.encode.side_effect = encode_side_effect
+        tok.decode.side_effect = lambda ids: "X"
+        resolver = AnswerTokenResolver(tok)
+        ids = resolver.get_answer_token_ids(["optA", "optB", "optC", "optD"])
+        self.assertEqual(len(set(ids.values())), 4)
+
+    def test_final_answer_anchor_in_prompt(self):
+        """Ensure the final prompt contains the explicit anchor and assistant generation prompt."""
+        # Capture the prompt passed to get_logits_for_prompt
+        captured = {}
+        def glfp(prompt):
+            captured['prompt'] = prompt
+            return MagicMock()
+        # Capture batched final prompts
+        def glfp_batch(prompts):
+            captured['prompt'] = prompts[0] if prompts else ''
+            # Return a dummy batch logits placeholder; downstream we mock probability calc
+            return [MagicMock()]
+        self.question_answerer.token_generator.get_logits_for_prompts_batch = MagicMock(side_effect=glfp_batch)
+
+        # Prepare mocks
+        reasoning = "Because of X and Y, choose A."
+        self.question_answerer.token_generator.generate_batch_with_kv_cache = MagicMock(
+            return_value=([reasoning], [None])
+        )
+        self.question_answerer.message_generator.create_reasoning_messages = MagicMock(
+            return_value=[{"role": "user", "content": "Q"}]
+        )
+        # Resolver and sampler
+        self.question_answerer.token_resolver.get_answer_token_ids = MagicMock(
+            return_value={"A": 1, "B": 2, "C": 3, "D": 4}
+        )
+        mock_sampler = MagicMock(); mock_sampler.sample.return_value = 1
+        self.mock_tokenizer.decode.return_value = "A"
+        # Avoid dependency on real logits in probability calculation
+        self.question_answerer._calculate_answer_probabilities = MagicMock(return_value={"A":0.4,"B":0.3,"C":0.2,"D":0.1})
+
+        # Use batched API to avoid wrapper assumptions
+        _ = self.question_answerer.answer_questions_batch(
+            ["Q?"], [["a","b","c","d"]], mock_sampler, include_cot=True
+        )
+        prompt = captured.get('prompt', '')
+        self.assertIn("What is your final answer? Respond with just the letter (A, B, C, or D).", prompt)
+        # The template appends "Assistant: " when add_generation_prompt=True
+        self.assertTrue(prompt.strip().endswith("Assistant:"))
 
     def test_reasoning_extraction_in_answer(self):
         """Test that reasoning is properly extracted in answer_question."""

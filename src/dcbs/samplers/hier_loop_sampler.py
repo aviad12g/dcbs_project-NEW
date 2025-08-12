@@ -13,6 +13,7 @@ inside the top-N matters but the final choice must stay reproducible.
 """
 
 from typing import Optional, Set, List
+import numpy as np
 
 import torch
 
@@ -117,10 +118,17 @@ class DeterministicHierLoopSampler(Sampler):
                     effective_clusterer = base_clusterer
 
             # Optional weighting by candidate probabilities if supported (only when enabled on sampler)
-            if hasattr(effective_clusterer, "set_sample_weights") and getattr(self, 'cluster_weighting', 'none') == 'prob':
+            if hasattr(effective_clusterer, "set_sample_weights") and getattr(self, 'cluster_weighting', 'none') in ("prob", "uniform"):
                 try:
-                    weights_np = cand_probs[working_indices].detach().cpu().numpy()
-                    effective_clusterer.set_sample_weights(weights_np)
+                    # Build normalized weights: prob => normalized cand_probs; uniform => 1/n
+                    probs = cand_probs[working_indices].detach().cpu().numpy()
+                    if getattr(self, 'cluster_weighting', 'none') == 'uniform':
+                        n = max(1, probs.shape[0])
+                        w = (np.ones_like(probs, dtype=float) / float(n))
+                    else:
+                        s = float(probs.sum())
+                        w = (probs / s) if s > 0 else (np.ones_like(probs, dtype=float) / max(1, probs.shape[0]))
+                    effective_clusterer.set_sample_weights(w)
                 except Exception:
                     pass
             labels = effective_clusterer.cluster(subset_embeddings)

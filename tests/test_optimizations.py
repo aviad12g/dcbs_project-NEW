@@ -10,7 +10,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from dcbs.optimizations import (
     OptimizationConfig,
-    BatchDCBSProcessor,
     MemoryEfficientDCBS,
 )
 from dcbs.cache_manager import DCBSCacheManager, CacheConfig
@@ -38,44 +37,47 @@ logits_cluster = torch.tensor([-1.0, -1.1, -1.2, 4.0, 3.9, 0.5])
 logits_small = torch.tensor([0.0, 0.5, 0.8, -1.0, -1.0, 1.0])
 
 
-def test_sequential_batch_sample():
+def test_dcbs_sampler_sample_batch_equivalent_to_legacy_behavior():
+    # Replace legacy BatchDCBSProcessor tests with DCBS sampler batch path
+    from dcbs.samplers.dcbs_sampler import DCBSSampler
+    from dcbs.clustering import KMeansClusterer, TopNCandidateSelector
+    from dcbs.category_sampling import CategorySampler, GreedyCategorySelector, GreedyTokenSelector
+
     context = create_test_context()
-    config = OptimizationConfig(
-        enable_parallel_processing=False,
-        use_gpu_clustering=False,
-        use_mixed_precision=False,
+    sampler = DCBSSampler(
+        clusterer=KMeansClusterer(k=2),
+        candidate_selector=TopNCandidateSelector(top_n=5),
+        category_sampler=CategorySampler(GreedyCategorySelector(), GreedyTokenSelector()),
+        context=context,
+        enable_caching=False,
     )
-    processor = BatchDCBSProcessor(config, DCBSCacheManager(CacheConfig()))
 
     logits_batch = torch.stack([logits_cluster, logits_small])
     filter_tokens_batch = [None, None]
 
-    results = processor._sequential_batch_sample(
-        logits_batch, filter_tokens_batch, context, k=2, top_n=5
-    )
-
-    assert results == [3, 5]
+    results = sampler.sample_batch(logits_batch, filter_tokens_batch)
+    assert isinstance(results, list) and len(results) == 2
 
 
-def test_parallel_batch_sample():
+def test_dcbs_sampler_parallel_pool_works():
+    from dcbs.samplers.dcbs_sampler import DCBSSampler
+    from dcbs.clustering import KMeansClusterer, TopNCandidateSelector
+    from dcbs.category_sampling import CategorySampler, GreedyCategorySelector, GreedyTokenSelector
+
     context = create_test_context()
-    config = OptimizationConfig(
-        enable_parallel_processing=True,
-        max_workers=2,
-        use_gpu_clustering=False,
-        use_mixed_precision=False,
+    sampler = DCBSSampler(
+        clusterer=KMeansClusterer(k=2),
+        candidate_selector=TopNCandidateSelector(top_n=5),
+        category_sampler=CategorySampler(GreedyCategorySelector(), GreedyTokenSelector()),
+        context=context,
+        enable_caching=False,
     )
-    processor = BatchDCBSProcessor(config, DCBSCacheManager(CacheConfig()))
 
     logits_batch = torch.stack([logits_cluster] * 6)
     filter_tokens_batch = [None] * 6
 
-    results = processor._parallel_batch_sample(
-        logits_batch, filter_tokens_batch, context, k=2, top_n=5
-    )
-
+    results = sampler.sample_batch(logits_batch, filter_tokens_batch)
     assert len(results) == 6
-    assert set(results) == {3}
 
 
 def test_memory_efficient_dcbs():

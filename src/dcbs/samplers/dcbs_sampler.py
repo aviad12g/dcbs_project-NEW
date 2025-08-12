@@ -649,10 +649,25 @@ class DCBSSampler(Sampler):
                     f"Invalid logits detected in batch sequence {i}: contains NaN/Inf"
                 )
 
-            # Candidate probabilities and embeddings
+            # Candidate probabilities (normalized over candidates) and embeddings
             cand_ids_tensor = torch.tensor(candidate_ids, device=logits.device)
             cand_logits = logits[cand_ids_tensor]
             cand_probs = torch.softmax(cand_logits, dim=-1)
+
+            # Normalize weights to sum=1 for clustering weighting modes
+            weighting_mode = getattr(self, 'cluster_weighting', 'none')
+            if weighting_mode in ("prob", "uniform"):
+                if weighting_mode == "uniform":
+                    # 1/n per candidate
+                    num = max(1, cand_probs.numel())
+                    cand_weights = torch.full_like(cand_probs, 1.0 / float(num))
+                else:
+                    # normalized probabilities already sum to 1 over candidates
+                    total = float(cand_probs.sum().item())
+                    cand_weights = cand_probs if total > 0 else torch.full_like(cand_probs, 1.0 / max(1, cand_probs.numel()))
+                # Persist alongside candidate_probs for use by worker
+                # Replace candidate_probs_list element with weights for clarity in weighting path
+            
 
             # Embeddings on embedding device, then move to CPU for subprocess
             cand_ids_for_embed = torch.tensor(candidate_ids, device=device)
@@ -661,6 +676,7 @@ class DCBSSampler(Sampler):
             )
 
             candidate_sets.append(candidate_ids)
+            # Store probabilities for selection; store weights separately for clustering
             candidate_probs_list.append(cand_probs)
             embeddings_list.append(norm_embeddings)
 
@@ -719,12 +735,22 @@ class DCBSSampler(Sampler):
             emb_cpu = embeddings_list[len(index_mapping)].detach().cpu().numpy()
             # Prepare optional weights for this sequence if enabled
             weights_np = None
-            if getattr(self, 'cluster_weighting', 'none') == 'prob':
+            weighting_mode = getattr(self, 'cluster_weighting', 'none')
+            if weighting_mode in ("prob", "uniform"):
                 try:
-                    w = candidate_probs_list[len(index_mapping)].detach().cpu().numpy()
-                    total = float(w.sum())
-                    if total > 0:
-                        w = w * (len(w) / total)
+                    # Build weights that sum to 1; uniform => 1/n
+                    probs = candidate_probs_list[len(index_mapping)].detach().cpu().numpy()
+                    if weighting_mode == "uniform":
+                        n = max(1, probs.shape[0])
+                        w = np.ones_like(probs, dtype=float) / float(n)
+                    else:
+                        s = float(probs.sum())
+                        if s > 0:
+                            w = probs / s
+                        else:
+                            n = max(1, probs.shape[0])
+                            w = np.ones_like(probs, dtype=float) / float(n)
+                    # For DBSCAN we will internally rescale to preserve min_samples semantics
                     weights_np = w
                 except Exception:
                     weights_np = None
@@ -734,19 +760,28 @@ class DCBSSampler(Sampler):
         # 3) Run clustering in parallel processes
         labels_results: Dict[int, List[int]] = {}
         if jobs:
-            # Decide pool size and initialize worker environment
+            # Decide pool size and initialize worker environment (cap via env var)
+            # Priority: sampler.max_cluster_workers (from config) > env > auto
+            sampler_max_workers = getattr(self, 'max_cluster_workers', None)
             max_workers_cfg = int(os.environ.get("DCBS_MAX_CLUSTER_WORKERS", "0") or 0)
             auto_workers = max(1, min(os.cpu_count() or 1, len(jobs)))
-            max_workers = auto_workers if max_workers_cfg <= 0 else min(max_workers_cfg, auto_workers)
-            with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers, initializer=_init_dcbs_worker_env) as executor:
-                future_to_index = {
-                    executor.submit(_dcbs_parallel_cluster_job, job): index_mapping[j_idx]
-                    for j_idx, job in enumerate(jobs)
-                }
-                for fut in concurrent.futures.as_completed(future_to_index):
-                    labels = fut.result()
-                    original_i = future_to_index[fut]
-                    labels_results[original_i] = labels
+            if sampler_max_workers is not None and sampler_max_workers > 0:
+                max_workers = min(int(sampler_max_workers), auto_workers)
+            else:
+                max_workers = auto_workers if max_workers_cfg <= 0 else min(max_workers_cfg, auto_workers)
+            # Persist the pool across calls using a module-level singleton to avoid spin-up cost
+            if not hasattr(self, "_cluster_pool") or self._cluster_pool is None:
+                self._cluster_pool = concurrent.futures.ProcessPoolExecutor(
+                    max_workers=max_workers, initializer=_init_dcbs_worker_env
+                )
+            # Submit jobs
+            futures = []
+            for j_idx, job in enumerate(jobs):
+                fut = self._cluster_pool.submit(_dcbs_parallel_cluster_job, job)
+                futures.append((fut, index_mapping[j_idx]))
+            for fut, orig_idx in futures:
+                labels = fut.result()
+                labels_results[orig_idx] = labels
 
         # 4) Final selection on main process using category sampler for consistency
         results: List[int] = [0] * batch_size
@@ -786,8 +821,13 @@ class DCBSSampler(Sampler):
 
     def cleanup(self) -> None:
         """Clean up resources used by the sampler."""
-        if self.batch_processor is not None:
-            self.batch_processor.cleanup()
+        # Shutdown persistent cluster pool if exists
+        try:
+            if hasattr(self, "_cluster_pool") and self._cluster_pool is not None:
+                self._cluster_pool.shutdown(wait=False, cancel_futures=True)
+                self._cluster_pool = None
+        except Exception:
+            pass
         
         if self.cache_manager is not None:
             # Clear caches to free memory
@@ -796,8 +836,8 @@ class DCBSSampler(Sampler):
     def get_batch_processing_stats(self) -> dict:
         """Get statistics about batch processing performance."""
         return {
-            "batch_processing_enabled": False,
-            "reason": "Batch processing has been disabled to fix a configuration override bug."
+            "batch_processing_enabled": True,
+            "cluster_pool_active": hasattr(self, "_cluster_pool") and self._cluster_pool is not None,
         }
     
     def __del__(self):

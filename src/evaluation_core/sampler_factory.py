@@ -31,7 +31,12 @@ from .config import EvaluationConfig
 
 
 class SamplerFactory:
-    """Factory for creating and managing sampler instances."""
+    """Factory for creating and managing sampler instances.
+
+    Honors config fields:
+    - cluster_weighting: one of {none, prob, uniform}
+    - max_cluster_workers: optional int to cap process pool size (env DCBS_MAX_CLUSTER_WORKERS overrides if set)
+    """
 
     @staticmethod
     def create_dcbs_sampler(
@@ -114,9 +119,12 @@ class SamplerFactory:
 
         )
 
-        # Configure clustering weighting mode on the sampler ("none" | "prob")
+        # Configure clustering weighting mode on the sampler ("none" | "prob" | "uniform")
         try:
             setattr(sampler, 'cluster_weighting', getattr(config, 'cluster_weighting', 'none'))
+            # Pass max_cluster_workers if specified for reproducibility
+            if getattr(config, 'max_cluster_workers', None) is not None:
+                setattr(sampler, 'max_cluster_workers', int(config.max_cluster_workers))
         except Exception:
             pass
         return sampler

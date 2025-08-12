@@ -34,6 +34,8 @@ class EvaluationConfig:
     top_k: Optional[int] = None # Top-K value for sampling
     batch_size: Optional[int] = None  # Batch size for GPU processing (None = auto-detect)
     use_elbow_method: bool = False  # Use elbow method for dynamic k-means k selection
+    # Parallelism control for clustering workers (None = auto)
+    max_cluster_workers: Optional[int] = None
     
     # Cluster weighting strategy for category selection
     weighting_strategy: str = "prob_mass"  # Options: prob_mass, size, sqrt_size, uniform
@@ -41,7 +43,7 @@ class EvaluationConfig:
     # Clustering weighting mode (how to weight the clustering step itself)
     # none: unweighted clustering (current default behaviour)
     # prob: weight samples by their token probabilities during clustering
-    cluster_weighting: str = "none"
+    cluster_weighting: str = "none"  # Options: none, prob, uniform
 
     # Multi-dataset evaluation
     datasets: list = None  # List of datasets to evaluate

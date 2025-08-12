@@ -89,7 +89,7 @@ class TestTemperatureSampler:
     def test_sample_with_empty_filter_tokens(self):
         sampler = TemperatureSampler(temperature=1.0)
         # If filter_tokens is empty, it should effectively act as if no tokens are allowed
-        # The current implementation will set all logits to -inf then normalize, resulting in uniform over all.
+        # The current implementation should raise or select deterministically on valid paths; ensure no crash.
         # This might need clarification on expected behavior if an empty filter_tokens means *no* tokens allowed.
         # For now, we expect it to still return a token, as the probabilities become uniform.
         selected_token = sampler.sample(self.logits, filter_tokens=set())

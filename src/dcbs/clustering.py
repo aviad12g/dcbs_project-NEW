@@ -9,6 +9,7 @@ import numpy as np
 import torch
 from sklearn.cluster import MiniBatchKMeans, DBSCAN, AgglomerativeClustering
 from sklearn.metrics.pairwise import cosine_distances
+import numpy as np
 
 from .constants import (
     KMEANS_RANDOM_SEED,
@@ -54,7 +55,13 @@ class TokenClusterer(ABC):
 
 
 class KMeansClusterer(TokenClusterer):
-    """K-means clustering implementation with adaptive k selection."""
+    """K-means clustering implementation with adaptive k selection.
+
+    Notes on weights:
+    - If `set_sample_weights(weights)` is used, weights are expected to be normalized to sum to 1.
+    - Weights influence centroid updates via a locally renormalized weighted mean per cluster.
+    - `uniform` weighting mode upstream should pass 1/n per candidate for clarity and consistency.
+    """
 
     def __init__(
         self,
@@ -153,7 +160,9 @@ class KMeansClusterer(TokenClusterer):
     def cluster(self, embeddings: torch.Tensor) -> np.ndarray:
         """Cluster embeddings using k-means with cosine similarity and adaptive k selection.
 
-        Supports optional per-sample weights previously set via set_sample_weights()."""
+        Supports optional per-sample weights previously set via set_sample_weights().
+        Sample weights are expected to be normalized to sum to 1 externally.
+        """
         embeddings_np = embeddings.detach().cpu().numpy()
         weights = getattr(self, "_sample_weights", None)
         if weights is not None:
@@ -179,7 +188,7 @@ class KMeansClusterer(TokenClusterer):
 
         batch_size = max(self.min_batch_size, len(embeddings_np))
 
-        # Use spherical k-means approach for cosine similarity
+        # Use spherical k-means approach for cosine similarity with optional weights
         # Initialize centroids
         np.random.seed(self.random_seed)
         centroid_indices = np.random.choice(n_candidates, effective_k, replace=False)
@@ -207,12 +216,14 @@ class KMeansClusterer(TokenClusterer):
                     if weights is None:
                         centroid = np.mean(embeddings_normalized[cluster_mask], axis=0)
                     else:
+                        # Expect weights to sum to 1 globally; renormalize locally to avoid scale issues
                         w = weights[cluster_mask]
-                        w_sum = float(np.sum(w))
-                        if w_sum <= 0:
+                        w_local_sum = float(np.sum(w))
+                        if w_local_sum <= 0:
                             centroid = np.mean(embeddings_normalized[cluster_mask], axis=0)
                         else:
-                            centroid = np.average(embeddings_normalized[cluster_mask], axis=0, weights=w)
+                            w_local = w / w_local_sum
+                            centroid = np.average(embeddings_normalized[cluster_mask], axis=0, weights=w_local)
                     # Normalize centroid
                     norm = np.linalg.norm(centroid)
                     if norm > 0:
@@ -241,7 +252,13 @@ class KMeansClusterer(TokenClusterer):
 
 
 class DBSCANClusterer(TokenClusterer):
-    """DBSCAN clustering implementation for token embeddings."""
+    """DBSCAN clustering implementation for token embeddings.
+
+    Notes on weights:
+    - Accepts normalized weights (sum to 1) via `set_sample_weights()`.
+    - Internally rescales weights by n (number of candidates) so that `min_samples`
+      continues to behave like a count threshold regardless of candidate set size.
+    """
 
     def __init__(
         self,
@@ -281,9 +298,24 @@ class DBSCANClusterer(TokenClusterer):
             n_jobs=self.n_jobs,
         )
         
+        # Rescale normalized weights to preserve min_samples semantics across n
+        if weights is not None:
+            try:
+                n_points = max(1, embeddings_np.shape[0])
+                # If weights sum to ~1, scale by n to approximate counts
+                total_w = float(np.sum(weights))
+                if total_w > 0:
+                    scaled_weights = weights * (n_points / total_w)
+                else:
+                    scaled_weights = np.ones_like(weights, dtype=float)
+            except Exception:
+                scaled_weights = None
+        else:
+            scaled_weights = None
+
         # Use fit + labels_ to allow passing weights across sklearn versions
         try:
-            dbscan.fit(embeddings_np, sample_weight=weights)
+            dbscan.fit(embeddings_np, sample_weight=scaled_weights)
         except TypeError:
             # Fallback if sklearn version doesn't support sample_weight here
             dbscan.fit(embeddings_np)

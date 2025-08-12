@@ -30,6 +30,8 @@ batch_size: null # Batch size for GPU processing (default: auto-detect)
 dcbs_params:
   k: 8
   top_n: 50
+  cluster_weighting: "none"  # options: none, prob, uniform
+  max_cluster_workers: null   # set to an int to cap clustering parallelism
   dominance_weight: 0.5
   min_cluster_size: 2
   dbscan_eps: 0.3

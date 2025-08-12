@@ -87,9 +87,11 @@ class ArgumentParserSetup:
         parser.add_argument(
             "--cluster-weighting",
             type=str,
-            choices=["none", "prob"],
+            choices=["none", "prob", "uniform"],
             default=None,
-            help="Weight clustering by token probabilities (prob) or leave unweighted (none)",
+            help=
+                "Clustering sample weights: 'prob' uses candidate probabilities (sum=1), "
+                "'uniform' uses 1/n per candidate (sum=1), 'none' disables weighting.",
         )
 
         parser.add_argument(

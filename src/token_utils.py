@@ -170,8 +170,18 @@ class AnswerTokenResolver:
             decoded = tokenizer_cache.decode([token_id], self.tokenizer)
             self.logger.debug(f"Option {label} ({option}): token_id={token_id}, decoded='{decoded}'")
         
-        # Check for conflicts
-        self._check_for_duplicates(answer_ids)
+        # Check for conflicts and harden resolution by retrying with strict candidates
+        duplicates = self._check_for_duplicates(answer_ids)
+        if duplicates:
+            # Retry with stricter candidates ordering to reduce ambiguity
+            hardened = {}
+            for i, option in enumerate(options):
+                label = chr(ord("A") + i)
+                token_id = self._resolve_single_token_id_strict(label)
+                hardened[option] = token_id
+            # If still duplicates, keep but warn
+            self._check_for_duplicates(hardened)
+            answer_ids = hardened
         
         return answer_ids
     
@@ -203,9 +213,18 @@ class AnswerTokenResolver:
         # Ultimate fallback: ASCII value
         self.logger.warning(f"Using ASCII fallback for label {label}")
         return ord(label)
+
+    def _resolve_single_token_id_strict(self, label: str) -> int:
+        """Strict resolver that prefers space+letter and rejects multi-token encodes."""
+        strict_candidates = [f" {label}", f" {label}."]
+        for candidate in strict_candidates:
+            tokens = tokenizer_cache.encode(candidate, self.tokenizer, add_special_tokens=False)
+            if len(tokens) == 1:
+                return tokens[0]
+        return self._resolve_single_token_id(label)
     
-    def _check_for_duplicates(self, answer_ids: Dict[str, int]) -> None:
-        """Check for and warn about duplicate token IDs."""
+    def _check_for_duplicates(self, answer_ids: Dict[str, int]) -> Dict[int, list]:
+        """Check for and warn about duplicate token IDs. Returns mapping of dup token->options."""
         token_counts = {}
         for option, token_id in answer_ids.items():
             if token_id in token_counts:
@@ -217,6 +236,7 @@ class AnswerTokenResolver:
         if duplicates:
             self.logger.warning(f"Found duplicate token IDs: {duplicates}")
             self.logger.warning("This may affect evaluation accuracy!")
+        return duplicates
 
 
 def is_valid_token_prediction(
