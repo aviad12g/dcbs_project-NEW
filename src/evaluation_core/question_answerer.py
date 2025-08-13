@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Tuple
 
 import torch
 
-from src.dcbs import SamplingContext
+from src.dcbs import SamplingContext, GreedySampler
 from src.errors import eval_logger as logger
 from src.token_utils import AnswerTokenResolver
 from src.utils.cot_parser import CoTResponseParser
@@ -41,6 +41,9 @@ class QuestionAnswerer:
         self.token_generator = TokenGenerator(model, tokenizer, self.device)
         self.token_resolver = AnswerTokenResolver(tokenizer)
         self.cot_parser = CoTResponseParser()
+        # Use greedy for reasoning generation to standardize context and avoid
+        # degrading reasoning quality with experimental samplers
+        self._reasoning_sampler = GreedySampler()
     
     def _format_prompt(self, messages: List[Dict[str, str]], add_generation_prompt: bool = True) -> str:
         """
@@ -160,7 +163,7 @@ class QuestionAnswerer:
         reasoning_messages = self.message_generator.create_reasoning_messages(question, options)
         
         reasoning_responses, _, _ = self.token_generator.generate_batch_with_kv_cache(
-            [reasoning_messages], sampler, max_new_tokens=800
+            [reasoning_messages], self._reasoning_sampler, max_new_tokens=512
         )
         reasoning_response = reasoning_responses[0]
 
@@ -179,19 +182,33 @@ class QuestionAnswerer:
         
         # Step 3: Sample from answer tokens
         answer_ids = self.token_resolver.get_answer_token_ids(options)
+        answer_variants = self.token_resolver.get_answer_token_variants(options)
         # Sanity: enforce 4 distinct token IDs to avoid degenerate selection
         if len(set(answer_ids.values())) != len(answer_ids):
             logger.warning(f"Duplicate answer token IDs detected: {answer_ids}")
         answer_probs = self._calculate_answer_probabilities(logits, answer_ids)
 
         filter_tokens = set(answer_ids.values())
+        # Expand filter to include plausible single-token variants for each option
+        for ids in answer_variants.values():
+            for tid in ids:
+                filter_tokens.add(tid)
         pred_token_id = sampler.sample(logits, filter_tokens=filter_tokens)
 
         selected_answer = None
+        canonical_pred_id = pred_token_id
         for answer_text, token_id in answer_ids.items():
             if token_id == pred_token_id:
                 selected_answer = answer_text
+                canonical_pred_id = token_id
                 break
+        if selected_answer is None:
+            # Try to map variant token back to its canonical answer id
+            for answer_text, ids in answer_variants.items():
+                if pred_token_id in ids:
+                    selected_answer = answer_text
+                    canonical_pred_id = answer_ids[answer_text]
+                    break
         
         generated_text = self.tokenizer.decode(pred_token_id)
         final_answer = self._extract_final_answer(generated_text)
@@ -210,8 +227,9 @@ class QuestionAnswerer:
             'raw_reasoning': reasoning_response,
             'reasoning_quality': parsed_reasoning,
             'answer_probs': answer_probs,
-            'pred_token_id': pred_token_id,
+            'pred_token_id': canonical_pred_id,
             'answer_ids': answer_ids,
+            'answer_token_variants': answer_variants,
             'filter_tokens': filter_tokens,
             'logits': logits
         }
@@ -259,7 +277,7 @@ class QuestionAnswerer:
             for q, opts in zip(questions, options_list)
         ]
         gen_out = self.token_generator.generate_batch_with_kv_cache(
-            reasoning_messages_batch, sampler, max_new_tokens=800
+            reasoning_messages_batch, self._reasoning_sampler, max_new_tokens=512
         )
         # Back-compat: allow 2- or 3-tuple returns
         if isinstance(gen_out, tuple) and len(gen_out) == 3:
@@ -280,7 +298,14 @@ class QuestionAnswerer:
 
         # Step 3: Resolve answer tokens and select with batch sampling (or fallback)
         answer_ids_list = [self.token_resolver.get_answer_token_ids(opts) for opts in options_list]
-        filter_tokens_batch = [set(d.values()) for d in answer_ids_list]
+        variants_list = [self.token_resolver.get_answer_token_variants(opts) for opts in options_list]
+        filter_tokens_batch = []
+        for ans_ids, variants in zip(answer_ids_list, variants_list):
+            s = set(ans_ids.values())
+            for ids in variants.values():
+                for tid in ids:
+                    s.add(tid)
+            filter_tokens_batch.append(s)
 
         if hasattr(sampler, "sample_batch"):
             pred_ids = sampler.sample_batch(logits_batch, filter_tokens_batch)
@@ -297,11 +322,20 @@ class QuestionAnswerer:
             # Probabilities per option (restricted softmax) for this row
             answer_probs = self._calculate_answer_probabilities(logits_batch[i], answer_ids)
 
+            # Canonicalize predicted token to primary id, inferring option via variants if needed
             selected_answer = None
+            canonical_pred_id = pred_id
             for answer_text, token_id in answer_ids.items():
                 if token_id == pred_id:
                     selected_answer = answer_text
+                    canonical_pred_id = token_id
                     break
+            if selected_answer is None:
+                for answer_text, id_list in variants_list[i].items():
+                    if pred_id in id_list:
+                        selected_answer = answer_text
+                        canonical_pred_id = answer_ids[answer_text]
+                        break
 
             parsed_reasoning = self.cot_parser.parse_cot_response(rr)
             results.append(
@@ -311,7 +345,7 @@ class QuestionAnswerer:
                     "raw_reasoning": rr,
                     "reasoning_quality": parsed_reasoning,
                     "answer_probs": answer_probs,
-                    "pred_token_id": pred_id,
+                    "pred_token_id": canonical_pred_id,
                     "answer_ids": answer_ids,
                     "filter_tokens": filter_tokens_batch[i],
                     "logits": logits_batch[i],
@@ -334,7 +368,6 @@ class QuestionAnswerer:
         for q, opts in zip(questions, options_list):
             msgs = self.message_generator.create_direct_answer_messages(q, opts)
             prompt = self._format_prompt(msgs, add_generation_prompt=True)
-            prompt += "The correct answer is option"
             prompts.append(prompt)
 
         # Batched logits
@@ -342,7 +375,14 @@ class QuestionAnswerer:
 
         # Resolve answer tokens and build filter sets
         answer_ids_list = [self.token_resolver.get_answer_token_ids(opts) for opts in options_list]
-        filter_tokens_batch = [set(d.values()) for d in answer_ids_list]
+        variants_list = [self.token_resolver.get_answer_token_variants(opts) for opts in options_list]
+        filter_tokens_batch = []
+        for ans_ids, variants in zip(answer_ids_list, variants_list):
+            s = set(ans_ids.values())
+            for ids in variants.values():
+                for tid in ids:
+                    s.add(tid)
+            filter_tokens_batch.append(s)
 
         # Batch sampling (preferred), fallback to per-row if sampler lacks batch API
         if hasattr(sampler, "sample_batch"):
@@ -358,18 +398,27 @@ class QuestionAnswerer:
             # Calculate per-option probabilities from restricted logits
             answer_probs = self._calculate_answer_probabilities(logits_batch[i], answer_ids)
 
+            # Canonicalize predicted token to primary id via variants
             selected_answer = None
+            canonical_pred_id = pred_id
             for answer_text, token_id in answer_ids.items():
                 if token_id == pred_id:
                     selected_answer = answer_text
+                    canonical_pred_id = token_id
                     break
+            if selected_answer is None:
+                for answer_text, id_list in variants_list[i].items():
+                    if pred_id in id_list:
+                        selected_answer = answer_text
+                        canonical_pred_id = answer_ids[answer_text]
+                        break
 
             results.append(
                 {
                     "selected_answer": selected_answer,
                     "reasoning": None,
                     "answer_probs": answer_probs,
-                    "pred_token_id": pred_id,
+                    "pred_token_id": canonical_pred_id,
                     "answer_ids": answer_ids,
                     "filter_tokens": filter_tokens_batch[i],
                     "logits": logits_batch[i],

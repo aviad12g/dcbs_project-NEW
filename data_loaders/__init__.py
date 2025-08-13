@@ -25,11 +25,30 @@ class DatasetRegistry:
             "choices_field": "choices",
             "answer_field": "answerKey",
         },
+        # Convenience aliases for validation split (often used for reported baselines)
+        "arc_easy_val": {
+            "name": "allenai/ai2_arc",
+            "config": "ARC-Easy",
+            "split": "validation",
+            "description": "ARC Easy - validation split",
+            "question_field": "question",
+            "choices_field": "choices",
+            "answer_field": "answerKey",
+        },
         "arc_challenge": {
             "name": "allenai/ai2_arc",
             "config": "ARC-Challenge",
             "split": "test", 
             "description": "ARC Challenge - harder grade-school science questions",
+            "question_field": "question",
+            "choices_field": "choices",
+            "answer_field": "answerKey",
+        },
+        "arc_challenge_val": {
+            "name": "allenai/ai2_arc",
+            "config": "ARC-Challenge",
+            "split": "validation",
+            "description": "ARC Challenge - validation split",
             "question_field": "question",
             "choices_field": "choices",
             "answer_field": "answerKey",
@@ -156,7 +175,9 @@ class DatasetRegistry:
         # Handle choices
         if info["choices_field"] == "choices" and isinstance(example["choices"], dict):
             # ARC format: {"text": [...], "label": [...]}
-            choices = example["choices"]["text"]
+            texts = example["choices"].get("text", [])
+            labels = example["choices"].get("label", [])
+            choices = texts
         elif info["choices_field"] == "endings":
             # HellaSwag format: list of strings
             choices = example["endings"]
@@ -166,12 +187,22 @@ class DatasetRegistry:
         
         # Handle answer format
         if isinstance(answer_field, str):
-            if answer_field.isdigit():
-                # Numeric string format (0, 1, 2, 3)
-                correct_option = answer_field
+            s = answer_field.strip()
+            if s.isdigit():
+                # Numeric string format (0,1,2,3)
+                correct_option = s
             else:
-                # Letter format (A, B, C, D)
-                correct_option = str(ord(answer_field.upper()) - ord('A'))
+                # Letter format (A,B,C,D). For ARC, map via provided labels to ensure correct alignment.
+                if info["choices_field"] == "choices" and isinstance(example.get("choices"), dict):
+                    # Find index where label matches the answer key
+                    try:
+                        idx = [str(l).strip().upper() for l in labels].index(s.upper())
+                        correct_option = str(idx)
+                    except Exception:
+                        # Fallback to alphabetical A->0 mapping if labels missing
+                        correct_option = str(max(0, ord(s.upper()) - ord('A')))
+                else:
+                    correct_option = str(max(0, ord(s.upper()) - ord('A')))
         elif isinstance(answer_field, int):
             # Numeric format (0, 1, 2, 3)
             correct_option = str(answer_field)

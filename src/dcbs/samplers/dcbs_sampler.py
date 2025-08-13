@@ -757,31 +757,38 @@ class DCBSSampler(Sampler):
             jobs.append((emb_cpu, clusterer_spec, weights_np))
             index_mapping.append(i)
 
-        # 3) Run clustering in parallel processes
+        # 3) Run clustering (disable process pools on Windows to avoid DLL/OOM issues)
         labels_results: Dict[int, List[int]] = {}
         if jobs:
-            # Decide pool size and initialize worker environment (cap via env var)
-            # Priority: sampler.max_cluster_workers (from config) > env > auto
-            sampler_max_workers = getattr(self, 'max_cluster_workers', None)
-            max_workers_cfg = int(os.environ.get("DCBS_MAX_CLUSTER_WORKERS", "0") or 0)
-            auto_workers = max(1, min(os.cpu_count() or 1, len(jobs)))
-            if sampler_max_workers is not None and sampler_max_workers > 0:
-                max_workers = min(int(sampler_max_workers), auto_workers)
+            use_process_pool = os.name != 'nt' and os.environ.get("DCBS_DISABLE_PROCESS_POOL", "0") != "1"
+            if use_process_pool:
+                # Decide pool size and initialize worker environment (cap via env var)
+                # Priority: sampler.max_cluster_workers (from config) > env > auto
+                sampler_max_workers = getattr(self, 'max_cluster_workers', None)
+                max_workers_cfg = int(os.environ.get("DCBS_MAX_CLUSTER_WORKERS", "0") or 0)
+                auto_workers = max(1, min(os.cpu_count() or 1, len(jobs)))
+                if sampler_max_workers is not None and sampler_max_workers > 0:
+                    max_workers = min(int(sampler_max_workers), auto_workers)
+                else:
+                    max_workers = auto_workers if max_workers_cfg <= 0 else min(max_workers_cfg, auto_workers)
+                # Persist the pool across calls using a module-level singleton to avoid spin-up cost
+                if not hasattr(self, "_cluster_pool") or self._cluster_pool is None:
+                    self._cluster_pool = concurrent.futures.ProcessPoolExecutor(
+                        max_workers=max_workers, initializer=_init_dcbs_worker_env
+                    )
+                # Submit jobs
+                futures = []
+                for j_idx, job in enumerate(jobs):
+                    fut = self._cluster_pool.submit(_dcbs_parallel_cluster_job, job)
+                    futures.append((fut, index_mapping[j_idx]))
+                for fut, orig_idx in futures:
+                    labels = fut.result()
+                    labels_results[orig_idx] = labels
             else:
-                max_workers = auto_workers if max_workers_cfg <= 0 else min(max_workers_cfg, auto_workers)
-            # Persist the pool across calls using a module-level singleton to avoid spin-up cost
-            if not hasattr(self, "_cluster_pool") or self._cluster_pool is None:
-                self._cluster_pool = concurrent.futures.ProcessPoolExecutor(
-                    max_workers=max_workers, initializer=_init_dcbs_worker_env
-                )
-            # Submit jobs
-            futures = []
-            for j_idx, job in enumerate(jobs):
-                fut = self._cluster_pool.submit(_dcbs_parallel_cluster_job, job)
-                futures.append((fut, index_mapping[j_idx]))
-            for fut, orig_idx in futures:
-                labels = fut.result()
-                labels_results[orig_idx] = labels
+                # Sequential fallback (Windows-safe)
+                for j_idx, job in enumerate(jobs):
+                    labels = _dcbs_parallel_cluster_job(job)
+                    labels_results[index_mapping[j_idx]] = labels
 
         # 4) Final selection on main process using category sampler for consistency
         results: List[int] = [0] * batch_size

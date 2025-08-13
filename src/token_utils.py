@@ -184,16 +184,75 @@ class AnswerTokenResolver:
             answer_ids = hardened
         
         return answer_ids
+
+    def get_answer_token_variants(self, options: List[str]) -> Dict[str, List[int]]:
+        """Return a list of plausible single-token IDs for each option's letter.
+
+        Includes with/without leading space and optional trailing period, adjusted for
+        chat-template vs completion modes. Deduplicates and preserves order of discovery.
+        """
+        variants: Dict[str, List[int]] = {}
+        has_chat_template = hasattr(self.tokenizer, "chat_template") and getattr(self.tokenizer, "chat_template") is not None
+        for i, option in enumerate(options):
+            label = chr(ord("A") + i)
+            if has_chat_template:
+                candidates = [label, f"{label}.", f" {label}", f" {label}."]
+            else:
+                candidates = [f" {label}", f" {label}.", label, f"{label}."]
+
+            ids: List[int] = []
+            seen = set()
+            for cand in candidates:
+                toks = tokenizer_cache.encode(cand, self.tokenizer, add_special_tokens=False)
+                if len(toks) == 1:
+                    tid = toks[0]
+                    if tid not in seen:
+                        ids.append(tid)
+                        seen.add(tid)
+            # Fallback if none found
+            if not ids:
+                fallback = tokenizer_cache.encode(f" {label}", self.tokenizer, add_special_tokens=False)
+                if fallback:
+                    tid = fallback[-1]
+                    if tid not in seen:
+                        ids.append(tid)
+                        seen.add(tid)
+                else:
+                    ids.append(ord(label))
+            variants[option] = ids
+        # Warn on duplicates across options (may confuse evaluation)
+        token_to_opts: Dict[int, List[str]] = {}
+        for opt, id_list in variants.items():
+            for tid in id_list:
+                token_to_opts.setdefault(tid, []).append(opt)
+        dup = {tid: opts for tid, opts in token_to_opts.items() if len(opts) > 1}
+        if dup:
+            self.logger.warning(f"Overlapping token IDs across options: {dup}")
+        return variants
     
     def _resolve_single_token_id(self, label: str) -> int:
-        """Resolve a single answer label to its best token ID."""
-        # Candidate tokenization strategies in order of preference
-        candidates = [
-            f" {label}",      # Space + letter (most common)
-            label,            # Raw letter
-            f"{label}.",      # Letter with period
-            f" {label}.",     # Space + letter + period
-        ]
+        """Resolve a single answer label to its best token ID.
+
+        Context-aware ordering: for chat-template models, prefer raw letter first
+        (no leading space) because the next token begins the assistant message
+        at start-of-line. For plain completion modes, prefer leading-space tokens.
+        """
+        has_chat_template = hasattr(self.tokenizer, "chat_template") and getattr(self.tokenizer, "chat_template") is not None
+        if has_chat_template:
+            candidates = [
+                label,            # Raw letter (chat completion usually starts at BOS of assistant)
+                f" {label}",      # Space + letter
+                f"{label}.",      # Letter with period
+                f" {label}.",     # Space + letter + period
+            ]
+        else:
+            # Completion-style prompts often put a space before the answer token
+            candidates = [
+                f" {label}",      # Space + letter (most common)
+                label,            # Raw letter
+                f"{label}.",      # Letter with period
+                f" {label}.",     # Space + letter + period
+            ]
         
         for candidate in candidates:
             tokens = tokenizer_cache.encode(candidate, self.tokenizer, add_special_tokens=False)
@@ -215,8 +274,9 @@ class AnswerTokenResolver:
         return ord(label)
 
     def _resolve_single_token_id_strict(self, label: str) -> int:
-        """Strict resolver that prefers space+letter and rejects multi-token encodes."""
-        strict_candidates = [f" {label}", f" {label}."]
+        """Strict resolver with context-aware ordering."""
+        has_chat_template = hasattr(self.tokenizer, "chat_template") and getattr(self.tokenizer, "chat_template") is not None
+        strict_candidates = ([label, f"{label}."] if has_chat_template else [f" {label}", f" {label}."])
         for candidate in strict_candidates:
             tokens = tokenizer_cache.encode(candidate, self.tokenizer, add_special_tokens=False)
             if len(tokens) == 1:

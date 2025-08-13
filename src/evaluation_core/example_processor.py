@@ -100,8 +100,37 @@ class ExampleProcessor:
             if "question" in example:
                 sentence = example["question"]
                 options = example["options"]
-                correct_option = example.get("correct_option", "1")
-                correct_idx = int(correct_option) - 1
+                # Robust parsing of correct option: supports 0-based, 1-based, or letter formats
+                raw_co = example.get("correct_option", "1")
+                correct_idx = None
+                try:
+                    if isinstance(raw_co, int):
+                        # Prefer 0-based if in range, else treat as 1-based
+                        if 0 <= raw_co < len(options):
+                            correct_idx = raw_co
+                        elif 1 <= raw_co <= len(options):
+                            correct_idx = raw_co - 1
+                    elif isinstance(raw_co, str):
+                        s = raw_co.strip()
+                        if s.isdigit():
+                            v = int(s)
+                            if 0 <= v < len(options):
+                                correct_idx = v
+                            elif 1 <= v <= len(options):
+                                correct_idx = v - 1
+                        elif len(s) == 1 and 'A' <= s.upper() <= chr(ord('A') + len(options) - 1):
+                            correct_idx = ord(s.upper()) - ord('A')
+                    # Fallback: use provided correct_answer text if available
+                    if correct_idx is None:
+                        ca = example.get("correct_answer")
+                        if isinstance(ca, str) and ca in options:
+                            correct_idx = options.index(ca)
+                except Exception:
+                    correct_idx = None
+
+                if correct_idx is None:
+                    raise ValueError(f"Unable to determine correct option index from value '{raw_co}' with {len(options)} choices")
+
                 correct_answer = options[correct_idx]
                 
                 questions.append(sentence)
@@ -111,7 +140,7 @@ class ExampleProcessor:
                     "sentence": sentence,
                     "options": options,
                     "correct_answer": correct_answer,
-                    "correct_option": correct_option,
+                    "correct_option": raw_co,
                     "correct_idx": correct_idx
                 })
             else:
@@ -136,6 +165,9 @@ class ExampleProcessor:
             result["correct_id"] = answer_result["answer_ids"][metadata["correct_answer"]]
             result["logits"] = answer_result["logits"]
             result["answer_probs"] = answer_result["answer_probs"]
+            # Preserve token variants (if provided) for downstream debugging
+            if "answer_token_variants" in answer_result:
+                result["answer_token_variants"] = answer_result["answer_token_variants"]
             result["processing_time"] = answer_result.get("processing_time", total_time / len(examples))
             
             processed_examples.append(result)
@@ -201,7 +233,10 @@ class ExampleProcessor:
         # Multiple-choice branch (existing logic)
         logits = answer_result["logits"]
         filter_tokens = answer_result["filter_tokens"]
-        correct_id = processed_result["correct_id"]
+        # Recompute correct_id against the current answer_ids to avoid tokenization drift
+        current_answer_ids = answer_result.get("answer_ids", {})
+        correct_answer_text = processed_result["correct_answer"]
+        correct_id = current_answer_ids.get(correct_answer_text, processed_result["correct_id"])  # fallback to precomputed
 
         predicted_answer = answer_result.get("selected_answer")
         
@@ -300,7 +335,10 @@ class ExampleProcessor:
         for processed_result, answer_result in zip(processed_results, answer_results):
             logits = answer_result["logits"]
             filter_tokens = answer_result["filter_tokens"]
-            correct_id = processed_result["correct_id"]
+            # Recompute correct_id using the same answer_ids used to produce pred_id
+            current_answer_ids = answer_result.get("answer_ids", {})
+            correct_answer_text = processed_result["correct_answer"]
+            correct_id = current_answer_ids.get(correct_answer_text, processed_result["correct_id"])  # fallback
 
             predicted_answer = answer_result.get("selected_answer")
             pred_id = answer_result.get("pred_token_id")
