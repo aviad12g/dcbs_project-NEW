@@ -125,6 +125,11 @@ class SamplerFactory:
             # Pass max_cluster_workers if specified for reproducibility
             if getattr(config, 'max_cluster_workers', None) is not None:
                 setattr(sampler, 'max_cluster_workers', int(config.max_cluster_workers))
+            # Batched clustering controls
+            if hasattr(config, 'batched_clustering'):
+                setattr(sampler, 'batched_clustering', getattr(config, 'batched_clustering'))
+            if getattr(config, 'kmeans_iters', None) is not None:
+                setattr(sampler, 'kmeans_iters', int(config.kmeans_iters))
         except Exception:
             pass
         return sampler

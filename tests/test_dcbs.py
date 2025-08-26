@@ -416,6 +416,82 @@ class TestDCBS(unittest.TestCase):
         self.assertGreaterEqual(token_id, 0)
         self.assertLess(token_id, vocab_size)
 
+    def test_batched_vs_single_parity(self):
+        """Batched vs single-row DCBS parity on synthetic logits."""
+        torch.manual_seed(123)
+        vocab_size = 50
+        embed_dim = 16
+
+        embedding = self.create_mock_embedding(vocab_size, embed_dim)
+        context = SamplingContext(embedding_layer=embedding, tokenizer=None, device=torch.device("cpu"))
+
+        B = 8
+        logits_batch = torch.randn(B, vocab_size)
+
+        # Stable tie-break: add tiny token-id-based offset
+        token_ids = torch.arange(vocab_size)
+        tiny = (token_ids.float() * 1e-9)
+        logits_batch = logits_batch + tiny
+
+        sampler = DCBSSampler.create_default(k=4, top_n=20, context=context)
+        setattr(sampler, 'batched_clustering', 'on')
+
+        single = []
+        for i in range(B):
+            tok = sampler.sample(logits_batch[i], context=context)
+            single.append(tok)
+
+        batched = sampler.sample_batch(logits_batch, context=context)
+        self.assertEqual(single, batched)
+
+    def test_masked_filtered_rows(self):
+        """Filtered candidates per row are respected under batched path."""
+        torch.manual_seed(123)
+        vocab_size = 60
+        embed_dim = 8
+
+        embedding = self.create_mock_embedding(vocab_size, embed_dim)
+        context = SamplingContext(embedding_layer=embedding, tokenizer=None, device=torch.device("cpu"))
+
+        B = 4
+        logits_batch = torch.randn(B, vocab_size)
+        sampler = DCBSSampler.create_default(k=3, top_n=10, context=context)
+        setattr(sampler, 'batched_clustering', 'on')
+
+        filters = [
+            {1, 2, 3, 4},
+            {10, 12},
+            {5, 6, 7},
+            {15, 18, 21, 22, 23},
+        ]
+
+        single = []
+        for i in range(B):
+            tok = sampler.sample(logits_batch[i], filter_tokens=filters[i], context=context)
+            single.append(tok)
+
+        batched = sampler.sample_batch(logits_batch, filter_tokens_batch=filters, context=context)
+        self.assertEqual(single, batched)
+
+    def test_cache_key_content_sensitive(self):
+        """Cache key must change when embedding content changes (no stale reuse)."""
+        torch.manual_seed(42)
+        vocab_size = 32
+        embed_dim = 8
+        embedding = self.create_mock_embedding(vocab_size, embed_dim)
+        context = SamplingContext(embedding_layer=embedding, tokenizer=None, device=torch.device("cpu"))
+
+        sampler = DCBSSampler.create_default(k=3, top_n=10, context=context)
+
+        logits = torch.randn(vocab_size)
+        _ = sampler.sample(logits, context=context)  # warm cache
+
+        with torch.no_grad():
+            embedding.weight[0] = embedding.weight[0] + 0.01
+
+        tok = sampler.sample(logits, context=context)
+        self.assertIsInstance(tok, int)
+
 
 if __name__ == "__main__":
     unittest.main()

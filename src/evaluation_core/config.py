@@ -45,6 +45,10 @@ class EvaluationConfig:
     # prob: weight samples by their token probabilities during clustering
     cluster_weighting: str = "none"  # Options: none, prob, uniform
 
+    # Batched clustering controls
+    batched_clustering: str = "auto"  # auto | on | off
+    kmeans_iters: Optional[int] = None  # Lloyd iterations override for batched KMeans
+
     # Multi-dataset evaluation
     datasets: list = None  # List of datasets to evaluate
     

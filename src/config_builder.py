@@ -105,6 +105,8 @@ class ConfigBuilder:
             "batch_size": "batch_size",  # Add batch_size mapping
             "use_elbow_method": "use_elbow_method",  # Add elbow method mapping
             "cluster_weighting": "cluster_weighting",
+            "batched_clustering": "batched_clustering",
+            "kmeans_iters": "kmeans_iters",
         }
 
         # Apply overrides from command-line arguments
@@ -127,6 +129,8 @@ class ConfigBuilder:
             "enable_cluster_history": enable_cluster_history,
             "batch_size": batch_size,  # Add batch_size to config values
             "use_elbow_method": use_elbow_method,  # Add elbow method to config values
+            "batched_clustering": yaml_config.get("batched_clustering", "auto"),
+            "kmeans_iters": yaml_config.get("kmeans_iters"),
         }
 
         for arg_name, config_key in arg_overrides.items():

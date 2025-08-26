@@ -204,6 +204,21 @@ class ArgumentParserSetup:
         )
 
         parser.add_argument(
+            "--batched-clustering",
+            type=str,
+            choices=["auto", "on", "off"],
+            default="auto",
+            help="Enable batched clustering fast path for compatible clusterers (K-Means).",
+        )
+
+        parser.add_argument(
+            "--kmeans-iters",
+            type=int,
+            default=None,
+            help="Override number of Lloyd iterations for batched K-Means.",
+        )
+
+        parser.add_argument(
             "--enable-cluster-history",
             action="store_true",
             help="Record cluster history and probabilities",

@@ -11,6 +11,7 @@ import os
 import time
 
 import numpy as np
+import hashlib
 import torch
 
 from .base import Sampler, SamplingContext
@@ -477,9 +478,75 @@ class DCBSSampler(Sampler):
         if not self.enable_caching or self.cache_manager is None:
             return self.clusterer.cluster(embeddings)
         
-        # Try cached clustering
+        # Try cached clustering with strict content-aware key
         device_str = str(embeddings.device)
-        cache_key = (embeddings.shape[0], self.clusterer.num_clusters, device_str)
+        try:
+            # Compute deterministic content hash of embeddings (fp16 CPU, contiguous)
+            emb_fp16_cpu = (
+                embeddings.detach()
+                .to(device="cpu", dtype=torch.float16)
+                .contiguous()
+            )
+            emb_bytes = emb_fp16_cpu.numpy().tobytes()
+            emb_hash = hashlib.blake2b(emb_bytes, digest_size=16).hexdigest()
+        except Exception:
+            # Fallback to shape-only hash if conversion fails
+            emb_hash = f"shape:{tuple(embeddings.shape)}"
+
+        # Clusterer spec for key stability
+        clusterer_name = self.clusterer.__class__.__name__
+        clusterer_params: Dict[str, Any] = {}
+        try:
+            if clusterer_name == "KMeansClusterer":
+                clusterer_params = {
+                    "k": int(getattr(self.clusterer, "k", 0)),
+                    "random_seed": int(getattr(self.clusterer, "random_seed", 0)),
+                    "max_iterations": int(getattr(self.clusterer, "max_iterations", 0)),
+                    "enable_adaptive_k": bool(getattr(self.clusterer, "enable_adaptive_k", False)),
+                    "min_k": int(getattr(self.clusterer, "min_k", 0)),
+                    "max_k": int(getattr(self.clusterer, "max_k", 0)),
+                    "use_elbow_method": bool(getattr(self.clusterer, "use_elbow_method", False)),
+                }
+            elif clusterer_name == "DBSCANClusterer":
+                clusterer_params = {
+                    "eps": float(getattr(self.clusterer, "eps", 0.0)),
+                    "min_samples": int(getattr(self.clusterer, "min_samples", 0)),
+                    "metric": str(getattr(self.clusterer, "metric", "")),
+                }
+            elif clusterer_name == "HierarchicalClusterer":
+                clusterer_params = {
+                    "k": int(getattr(self.clusterer, "k", 0)),
+                    "linkage": str(getattr(self.clusterer, "linkage", "")),
+                    "metric": str(getattr(self.clusterer, "metric", "")),
+                }
+        except Exception:
+            clusterer_params = {}
+
+        # Candidate selector params (e.g., top_n)
+        selector_top_n = int(getattr(self.candidate_selector, "top_n", -1)) if hasattr(self, "candidate_selector") else -1
+
+        # Model/embedding identity (best-effort)
+        try:
+            emb_layer = getattr(self.context, "embedding_layer", None)
+            model_ident = (
+                int(emb_layer.weight.data_ptr()),
+                tuple(emb_layer.weight.shape)
+            ) if emb_layer is not None else (None, None)
+        except Exception:
+            model_ident = (None, None)
+
+        cluster_weighting = str(getattr(self, "cluster_weighting", "none"))
+        cache_key = (
+            "dcbs_cluster",
+            clusterer_name,
+            tuple(sorted(clusterer_params.items())),
+            cluster_weighting,
+            selector_top_n,
+            str(embeddings.dtype),
+            device_str,
+            model_ident,
+            emb_hash,
+        )
         
         cached_labels = self.cache_manager.get_clustering(cache_key)
         if cached_labels is not None:
@@ -649,42 +716,142 @@ class DCBSSampler(Sampler):
                     f"Invalid logits detected in batch sequence {i}: contains NaN/Inf"
                 )
 
-            # Candidate probabilities (normalized over candidates) and embeddings
+            # Candidate probabilities (normalized over candidates)
             cand_ids_tensor = torch.tensor(candidate_ids, device=logits.device)
             cand_logits = logits[cand_ids_tensor]
             cand_probs = torch.softmax(cand_logits, dim=-1)
 
-            # Normalize weights to sum=1 for clustering weighting modes
-            weighting_mode = getattr(self, 'cluster_weighting', 'none')
-            if weighting_mode in ("prob", "uniform"):
-                if weighting_mode == "uniform":
-                    # 1/n per candidate
-                    num = max(1, cand_probs.numel())
-                    cand_weights = torch.full_like(cand_probs, 1.0 / float(num))
-                else:
-                    # normalized probabilities already sum to 1 over candidates
-                    total = float(cand_probs.sum().item())
-                    cand_weights = cand_probs if total > 0 else torch.full_like(cand_probs, 1.0 / max(1, cand_probs.numel()))
-                # Persist alongside candidate_probs for use by worker
-                # Replace candidate_probs_list element with weights for clarity in weighting path
-            
-
-            # Embeddings on embedding device, then move to CPU for subprocess
-            cand_ids_for_embed = torch.tensor(candidate_ids, device=device)
-            norm_embeddings = self.embedding_ops.get_normalized_embeddings(
-                cand_ids_for_embed, effective_context.embedding_layer
-            )
-
             candidate_sets.append(candidate_ids)
-            # Store probabilities for selection; store weights separately for clustering
             candidate_probs_list.append(cand_probs)
-            embeddings_list.append(norm_embeddings)
+
+        # Build embeddings for non-simple rows in a single batched fetch for efficiency
+        if len(simple_results) != batch_size:
+            # Collect unique token ids across non-simple rows
+            all_ids: List[int] = []
+            for ids in candidate_sets:
+                all_ids.extend(ids)
+            unique_ids_list = sorted(set(all_ids))
+            if unique_ids_list:
+                unique_ids_tensor = torch.tensor(unique_ids_list, device=device)
+                unique_embeds = self.embedding_ops.get_normalized_embeddings(
+                    unique_ids_tensor, effective_context.embedding_layer
+                )  # (U, d)
+                # Map id -> position
+                id_to_pos = {tid: idx for idx, tid in enumerate(unique_ids_list)}
+                # Build per-row embeddings by indexing into unique_embeds
+                for ids in candidate_sets:
+                    if not ids:
+                        embeddings_list.append(torch.empty((0, unique_embeds.shape[1]), device=device, dtype=unique_embeds.dtype))
+                    else:
+                        idxs = torch.tensor([id_to_pos[t] for t in ids], device=device)
+                        embeddings_list.append(unique_embeds.index_select(0, idxs))
+            else:
+                embeddings_list = [torch.empty((0, effective_context.embedding_layer.weight.shape[1]), device=device) for _ in candidate_sets]
 
         # If all were simple, return aggregated results
         if len(simple_results) == batch_size:
             return [simple_results[i] for i in range(batch_size)]
 
-        # 2) Prepare clustering jobs for remaining sequences
+        # 2) Batched clustering fast-path (for KMeans with cluster_batch)
+        non_simple_count = len(candidate_probs_list)
+        batched_used = False
+        batched_mode = str(getattr(self, 'batched_clustering', 'auto'))
+        if non_simple_count > 0 and hasattr(self.clusterer, "cluster_batch") and batched_mode != 'off':
+            try:
+                # Build padded batch tensors
+                n_list = [emb.shape[0] for emb in embeddings_list]
+                n_max = max(n_list)
+                d = embeddings_list[0].shape[1]
+                device = embeddings_list[0].device
+                dtype = embeddings_list[0].dtype
+
+                E_batch = torch.zeros((non_simple_count, n_max, d), device=device, dtype=dtype)
+                P_batch = torch.zeros((non_simple_count, n_max), device=device, dtype=embeddings_list[0].dtype)
+                valid_mask = torch.zeros((non_simple_count, n_max), device=device, dtype=torch.bool)
+
+                for j, (emb, probs) in enumerate(zip(embeddings_list, candidate_probs_list)):
+                    n_j = emb.shape[0]
+                    E_batch[j, :n_j] = emb
+                    P_batch[j, :n_j] = probs
+                    valid_mask[j, :n_j] = True
+
+                # Build weights according to clustering weighting mode
+                weighting_mode = getattr(self, 'cluster_weighting', 'none')
+                if weighting_mode == "uniform":
+                    # 1/n over valid positions
+                    counts = valid_mask.sum(dim=1, keepdim=True).clamp(min=1)
+                    W_batch = torch.zeros_like(P_batch)
+                    W_batch[valid_mask] = (1.0 / counts).expand_as(P_batch)[valid_mask]
+                elif weighting_mode == "prob":
+                    # Probabilities already sum to 1 across candidates
+                    row_sums = P_batch.sum(dim=1, keepdim=True).clamp(min=1e-8)
+                    W_batch = torch.where(valid_mask, P_batch / row_sums, torch.zeros_like(P_batch))
+                else:
+                    W_batch = None
+
+                # Determine k and iterations
+                k_value = int(getattr(self.clusterer, "k", DEFAULT_K_CLUSTERS))
+                iters_value = int(getattr(self, 'kmeans_iters', None) or getattr(self.clusterer, "max_iterations", 6))
+                seed_value = int(getattr(self.clusterer, "random_seed", 42))
+
+                labels_tensor: torch.Tensor = self.clusterer.cluster_batch(
+                    E_batch, weights=W_batch, valid_mask=valid_mask, k=k_value, iters=iters_value, seed=seed_value
+                )
+
+                # Selection per row using DCBS semantics
+                results: List[int] = [0] * batch_size
+                # Fill simple first
+                for i, tok in simple_results.items():
+                    results[i] = tok
+
+                # For non-simple rows, compute selection
+                b_row = 0
+                for i in range(batch_size):
+                    if i in simple_results:
+                        continue
+                    labels_row = labels_tensor[b_row]  # (n_max,)
+                    probs_row = P_batch[b_row]
+                    mask_row = valid_mask[b_row]
+                    n_j = n_list[b_row]
+
+                    # Compute cluster masses without scatter on -1
+                    K = int(labels_row.max().item() + 1) if (labels_row[mask_row] >= 0).any() else 1
+                    masses = torch.zeros(K, device=probs_row.device, dtype=probs_row.dtype)
+                    for k_idx in range(K):
+                        in_k = (labels_row == k_idx) & mask_row
+                        if in_k.any():
+                            masses[k_idx] = probs_row[in_k].sum()
+
+                    # Choose cluster (argmax with stable tie-break by lowest index)
+                    # torch.argmax is deterministic and chooses the first max index
+                    selected_cluster_idx = int(torch.argmax(masses).item())
+
+                    # Pick token within selected cluster
+                    in_sel = (labels_row == selected_cluster_idx) & mask_row
+                    if not in_sel.any():
+                        # Fallback to global best among valid
+                        pos = int(torch.argmax(torch.where(mask_row, probs_row, torch.full_like(probs_row, float('-inf')))).item())
+                    else:
+                        # Argmax within cluster with valid mask
+                        masked = torch.where(in_sel, probs_row, torch.full_like(probs_row, float('-inf')))
+                        pos = int(torch.argmax(masked).item())
+
+                    # Map pos to token id via candidate_sets order
+                    selected_token = candidate_sets[b_row][pos]
+                    results[i] = selected_token
+                    b_row += 1
+
+                batched_used = True
+                try:
+                    self.debugger.log_debug(f"Batched clustering path used: True; k={k_value}; iters={iters_value}; rows={non_simple_count}")
+                except Exception:
+                    pass
+                return results
+            except Exception:
+                # Fall back to existing per-row clustering path
+                batched_used = False
+
+        # 2b) Prepare clustering jobs for remaining sequences (per-row fallback)
         jobs: List[Tuple[np.ndarray, Dict[str, Any], Optional[np.ndarray]]] = []
         index_mapping: List[int] = []  # map job order -> original index
 

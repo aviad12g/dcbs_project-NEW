@@ -250,6 +250,169 @@ class KMeansClusterer(TokenClusterer):
             "max_k": self.max_k,
         }
 
+    # ------------------------ Batched API ------------------------
+    def cluster_batch(
+        self,
+        embeddings: torch.Tensor,  # (B, n, d)
+        weights: Optional[torch.Tensor] = None,  # (B, n) or None
+        valid_mask: Optional[torch.Tensor] = None,  # (B, n) bool or None
+        k: Optional[int] = None,
+        iters: Optional[int] = None,
+        seed: Optional[int] = None,
+    ) -> torch.Tensor:
+        """Batched spherical K-Means with optional per-sample weights and masks.
+
+        Args:
+            embeddings: Unit-norm or raw embeddings of shape (B, n, d)
+            weights: Optional per-sample weights (B, n); if None uses uniform
+            valid_mask: Optional mask for valid positions (B, n)
+            k: Number of clusters (defaults to self.k)
+            iters: Number of Lloyd iterations (defaults to self.max_iterations)
+            seed: Random seed (ignored; deterministic init used)
+
+        Returns:
+            labels: Long tensor of shape (B, n) with cluster indices in [0, k-1];
+                    invalid positions (if any) are set to -1.
+        """
+        import torch
+        import torch.nn.functional as F
+
+        assert embeddings.dim() == 3, "embeddings must be (B, n, d)"
+        B, n, d = embeddings.shape
+        device = embeddings.device
+        dtype = embeddings.dtype
+
+        K = int(k if k is not None else self.k)
+        T = int(iters if iters is not None else self.max_iterations)
+
+        # Normalize embeddings to unit vectors (spherical k-means)
+        E = embeddings
+        norms = torch.linalg.norm(E, ord=2, dim=-1, keepdim=True).clamp_min(1e-12)
+        E = E / norms
+
+        # Valid mask
+        if valid_mask is None:
+            valid_mask = torch.ones((B, n), device=device, dtype=torch.bool)
+        else:
+            valid_mask = valid_mask.to(device=device, dtype=torch.bool)
+
+        # Weights
+        if weights is None:
+            # Uniform 1/n over valid positions per row
+            counts = valid_mask.sum(dim=1, keepdim=True).clamp(min=1)
+            W = torch.zeros((B, n), device=device, dtype=E.dtype)
+            W[valid_mask] = (1.0 / counts).expand_as(W)[valid_mask]
+        else:
+            W = weights.to(device=device, dtype=E.dtype)
+            # Normalize per row over valid positions
+            W = torch.where(valid_mask, W, torch.zeros_like(W))
+            row_sum = W.sum(dim=1, keepdim=True).clamp(min=1e-12)
+            W = W / row_sum
+
+        # Chunk rows if memory would be large
+        # Budget approx 10 million elements for E chunk to keep distance tensors reasonable
+        max_elems = 10_000_000
+        rows_per_chunk = max(1, int(max_elems // max(1, n * d)))
+
+        labels_out = torch.full((B, n), -1, device=device, dtype=torch.long)
+
+        for start in range(0, B, rows_per_chunk):
+            end = min(B, start + rows_per_chunk)
+            Eb = E[start:end]           # (b, n, d)
+            Wb = W[start:end]           # (b, n)
+            Mb = valid_mask[start:end]  # (b, n)
+            bsz = Eb.shape[0]
+
+            # Deterministic farthest-point seeding per row
+            # First centroid index: highest weight among valid
+            # Build masked weights that are -inf where invalid to allow argmax
+            masked_w = torch.where(Mb, Wb, torch.full_like(Wb, float('-inf')))
+            first_idx = torch.argmax(masked_w, dim=1)  # (b,)
+
+            # Initialize centroid tensor
+            C = torch.empty((bsz, K, d), device=device, dtype=dtype)
+            # Fill first centroid
+            C[:, 0] = Eb[torch.arange(bsz, device=device), first_idx]
+
+            # Track chosen indices to discourage reuse (not strictly required)
+            chosen = torch.zeros((bsz, n), device=device, dtype=torch.bool)
+            chosen.scatter_(1, first_idx.view(-1, 1), True)
+
+            # Precompute cosine similarities for farthest selection iteratively
+            # Distance to nearest selected centroid so far
+            dist_to_set = 1.0 - (Eb * C[:, :1]).sum(-1)  # (b, n)
+            dist_to_set = torch.where(Mb, dist_to_set, torch.full_like(dist_to_set, float('-inf')))
+
+            for ki in range(1, K):
+                # Pick farthest valid, tie-break by lowest index (argmax returns first)
+                next_idx = torch.argmax(dist_to_set, dim=1)
+                C[:, ki] = Eb[torch.arange(bsz, device=device), next_idx]
+                chosen.scatter_(1, next_idx.view(-1, 1), True)
+                # Update distances using new centroid
+                new_dist = 1.0 - (Eb * C[:, ki:ki+1]).sum(-1)  # (b, n)
+                # Keep the min distance to any selected centroid (nearest-centroid distance)
+                dist_to_set = torch.minimum(dist_to_set, new_dist)
+                # Ensure invalid positions remain -inf so they are never selected
+                dist_to_set = torch.where(Mb, dist_to_set, torch.full_like(dist_to_set, float('-inf')))
+
+            # Lloyd iterations
+            prev_A = None
+            for _t in range(max(1, T)):
+                # Assign to nearest centroid by cosine distance = 1 - dot
+                # Compute similarity: (b, n, K)
+                sim = torch.einsum('bnd,bkd->bnk', Eb, C)
+                # Distance = 1 - sim; nearest => argmax(sim)
+                A = torch.argmax(sim, dim=-1)  # (b, n)
+                # Invalidate assignments for masked-out positions
+                A = torch.where(Mb, A, torch.full_like(A, 0))
+
+                # Early stop if unchanged
+                if prev_A is not None and torch.equal(A, prev_A):
+                    break
+                prev_A = A
+
+                # One-hot memberships with mask; avoid -1 by clamping
+                Mhot = F.one_hot(A.clamp(min=0), num_classes=K).to(Eb.dtype)  # (b, n, K)
+                Mhot = Mhot * Mb.unsqueeze(-1).to(Eb.dtype)
+
+                # Weighted centroid update
+                w = Wb.unsqueeze(-1)  # (b, n, 1)
+                num = torch.einsum('bnk,bnd->bkd', Mhot * w, Eb)  # (b, K, d)
+                den = (Mhot * w).sum(dim=1, keepdim=False).clamp_min(1e-12)  # (b, K, 1)
+                C_new = num / den
+
+                # Normalize centroids; where den==0, keep previous centroids (empty cluster)
+                C_norm = torch.linalg.norm(C_new, ord=2, dim=-1, keepdim=True).clamp_min(1e-12)
+                C_new = C_new / C_norm
+                # Where den == 0 (empty), deterministically reseed to farthest point from current set
+                empty = (den.squeeze(-1) <= 1e-12)  # (b, K)
+                if empty.any():
+                    # For each empty centroid, pick farthest valid point
+                    # Compute nearest-centroid distance w.r.t. C (before update)
+                    dist_all = 1.0 - torch.einsum('bnd,bkd->bnk', Eb, C).amax(dim=-1)  # (b, n)
+                    dist_all = torch.where(Mb, dist_all, torch.full_like(dist_all, float('-inf')))
+                    # For each row and empty cluster, choose the same farthest index
+                    far_idx = torch.argmax(dist_all, dim=1)  # (b,)
+                    # Update only empty centroids
+                    for bi in range(bsz):
+                        for ki2 in range(K):
+                            if empty[bi, ki2]:
+                                C_new[bi, ki2] = Eb[bi, far_idx[bi]]
+                    # Re-normalize
+                    C_norm = torch.linalg.norm(C_new, ord=2, dim=-1, keepdim=True).clamp_min(1e-12)
+                    C_new = C_new / C_norm
+
+                C = C_new
+
+            # Final assignment
+            sim = torch.einsum('bnd,bkd->bnk', Eb, C)
+            A = torch.argmax(sim, dim=-1)
+            # Mask invalid positions to -1
+            A = torch.where(Mb, A, torch.full_like(A, -1))
+            labels_out[start:end] = A
+
+        return labels_out
+
 
 class DBSCANClusterer(TokenClusterer):
     """DBSCAN clustering implementation for token embeddings.
