@@ -61,77 +61,65 @@ class MessageCompleter:
     
     def complete(
         self,
-        conversations: List[List[Dict[str, str]]],
+        conversations: Union[List[Dict[str, str]], List[List[Dict[str, str]]]],
         batch_size: Optional[int] = None
     ) -> Union[CompletionResult, BatchCompletionResult]:
         """
         Complete message conversations.
         
         Args:
-            conversations: List of conversation message lists
+            conversations: Single conversation or list of conversation message lists
             batch_size: Override config batch size if provided
             
         Returns:
             CompletionResult for single conversation, BatchCompletionResult for multiple
         """
+        # Always treat as batch (single conversation = batch of 1)
+        if isinstance(conversations, list) and len(conversations) > 0 and isinstance(conversations[0], dict):
+            # Single conversation - convert to batch of 1
+            conversations = [conversations]
+            single_mode = True
+        else:
+            # Already a batch
+            single_mode = False
+        
+        # Validate max_new_tokens and context length
+        self._validate_token_limits(conversations)
+        
         # Use provided batch_size or config default
         effective_batch_size = batch_size or self.config.batch_size
         
-        if len(conversations) == 1:
-            return self._complete_single(conversations[0])
+        # Process through single batched path
+        results = self._complete_batch(conversations, effective_batch_size)
+        
+        # Return single result if input was single conversation
+        if single_mode:
+            return results.completions[0]
         else:
-            return self._complete_batch(conversations, effective_batch_size)
+            return results
     
-    def _complete_single(self, messages: List[Dict[str, str]]) -> CompletionResult:
-        """Complete a single conversation."""
-        # Process messages to get formatted prompt
-        formatted_prompt = self.processor.format_messages(messages)
-        
-        # Tokenize
-        inputs = self.model.tokenize([formatted_prompt])
-        
-        # Generate based on sampling method
-        if self.config.sampling_method == SamplingMethod.GREEDY:
-            token_sequences, logprob_sequences = self.model.generate(
-                inputs,
-                max_new_tokens=self.config.max_new_tokens,
-                do_sample=False,
-                return_logprobs=self.config.return_logprobs
-            )
-        elif self.config.sampling_method == SamplingMethod.TOP_P:
-            params = self.config.sampling_params
-            token_sequences, logprob_sequences = self.model.generate(
-                inputs,
-                max_new_tokens=self.config.max_new_tokens,
-                do_sample=True,
-                temperature=params["temperature"],
-                top_p=params["p"],
-                return_logprobs=self.config.return_logprobs
-            )
-        elif self.config.sampling_method == SamplingMethod.DCBS:
-            # Use DCBS sampling
-            token_sequences, logprob_sequences = self.sampler.sample(
-                self.model,
-                inputs,
-                max_new_tokens=self.config.max_new_tokens,
-                return_logprobs=self.config.return_logprobs
+    def _validate_token_limits(self, conversations: List[List[Dict[str, str]]]):
+        """Validate token limits for all conversations."""
+        # Hard limit on max_new_tokens
+        MAX_NEW_TOKENS = 4096
+        if self.config.max_new_tokens > MAX_NEW_TOKENS:
+            raise ValueError(
+                f"max_new_tokens {self.config.max_new_tokens} exceeds maximum allowed {MAX_NEW_TOKENS}"
             )
         
-        # Detokenize
-        completion_text = self.model.detokenize(token_sequences[0])
+        # Check context length for each conversation
+        model_ctx_length = getattr(self.model, 'context_length', 8192)  # Default fallback
         
-        # Create result
-        result = CompletionResult(
-            text=completion_text,
-            token_ids=token_sequences[0] if self.config.return_token_ids else None,
-            logprobs=logprob_sequences[0] if logprob_sequences else None,
-            model_name=self.model.model_name,
-            sampling_method=self.config.sampling_method.value,
-            input_messages=messages,
-            formatted_prompt=formatted_prompt
-        )
-        
-        return result
+        for i, conversation in enumerate(conversations):
+            formatted_prompt = self.processor.format_messages(conversation)
+            input_tokens = len(self.model.tokenize([formatted_prompt])[0])
+            
+            total_tokens = input_tokens + self.config.max_new_tokens
+            if total_tokens > model_ctx_length:
+                raise ValueError(
+                    f"Conversation {i}: total tokens ({total_tokens}) exceeds model context length ({model_ctx_length}). "
+                    f"Input: {input_tokens}, max_new_tokens: {self.config.max_new_tokens}"
+                )
     
     def _complete_batch(
         self,

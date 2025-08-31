@@ -69,8 +69,8 @@ class TopKSampler(Sampler):
                 if len(valid_tokens) > 0:
                     return valid_tokens[0].item()
                 else:
-                    # Fallback to greedy if no valid tokens
-                    return torch.argmax(logits).item()
+                    # No valid tokens - this indicates a filtering issue
+                    raise RuntimeError("No valid tokens found in filter_tokens")
             
             relevant_indices = top_k_indices
         else:
@@ -82,8 +82,8 @@ class TopKSampler(Sampler):
         
         # Check for invalid probabilities
         if torch.isnan(probabilities).any() or torch.isinf(probabilities).any():
-            # Fallback to greedy selection from original logits
-            return torch.argmax(logits).item()
+            # Invalid probabilities - this indicates a numerical issue
+            raise RuntimeError("Invalid probabilities in top-k sampling")
             
         sampled_idx = torch.multinomial(probabilities, num_samples=1).item()
 

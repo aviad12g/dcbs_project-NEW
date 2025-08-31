@@ -153,8 +153,11 @@ class InformationGainCategorySelector(CategorySelector):
         valid_clusters = self._prune_low_information_clusters(cluster_probs)
         
         if not valid_clusters:
-            # Fallback to greedy if no clusters survive pruning
-            return int(np.argmax(cluster_probs))
+            # No valid clusters - this indicates a configuration or data issue
+            raise RuntimeError(
+                "No valid clusters found after pruning. "
+                "Check clustering parameters or input data quality."
+            )
         
         # Find the highest probability cluster among the valid ones
         best_cluster_idx = valid_clusters[0]
@@ -350,16 +353,11 @@ class CategorySampler:
                     cluster_token_indices = cluster
                     break
             else:
-                # All clusters are empty, fallback to greedy selection
-                if filter_tokens:
-                    for token_id in candidate_ids:
-                        if token_id in filter_tokens:
-                            return token_id
-                    if filter_tokens:
-                        return next(iter(filter_tokens))
-                    # Fallback to first candidate if filter_tokens is empty
-                    return candidate_ids[0] if candidate_ids else 0
-                best_idx = torch.argmax(candidate_probs).item()
+                # All clusters are empty - this indicates a serious issue
+                raise RuntimeError(
+                    "All clusters are empty. This indicates a problem with clustering "
+                    "or token filtering. Check DCBS configuration."
+                )
                 return candidate_ids[best_idx]
         
         # Select token using the token selector
@@ -537,7 +535,9 @@ class DuelingAlgorithmCategorySelector(CategorySelector):
         
         # Handle cases where one or both champions don't exist
         if certainty_champion_cluster is None and consensus_champion_cluster is None:
-            return int(np.argmax(cluster_probs))  # Fallback to greedy
+            raise RuntimeError(
+                "No champion clusters found. Check DCBS configuration or input data."
+            )
         elif certainty_champion_cluster is None:
             return consensus_champion_cluster  # Consensus wins by default
         elif consensus_champion_cluster is None:

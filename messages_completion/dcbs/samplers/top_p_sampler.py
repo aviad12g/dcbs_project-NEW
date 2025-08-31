@@ -73,8 +73,8 @@ class TopPSampler(Sampler):
         
         # Check for invalid probabilities
         if torch.isnan(probabilities).any() or torch.isinf(probabilities).any():
-            # Fallback to greedy selection from original logits
-            return torch.argmax(logits).item()
+            # Invalid probabilities - this indicates a numerical issue
+            raise RuntimeError("Invalid probabilities in top-p sampling")
             
         token_id = torch.multinomial(probabilities, 1).item()
         return token_id

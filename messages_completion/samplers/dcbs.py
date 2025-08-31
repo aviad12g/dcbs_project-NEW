@@ -81,7 +81,10 @@ class DCBSSampler(Sampler):
             
         except ImportError as e:
             logger.error(f"Failed to import DCBS components: {e}")
-            raise ImportError("DCBS components not available")
+            raise ImportError(
+                "DCBS sampling requires the 'dcbs' package. "
+                "Install with: pip install dcbs"
+            ) from e
     
     def sample_token(
         self,
@@ -115,17 +118,11 @@ class DCBSSampler(Sampler):
                 context=context
             )
         else:
-            # Fallback to individual sampling
-            batch_size = logits_batch.shape[0]
-            results = []
-            
-            for i in range(batch_size):
-                logits = logits_batch[i]
-                filter_tokens = filter_tokens_batch[i] if filter_tokens_batch else None
-                token_id = self.sample_token(logits, context, filter_tokens)
-                results.append(token_id)
-            
-            return results
+            # DCBS sampler doesn't support batch sampling - raise error instead of fallback
+            raise NotImplementedError(
+                "DCBS sampler does not support batch sampling. "
+                "Process items individually or use a different sampling method."
+            )
     
     def sample(
         self,

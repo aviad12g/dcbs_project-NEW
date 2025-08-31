@@ -37,8 +37,8 @@ class MemoryEfficientDCBS:
 
         if len(candidates) <= 3:
             if len(candidates) == 0:
-                # No candidates available, fallback to greedy selection from all logits
-                return torch.argmax(logits).item()
+                # No candidates available - this indicates a serious configuration issue
+                raise RuntimeError("No candidates available for DCBS sampling")
             candidate_logits = logits[candidates]
             best_idx = torch.argmax(candidate_logits).item()
             return candidates[best_idx]
@@ -111,8 +111,8 @@ class MemoryEfficientDCBS:
         ]
         if sum(cluster_probs) == 0:
             if len(candidates) == 0:
-                # No candidates available, fallback to greedy selection
-                return torch.argmax(logits).item()
+                # No candidates available - this indicates a serious configuration issue
+                raise RuntimeError("No candidates available for DCBS sampling")
             return candidates[torch.argmax(candidate_probs).item()]
         best_cluster_idx = np.argmax(cluster_probs)
         cluster_indices = clusters[best_cluster_idx]

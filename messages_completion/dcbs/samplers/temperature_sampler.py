@@ -65,8 +65,8 @@ class TemperatureSampler(Sampler):
                 allowed_mask[valid_indices] = True
                 working_logits[~allowed_mask] = -float('inf')
             else:
-                # No valid tokens in filter_tokens, fallback to greedy selection
-                return torch.argmax(logits).item()
+                # No valid tokens in filter_tokens - this indicates a filtering issue
+                raise RuntimeError("No valid tokens found in filter_tokens")
 
         # Apply temperature scaling
         scaled_logits = working_logits / self.temperature
@@ -76,8 +76,8 @@ class TemperatureSampler(Sampler):
         
         # Check for invalid probabilities (all -inf case)
         if torch.isnan(probabilities).any() or torch.isinf(probabilities).any():
-            # Fallback to greedy selection from original logits
-            if filter_tokens and len(filter_tokens) > 0:
+            # Invalid probabilities - this indicates a numerical issue
+            raise RuntimeError("Invalid probabilities in temperature sampling")
                 valid_indices = [i for i in filter_tokens if i < len(logits)]
                 if valid_indices:
                     return max(valid_indices, key=lambda i: logits[i].item())
