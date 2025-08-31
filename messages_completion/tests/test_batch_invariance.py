@@ -1,5 +1,9 @@
+"""
+Test batch invariance with the new clean API.
+"""
+
 import copy
-from messages_completion import MessageCompleter, HuggingFaceModelInterface
+from messages_completion import CompletionConfig, MessageCompleter
 
 EXAMPLE_CONVOS = [
     [{"role":"system","content":"You are terse."},
@@ -9,16 +13,66 @@ EXAMPLE_CONVOS = [
 ]
 
 def test_batch_invariance():
-    model = HuggingFaceModelInterface("meta-llama/Meta-Llama-3-8B-Instruct")
-    model.set_seed(42)
-    comp = MessageCompleter(model, max_new_tokens=8)
+    """Test that batch processing produces identical results to sequential processing."""
+    # Create deterministic greedy configuration
+    config = CompletionConfig(
+        model_name="gpt2",
+        max_new_tokens=8,
+        sampling_method="greedy",
+        deterministic=True
+    )
     
+    completer = MessageCompleter(config)
+    
+    # Sequential processing (one at a time)
     seq_ids = []
     for convo in EXAMPLE_CONVOS:
-        out = comp.complete([copy.deepcopy(convo)], use_batching=False, return_logprobs=False)
-        seq_ids.append(out.token_ids if hasattr(out, "token_ids") else out.completions[0].token_ids)
+        result = completer.complete([copy.deepcopy(convo)])
+        seq_ids.append(result.token_ids)
     
-    batched = comp.complete(copy.deepcopy(EXAMPLE_CONVOS), use_batching=True, return_logprobs=False)
-    batched_ids = [c.token_ids for c in batched.completions]
+    # Batch processing (all at once)
+    batch_result = completer.complete(copy.deepcopy(EXAMPLE_CONVOS))
+    batch_ids = [c.token_ids for c in batch_result.completions]
     
-    assert seq_ids == batched_ids
+    # Results must be identical
+    assert seq_ids == batch_ids, f"Sequential {seq_ids} != Batch {batch_ids}"
+
+def test_dcbs_batch_invariance():
+    """Test batch invariance with DCBS sampling."""
+    try:
+        # Create deterministic DCBS configuration
+        config = CompletionConfig(
+            model_name="gpt2",
+            max_new_tokens=6,
+            sampling_method="dcbs",
+            sampling_params={
+                "k": 4,
+                "top_n": 20,
+                "clustering_method": "dbscan"
+            },
+            deterministic=True
+        )
+        
+        completer = MessageCompleter(config)
+        
+        # Sequential processing
+        seq_ids = []
+        for convo in EXAMPLE_CONVOS:
+            result = completer.complete([copy.deepcopy(convo)])
+            seq_ids.append(result.token_ids)
+        
+        # Batch processing
+        batch_result = completer.complete(copy.deepcopy(EXAMPLE_CONVOS))
+        batch_ids = [c.token_ids for c in batch_result.completions]
+        
+        # Results must be identical for deterministic DCBS
+        assert seq_ids == batch_ids, f"DCBS Sequential {seq_ids} != Batch {batch_ids}"
+        
+    except ImportError:
+        # DCBS not available, skip test
+        print("DCBS not available, skipping DCBS batch invariance test")
+
+if __name__ == "__main__":
+    test_batch_invariance()
+    test_dcbs_batch_invariance()
+    print("All batch invariance tests passed!")

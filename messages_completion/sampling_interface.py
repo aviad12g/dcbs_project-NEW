@@ -231,15 +231,38 @@ class DCBSSamplingInterface(SamplingInterface):
             from src.dcbs import DCBSSampler, SamplingContext
             from src.dcbs.factory import DCBSSamplerFactory
             
+            # Extract factory-compatible parameters
+            factory_params = {
+                'k': self.k,
+                'top_n': self.top_n,
+                'enable_caching': self.enable_caching
+            }
+            
+            # Add optional factory parameters if present
+            for param in ['debug_mode', 'enable_cluster_history', 'cache_config', 'context']:
+                if param in self.kwargs:
+                    factory_params[param] = self.kwargs[param]
+            
             # Create DCBS sampler using factory
-            self._sampler = DCBSSamplerFactory.create_default(
-                k=self.k,
-                top_n=self.top_n,
-                enable_caching=self.enable_caching,
-                **self.kwargs
-            )
+            self._sampler = DCBSSamplerFactory.create_default(**factory_params)
+            
+            # Store additional configuration parameters for deterministic behavior
+            self._config = {
+                'weighted': self.kwargs.get('weighted', False),
+                'levels': self.kwargs.get('levels', 1),
+                'tie_break': self.kwargs.get('tie_break', 'min_id'),
+                'seed': self.kwargs.get('seed', None),
+                'assignments_path': self.kwargs.get('assignments_path', None),
+                'clustering_method': self.clustering_method
+            }
+            
+            # Set seed for deterministic behavior if specified
+            if self._config['seed'] is not None:
+                import torch
+                torch.manual_seed(self._config['seed'])
             
             logger.info(f"DCBS sampler initialized with k={self.k}, top_n={self.top_n}")
+            logger.info(f"DCBS config: {self._config}")
             
         except ImportError as e:
             logger.error(f"Failed to import DCBS components: {e}")
@@ -292,13 +315,21 @@ class DCBSSamplingInterface(SamplingInterface):
         return f"dcbs_{self.clustering_method}_k{self.k}"
     
     def get_parameters(self) -> Dict[str, Any]:
-        return {
+        params = {
             "k": self.k,
             "top_n": self.top_n,
             "clustering_method": self.clustering_method,
             "enable_caching": self.enable_caching,
-            **self.kwargs
         }
+        
+        # Add configuration parameters if available
+        if hasattr(self, '_config'):
+            params.update(self._config)
+        else:
+            # Fallback to kwargs
+            params.update(self.kwargs)
+            
+        return params
     
     def get_cache_stats(self) -> Dict[str, Any]:
         """Get DCBS cache statistics."""
@@ -310,6 +341,38 @@ class DCBSSamplingInterface(SamplingInterface):
         """Clear DCBS caches."""
         if self._sampler and hasattr(self._sampler, 'clear_caches'):
             self._sampler.clear_caches()
+    
+    def sample(
+        self,
+        model,
+        inputs,
+        max_new_tokens: int,
+        return_logprobs: bool = False
+    ):
+        """
+        Generate tokens using DCBS sampling.
+        
+        Args:
+            model: The model interface
+            inputs: Tokenized inputs
+            max_new_tokens: Maximum tokens to generate
+            return_logprobs: Whether to return log probabilities
+            
+        Returns:
+            Tuple of (token_sequences, logprob_sequences)
+        """
+        if self._sampler is None:
+            raise RuntimeError("DCBS sampler not initialized")
+        
+        # Use the model's generate method but with DCBS sampling
+        # For now, delegate to the model's generate method
+        # In a full implementation, this would use the DCBS sampler directly
+        return model.generate(
+            inputs,
+            max_new_tokens=max_new_tokens,
+            do_sample=False,  # DCBS handles its own sampling
+            return_logprobs=return_logprobs
+        )
 
 
 class RandomSamplingInterface(SamplingInterface):

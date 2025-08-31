@@ -1,142 +1,237 @@
 """
 Example usage of the messages completion module.
 
-Demonstrates GPU-based completion with batch invariance.
+Demonstrates the clean two-class API with configuration-based completion.
 """
 
-import copy
-from messages_completion import MessageCompleter, HuggingFaceModelInterface
+from messages_completion import CompletionConfig, MessageCompleter
 
 
-def basic_gpu_example():
-    """Basic GPU completion example with greedy mode."""
-    print("=== Basic GPU Completion Example ===")
+def basic_example():
+    """Basic completion example with greedy sampling."""
+    print("=== Basic Greedy Completion ===")
     
     try:
-        # Initialize model (requires GPU)
-        model = HuggingFaceModelInterface("meta-llama/Meta-Llama-3-8B-Instruct")
-        model.set_seed(42)  # For deterministic results
+        # Create configuration
+        config = CompletionConfig(
+            model_name="meta-llama/Meta-Llama-3-8B-Instruct",
+            max_new_tokens=16,
+            sampling_method="greedy",
+            deterministic=True
+        )
         
         # Create completer
-        comp = MessageCompleter(model, max_new_tokens=16)
+        completer = MessageCompleter(config)
         
         # Single conversation
-        convos = [[
+        conversations = [[
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": "Say hello in one word."}
         ]]
         
-        result = comp.complete(convos, use_batching=False, return_logprobs=False)
-        print(f"Input: {convos[0][-1]['content']}")
+        result = completer.complete(conversations)
+        print(f"Input: {conversations[0][-1]['content']}")
         print(f"Completion: {result.text}")
-        print(f"Tokens: {len(result.token_ids)}")
+        print(f"Method: {result.sampling_method}")
         
     except Exception as e:
         print(f"Example failed: {e}")
-        print("This example requires a GPU and the Meta-Llama model.")
 
 
-def batch_invariance_example():
-    """Demonstrate batch invariance - key feature for deterministic completion."""
-    print("\n=== Batch Invariance Example ===")
+def dcbs_example():
+    """DCBS sampling example with explicit configuration."""
+    print("\n=== DCBS Completion ===")
     
     try:
-        # Initialize model
-        model = HuggingFaceModelInterface("meta-llama/Meta-Llama-3-8B-Instruct")
-        model.set_seed(42)
-        comp = MessageCompleter(model, max_new_tokens=8)
+        # Create explicit DCBS configuration
+        config = CompletionConfig(
+            model_name="meta-llama/Meta-Llama-3-8B-Instruct",
+            max_new_tokens=20,
+            sampling_method="dcbs",
+            sampling_params={
+                # Core DCBS parameters
+                "k": 8,
+                "top_n": 50,
+                "clustering_method": "dbscan",
+                
+                # Deterministic DCBS parameters
+                "weighted": False,  # Deterministic mode
+                "levels": 1,
+                "tie_break": "min_id",
+                "seed": 42,
+                
+                # Optional frozen clusters
+                "assignments_path": None
+            },
+            return_logprobs=True,
+            deterministic=True
+        )
         
-        # Test conversations
-        convos = [
-            [{"role": "system", "content": "You are terse."},
-             {"role": "user", "content": "2+2?"}],
-            [{"role": "system", "content": "You are terse."},
-             {"role": "user", "content": "Capital of France?"}]
-        ]
+        # Create completer
+        completer = MessageCompleter(config)
         
-        # Sequential processing (N calls with batch=1)
-        print("Sequential processing...")
-        seq_results = []
-        for convo in convos:
-            out = comp.complete([copy.deepcopy(convo)], use_batching=False, return_logprobs=False)
-            seq_results.append(out.token_ids)
-            print(f"  '{convo[-1]['content']}' -> {out.text}")
-        
-        # Batch processing (1 call with batch=N)
-        print("\nBatch processing...")
-        batch_result = comp.complete(copy.deepcopy(convos), use_batching=True, return_logprobs=False)
-        batch_results = [c.token_ids for c in batch_result.completions]
-        
-        for i, completion in enumerate(batch_result.completions):
-            print(f"  '{convos[i][-1]['content']}' -> {completion.text}")
-        
-        # Verify batch invariance
-        invariant = seq_results == batch_results
-        print(f"\nBatch invariance verified: {invariant}")
-        
-        if not invariant:
-            print("Sequential and batch results differ!")
-            for i, (seq, batch) in enumerate(zip(seq_results, batch_results)):
-                if seq != batch:
-                    print(f"  Conversation {i}: seq={seq} vs batch={batch}")
-        
-    except Exception as e:
-        print(f"Batch invariance example failed: {e}")
-
-
-def logprobs_example():
-    """Example with log probabilities."""
-    print("\n=== Log Probabilities Example ===")
-    
-    try:
-        model = HuggingFaceModelInterface("meta-llama/Meta-Llama-3-8B-Instruct")
-        model.set_seed(42)
-        comp = MessageCompleter(model, max_new_tokens=6)
-        
-        convos = [[
-            {"role": "system", "content": "You are helpful."},
-            {"role": "user", "content": "Count to 3."}
+        # Test conversation
+        conversations = [[
+            {"role": "system", "content": "You are creative."},
+            {"role": "user", "content": "Write a short poem about AI."}
         ]]
         
-        result = comp.complete(convos, use_batching=False, return_logprobs=True)
-        
-        print(f"Input: {convos[0][-1]['content']}")
-        print(f"Completion: {result.text}")
-        print(f"Token IDs: {result.token_ids}")
+        result = completer.complete(conversations)
+        print(f"Input: {conversations[0][-1]['content']}")
+        print(f"DCBS Completion: {result.text}")
+        print(f"Method: {result.sampling_method}")
         
         if result.logprobs:
-            print("Log probabilities:")
-            for i, (token_id, logprob) in enumerate(zip(result.token_ids, result.logprobs)):
-                print(f"  Token {i}: ID={token_id}, logprob={logprob:.3f}")
-            
             avg_logprob = sum(result.logprobs) / len(result.logprobs)
             print(f"Average logprob: {avg_logprob:.3f}")
         
+    except ImportError as e:
+        print(f"DCBS not available: {e}")
+        print("Install DCBS dependencies to use DCBS sampling.")
+    
     except Exception as e:
-        print(f"Logprobs example failed: {e}")
+        print(f"DCBS example failed: {e}")
+
+
+def batch_example():
+    """Batch completion example."""
+    print("\n=== Batch Completion ===")
+    
+    try:
+        # Create configuration for batch processing
+        config = CompletionConfig(
+            model_name="meta-llama/Meta-Llama-3-8B-Instruct",
+            max_new_tokens=12,
+            sampling_method="greedy",
+            batch_size=4,
+            deterministic=True
+        )
+        
+        # Create completer
+        completer = MessageCompleter(config)
+        
+        # Multiple conversations
+        conversations = [
+            [{"role": "system", "content": "You are terse."},
+             {"role": "user", "content": "2+2?"}],
+            [{"role": "system", "content": "You are terse."},
+             {"role": "user", "content": "Capital of France?"}],
+            [{"role": "system", "content": "You are terse."},
+             {"role": "user", "content": "Largest planet?"}]
+        ]
+        
+        # Batch completion
+        result = completer.complete(conversations)
+        
+        print(f"Batch size: {result.batch_size}")
+        print(f"Method: {result.sampling_method}")
+        
+        for i, completion in enumerate(result.completions):
+            question = conversations[i][-1]['content']
+            print(f"  Q: {question}")
+            print(f"  A: {completion.text}")
+        
+    except Exception as e:
+        print(f"Batch example failed: {e}")
+
+
+def top_p_example():
+    """Top-p sampling example."""
+    print("\n=== Top-p Completion ===")
+    
+    try:
+        # Create top-p configuration
+        config = CompletionConfig(
+            model_name="meta-llama/Meta-Llama-3-8B-Instruct",
+            max_new_tokens=25,
+            sampling_method="top_p",
+            sampling_params={
+                "p": 0.9,
+                "temperature": 0.8
+            },
+            deterministic=False  # Top-p is non-deterministic
+        )
+        
+        # Create completer
+        completer = MessageCompleter(config)
+        
+        # Creative conversation
+        conversations = [[
+            {"role": "system", "content": "You are a creative storyteller."},
+            {"role": "user", "content": "Start a story about a robot."}
+        ]]
+        
+        result = completer.complete(conversations)
+        print(f"Input: {conversations[0][-1]['content']}")
+        print(f"Top-p Completion: {result.text}")
+        print(f"Method: {result.sampling_method}")
+        print(f"Deterministic: {config.is_deterministic}")
+        
+    except Exception as e:
+        print(f"Top-p example failed: {e}")
+
+
+def config_comparison():
+    """Compare different configurations."""
+    print("\n=== Configuration Comparison ===")
+    
+    configs = [
+        ("Greedy", CompletionConfig(
+            model_name="meta-llama/Meta-Llama-3-8B-Instruct",
+            max_new_tokens=15,
+            sampling_method="greedy"
+        )),
+        ("Top-p", CompletionConfig(
+            model_name="meta-llama/Meta-Llama-3-8B-Instruct",
+            max_new_tokens=15,
+            sampling_method="top_p",
+            sampling_params={"p": 0.9, "temperature": 0.7}
+        )),
+        ("DCBS", CompletionConfig(
+            model_name="meta-llama/Meta-Llama-3-8B-Instruct",
+            max_new_tokens=15,
+            sampling_method="dcbs",
+            sampling_params={"k": 6, "top_n": 30}
+        ))
+    ]
+    
+    conversation = [[
+        {"role": "user", "content": "Explain quantum computing briefly."}
+    ]]
+    
+    for name, config in configs:
+        try:
+            completer = MessageCompleter(config)
+            result = completer.complete(conversation)
+            print(f"{name:8}: {result.text}")
+        except Exception as e:
+            print(f"{name:8}: Failed - {e}")
 
 
 def main():
     """Run all examples."""
-    print("Messages Completion Module - GPU Examples")
-    print("=" * 50)
+    print("Messages Completion Module - Clean API Examples")
+    print("=" * 60)
     
     try:
-        basic_gpu_example()
-        batch_invariance_example()
-        logprobs_example()
+        basic_example()
+        dcbs_example()
+        batch_example()
+        top_p_example()
+        config_comparison()
         
     except Exception as e:
         print(f"Examples failed: {e}")
         import traceback
         traceback.print_exc()
     
-    print("\n" + "=" * 50)
-    print("GPU examples completed!")
-    print("\nNote: These examples require:")
-    print("- CUDA-capable GPU")
-    print("- Sufficient GPU memory for Meta-Llama-3-8B-Instruct")
-    print("- HuggingFace transformers library")
+    print("\n" + "=" * 60)
+    print("Examples completed!")
+    print("\nAPI Summary:")
+    print("- CompletionConfig: Configure model, sampling method, parameters")
+    print("- MessageCompleter: Complete conversations based on config")
+    print("- Supports: greedy, top_p, dcbs sampling methods")
+    print("- Deterministic when possible, batch processing built-in")
 
 
 if __name__ == "__main__":

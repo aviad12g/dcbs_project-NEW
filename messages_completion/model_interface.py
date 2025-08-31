@@ -265,7 +265,6 @@ class HuggingFaceModelInterface(ModelInterface):
         # Extract logprobs if requested
         logprobs_list = None
         if return_logprobs and hasattr(outputs, 'scores') and outputs.scores:
-            import torch
             input_len = inputs["input_ids"].shape[1]
             gen_ids = outputs.sequences[:, input_len:]  # [B, T]
             

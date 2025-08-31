@@ -1,113 +1,217 @@
 """
-Single entrypoint for message completion.
-
-Provides MessageCompleter class that takes conversations and returns completions
-with deterministic, batch-invariant behavior.
+Message completer that orchestrates the completion pipeline.
 """
 
+import logging
 from typing import List, Dict, Union, Optional
-import copy
-
-from .message_processor import MessageProcessor, MessageBatch
-from .model_interface import ModelInterface
+from .config import CompletionConfig, SamplingMethod
+from .message_processor import MessageProcessor
+from .model_interface import HuggingFaceModelInterface
 from .output_types import CompletionResult, BatchCompletionResult
+
+logger = logging.getLogger(__name__)
 
 
 class MessageCompleter:
     """
-    Main class for converting conversations to completions.
+    Main interface for batched message completion.
     
-    Provides deterministic, batch-invariant completion generation with
-    optional token IDs and log probabilities.
+    Takes a configuration and provides a clean interface for completing
+    conversations with support for multiple sampling methods including DCBS.
     """
     
-    def __init__(self, model: ModelInterface, max_new_tokens: int = 64):
+    def __init__(self, config: CompletionConfig):
         """
-        Initialize message completer.
+        Initialize the message completer.
         
         Args:
-            model: Model interface implementation
-            max_new_tokens: Maximum tokens to generate per completion
+            config: CompletionConfig specifying model, sampling method, etc.
         """
-        self.model = model
-        self.proc = MessageProcessor()
-        self.max_new_tokens = max_new_tokens
+        self.config = config
+        
+        # Initialize model
+        self.model = HuggingFaceModelInterface(
+            model_name=config.model_name,
+            device=config.device,
+            load_in_4bit=config.load_in_4bit
+        )
+        
+        # Set deterministic mode if requested
+        if config.deterministic:
+            self.model.set_seed(42)
+        
+        # Initialize message processor
+        self.processor = MessageProcessor()
+        
+        # Initialize sampling interface based on method
+        self._init_sampling()
+        
+        logger.info(f"MessageCompleter initialized: {config}")
+    
+    def _init_sampling(self):
+        """Initialize the appropriate sampling interface."""
+        method = self.config.sampling_method
+        
+        if method == SamplingMethod.DCBS:
+            from .sampling_interface import DCBSSamplingInterface
+            self.sampler = DCBSSamplingInterface(**self.config.sampling_params)
+            logger.info("DCBS sampling interface initialized")
+        else:
+            self.sampler = None
     
     def complete(
-        self, 
-        conversations: List[List[Dict[str, str]]], 
-        use_batching: bool = True, 
-        return_logprobs: bool = False
+        self,
+        conversations: List[List[Dict[str, str]]],
+        batch_size: Optional[int] = None
     ) -> Union[CompletionResult, BatchCompletionResult]:
         """
-        Complete conversations with deterministic, batch-invariant generation.
+        Complete message conversations.
         
         Args:
-            conversations: List of conversation sequences
-            use_batching: Whether to use batch processing (should not affect results)
-            return_logprobs: Whether to return log probabilities
+            conversations: List of conversation message lists
+            batch_size: Override config batch size if provided
             
         Returns:
-            Single CompletionResult if one conversation, BatchCompletionResult otherwise
+            CompletionResult for single conversation, BatchCompletionResult for multiple
         """
-        # Ensure we work with a copy to avoid modifying input
-        conversations = copy.deepcopy(conversations)
+        # Use provided batch_size or config default
+        effective_batch_size = batch_size or self.config.batch_size
         
-        if use_batching:
-            # Batch processing: single encode/generate call
-            batch = MessageBatch(conversations)
-            rendered = [self.proc.format_messages(seq) for seq in batch]  # preserves order
-            
-            # Tokenize inputs
-            encoded = self.model.tokenize(rendered)
-            
-            # Generate completions - greedy by default for deterministic behavior
-            ids, logps = self.model.generate(
-                encoded,
-                max_new_tokens=self.max_new_tokens,
-                do_sample=False,  # Greedy sampling for deterministic results
-                return_logprobs=return_logprobs,
-            )
+        if len(conversations) == 1:
+            return self._complete_single(conversations[0])
         else:
-            # Sequential processing: N times with batch=1
-            ids = []
-            logps = [] if return_logprobs else None
-            
-            for conversation in conversations:
-                # Process single conversation
-                rendered = [self.proc.format_messages(conversation)]
-                encoded = self.model.tokenize(rendered)
-                
-                single_ids, single_logps = self.model.generate(
-                    encoded,
-                    max_new_tokens=self.max_new_tokens,
-                    do_sample=False,  # Greedy sampling for deterministic results
-                    return_logprobs=return_logprobs,
-                )
-                
-                ids.extend(single_ids)
-                if return_logprobs and single_logps:
-                    logps.extend(single_logps)
+            return self._complete_batch(conversations, effective_batch_size)
+    
+    def _complete_single(self, messages: List[Dict[str, str]]) -> CompletionResult:
+        """Complete a single conversation."""
+        # Process messages to get formatted prompt
+        formatted_prompt = self.processor.format_messages(messages)
         
-        # Create completion results
-        comps = []
-        for i, token_ids in enumerate(ids):
-            text = self.model.detokenize(token_ids)
-            comps.append(CompletionResult(
-                text=text,
-                token_ids=token_ids,
-                logprobs=(logps[i] if return_logprobs and logps is not None else None),
-                model_name=self.model.model_name,
-                sampling_method="greedy",
-            ))
+        # Tokenize
+        inputs = self.model.tokenize([formatted_prompt])
         
-        # Return single result or batch result
-        if len(comps) == 1:
-            return comps[0]
-        else:
-            return BatchCompletionResult(
-                completions=comps,
-                batch_size=len(comps),
-                model_name=self.model.model_name,
-                sampling_method="greedy",
+        # Generate based on sampling method
+        if self.config.sampling_method == SamplingMethod.GREEDY:
+            token_sequences, logprob_sequences = self.model.generate(
+                inputs,
+                max_new_tokens=self.config.max_new_tokens,
+                do_sample=False,
+                return_logprobs=self.config.return_logprobs
             )
+        elif self.config.sampling_method == SamplingMethod.TOP_P:
+            params = self.config.sampling_params
+            token_sequences, logprob_sequences = self.model.generate(
+                inputs,
+                max_new_tokens=self.config.max_new_tokens,
+                do_sample=True,
+                temperature=params["temperature"],
+                top_p=params["p"],
+                return_logprobs=self.config.return_logprobs
+            )
+        elif self.config.sampling_method == SamplingMethod.DCBS:
+            # Use DCBS sampling
+            token_sequences, logprob_sequences = self.sampler.sample(
+                self.model,
+                inputs,
+                max_new_tokens=self.config.max_new_tokens,
+                return_logprobs=self.config.return_logprobs
+            )
+        
+        # Detokenize
+        completion_text = self.model.detokenize(token_sequences[0])
+        
+        # Create result
+        result = CompletionResult(
+            text=completion_text,
+            token_ids=token_sequences[0] if self.config.return_token_ids else None,
+            logprobs=logprob_sequences[0] if logprob_sequences else None,
+            model_name=self.model.model_name,
+            sampling_method=self.config.sampling_method.value,
+            input_messages=messages,
+            formatted_prompt=formatted_prompt
+        )
+        
+        return result
+    
+    def _complete_batch(
+        self,
+        conversations: List[List[Dict[str, str]]],
+        batch_size: Optional[int] = None
+    ) -> BatchCompletionResult:
+        """Complete multiple conversations in batches."""
+        all_completions = []
+        
+        # Process in batches if batch_size specified
+        if batch_size and len(conversations) > batch_size:
+            for i in range(0, len(conversations), batch_size):
+                batch_convs = conversations[i:i + batch_size]
+                batch_completions = self._process_batch(batch_convs)
+                all_completions.extend(batch_completions)
+        else:
+            all_completions = self._process_batch(conversations)
+        
+        return BatchCompletionResult(
+            completions=all_completions,
+            batch_size=len(all_completions),
+            model_name=self.model.model_name,
+            sampling_method=self.config.sampling_method.value
+        )
+    
+    def _process_batch(self, conversations: List[List[Dict[str, str]]]) -> List[CompletionResult]:
+        """Process a single batch of conversations."""
+        # Format all prompts
+        formatted_prompts = [
+            self.processor.format_messages(conv) 
+            for conv in conversations
+        ]
+        
+        # Tokenize batch
+        inputs = self.model.tokenize(formatted_prompts)
+        
+        # Generate based on sampling method
+        if self.config.sampling_method == SamplingMethod.GREEDY:
+            token_sequences, logprob_sequences = self.model.generate(
+                inputs,
+                max_new_tokens=self.config.max_new_tokens,
+                do_sample=False,
+                return_logprobs=self.config.return_logprobs
+            )
+        elif self.config.sampling_method == SamplingMethod.TOP_P:
+            params = self.config.sampling_params
+            token_sequences, logprob_sequences = self.model.generate(
+                inputs,
+                max_new_tokens=self.config.max_new_tokens,
+                do_sample=True,
+                temperature=params["temperature"],
+                top_p=params["p"],
+                return_logprobs=self.config.return_logprobs
+            )
+        elif self.config.sampling_method == SamplingMethod.DCBS:
+            # Use DCBS sampling
+            token_sequences, logprob_sequences = self.sampler.sample(
+                self.model,
+                inputs,
+                max_new_tokens=self.config.max_new_tokens,
+                return_logprobs=self.config.return_logprobs
+            )
+        
+        # Create completions
+        completions = []
+        for i, (tokens, conversation, prompt) in enumerate(
+            zip(token_sequences, conversations, formatted_prompts)
+        ):
+            completion_text = self.model.detokenize(tokens)
+            logprobs = logprob_sequences[i] if logprob_sequences else None
+            
+            result = CompletionResult(
+                text=completion_text,
+                token_ids=tokens if self.config.return_token_ids else None,
+                logprobs=logprobs,
+                model_name=self.model.model_name,
+                sampling_method=self.config.sampling_method.value,
+                input_messages=conversation,
+                formatted_prompt=prompt
+            )
+            completions.append(result)
+        
+        return completions
