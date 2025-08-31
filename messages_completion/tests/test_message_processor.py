@@ -10,7 +10,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from messages_completion.message_processor import MessageProcessor, MessageBatch
+from messages_completion.processing import MessageProcessor, MessageBatch
 
 
 class TestMessageBatch(unittest.TestCase):

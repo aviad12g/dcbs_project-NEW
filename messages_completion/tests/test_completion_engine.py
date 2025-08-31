@@ -19,8 +19,7 @@ from messages_completion import (
     BatchCompletionResult,
     MessageBatch
 )
-from messages_completion.model_interface import ModelInterface
-from messages_completion.sampling_interface import SamplingInterface
+from messages_completion.samplers.base import Sampler
 
 
 class MockModelInterface(ModelInterface):
@@ -142,7 +141,7 @@ class TestCompletionEngine(unittest.TestCase):
         """Test engine initialization with model name."""
         config = CompletionConfig(model_name="microsoft/DialoGPT-small")
         
-        with patch('messages_completion.model_interface.HuggingFaceModelInterface') as mock_hf:
+        with patch('messages_completion.model.HuggingFaceModel') as mock_hf:
             mock_hf.return_value = self.mock_model
             engine = CompletionEngine(config=config)
             

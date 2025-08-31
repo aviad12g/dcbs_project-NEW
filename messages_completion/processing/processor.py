@@ -7,6 +7,8 @@ Handles message formatting, chat templates, and batch processing.
 from dataclasses import dataclass
 from typing import List, Dict, Optional, Union, Any
 import logging
+
+from .types import MessageBatch
 try:
     # Try to import chat templates from parent project if available
     from src.chat_templates import ChatTemplateManager
@@ -16,57 +18,6 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-
-@dataclass
-class MessageBatch:
-    """Container for a batch of message sequences."""
-    
-    message_sequences: List[List[Dict[str, str]]]
-    batch_id: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
-    
-    def __post_init__(self):
-        """Validate message batch."""
-        if not self.message_sequences:
-            raise ValueError("message_sequences cannot be empty")
-        
-        # Validate each message sequence
-        for i, messages in enumerate(self.message_sequences):
-            if not messages:
-                raise ValueError(f"Message sequence at index {i} cannot be empty")
-            
-            for j, message in enumerate(messages):
-                if not isinstance(message, dict):
-                    raise ValueError(f"Message at sequence {i}, position {j} must be a dict")
-                if "role" not in message or "content" not in message:
-                    raise ValueError(f"Message at sequence {i}, position {j} must have 'role' and 'content' keys")
-    
-    @property
-    def batch_size(self) -> int:
-        """Number of message sequences in the batch."""
-        return len(self.message_sequences)
-    
-    def __len__(self) -> int:
-        """Number of message sequences in the batch."""
-        return len(self.message_sequences)
-    
-    def __getitem__(self, index: int) -> List[Dict[str, str]]:
-        """Get message sequence at index."""
-        return self.message_sequences[index]
-    
-    def __iter__(self):
-        """Iterate over message sequences."""
-        return iter(self.message_sequences)
-    
-    @classmethod
-    def from_single_messages(cls, messages: List[Dict[str, str]], **kwargs) -> 'MessageBatch':
-        """Create a batch from a single message sequence."""
-        return cls(message_sequences=[messages], **kwargs)
-    
-    @classmethod
-    def from_multiple_messages(cls, message_sequences: List[List[Dict[str, str]]], **kwargs) -> 'MessageBatch':
-        """Create a batch from multiple message sequences."""
-        return cls(message_sequences=message_sequences, **kwargs)
 
 
 class MessageProcessor:

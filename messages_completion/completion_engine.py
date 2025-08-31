@@ -9,9 +9,9 @@ from typing import List, Dict, Optional, Union, Any, Set
 import time
 import logging
 from .output_types import CompletionResult, BatchCompletionResult, TokenInfo, Messages
-from .message_processor import MessageProcessor, MessageBatch
-from .model_interface import ModelInterface, HuggingFaceModelInterface
-from .sampling_interface import SamplingInterface, create_sampling_interface
+from .processing import MessageProcessor, MessageBatch
+from .model import HuggingFaceModel
+from .samplers import create_sampler
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +86,7 @@ class CompletionEngine:
                 raise ValueError("Either model_interface or model_name must be provided")
             
             logger.info(f"Initializing HuggingFace model: {self.config.model_name}")
-            model_interface = HuggingFaceModelInterface(
+            model_interface = HuggingFaceModel(
                 model_name=self.config.model_name,
                 device=self.config.device,
                 load_in_4bit=self.config.load_in_4bit

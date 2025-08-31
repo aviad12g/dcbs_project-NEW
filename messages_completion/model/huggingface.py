@@ -81,7 +81,7 @@ class ModelInterface(ABC):
         pass
 
 
-class HuggingFaceModelInterface(ModelInterface):
+class HuggingFaceModel(ModelInterface):
     """HuggingFace Transformers model interface with batch-safe, deterministic generation."""
     
     def __init__(

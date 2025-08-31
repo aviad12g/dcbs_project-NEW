@@ -5,8 +5,8 @@ Message completer that orchestrates the completion pipeline.
 import logging
 from typing import List, Dict, Union, Optional
 from .config import CompletionConfig, SamplingMethod
-from .message_processor import MessageProcessor
-from .model_interface import HuggingFaceModelInterface
+from .processing import MessageProcessor
+from .model import HuggingFaceModel
 from .output_types import CompletionResult, BatchCompletionResult
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ class MessageCompleter:
         self.config = config
         
         # Initialize model
-        self.model = HuggingFaceModelInterface(
+        self.model = HuggingFaceModel(
             model_name=config.model_name,
             device=config.device,
             load_in_4bit=config.load_in_4bit
@@ -53,9 +53,9 @@ class MessageCompleter:
         method = self.config.sampling_method
         
         if method == SamplingMethod.DCBS:
-            from .sampling_interface import DCBSSamplingInterface
-            self.sampler = DCBSSamplingInterface(**self.config.sampling_params)
-            logger.info("DCBS sampling interface initialized")
+            from .samplers.dcbs import DCBSSampler
+            self.sampler = DCBSSampler(**self.config.sampling_params)
+            logger.info("DCBS sampler initialized")
         else:
             self.sampler = None
     

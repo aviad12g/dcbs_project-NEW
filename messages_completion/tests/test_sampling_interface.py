@@ -12,12 +12,10 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from messages_completion.sampling_interface import (
-    GreedySamplingInterface,
-    TopPSamplingInterface,
-    RandomSamplingInterface,
-    create_sampling_interface,
-    get_available_methods
+from messages_completion.samplers import create_sampler
+from messages_completion.samplers.greedy import GreedySampler
+from messages_completion.samplers.top_p import TopPSampler
+from messages_completion.samplers.factory import get_available_methods
 )
 
 
@@ -26,7 +24,7 @@ class TestGreedySamplingInterface(unittest.TestCase):
     
     def setUp(self):
         """Set up test fixtures."""
-        self.sampler = GreedySamplingInterface()
+        self.sampler = GreedySampler()
     
     def test_method_name(self):
         """Test method name."""
@@ -84,12 +82,12 @@ class TestGreedySamplingInterface(unittest.TestCase):
         self.assertEqual(token_ids, expected)
 
 
-class TestTopPSamplingInterface(unittest.TestCase):
-    """Test top-p sampling interface."""
+class TestTopPSampler(unittest.TestCase):
+    """Test top-p sampler."""
     
     def setUp(self):
         """Set up test fixtures."""
-        self.sampler = TopPSamplingInterface(p=0.9, temperature=1.0)
+        self.sampler = TopPSampler(p=0.9, temperature=1.0)
     
     def test_method_name(self):
         """Test method name."""
@@ -142,10 +140,10 @@ class TestTopPSamplingInterface(unittest.TestCase):
     def test_temperature_effect(self):
         """Test temperature effect on sampling."""
         # High temperature should make sampling more random
-        high_temp_sampler = TopPSamplingInterface(p=0.9, temperature=2.0)
+        high_temp_sampler = TopPSampler(p=0.9, temperature=2.0)
         
         # Low temperature should make sampling more deterministic
-        low_temp_sampler = TopPSamplingInterface(p=0.9, temperature=0.1)
+        low_temp_sampler = TopPSampler(p=0.9, temperature=0.1)
         
         logits = torch.tensor([1.0, 3.0, 2.0, 0.1])
         
@@ -283,17 +281,17 @@ class TestSamplingFactory(unittest.TestCase):
     
     def test_create_top_p_interface(self):
         """Test creating top-p sampling interface."""
-        interface = create_sampling_interface("top_p", p=0.8, temperature=0.9)
+        interface = create_sampler("top_p", p=0.8, temperature=0.9)
         
-        self.assertIsInstance(interface, TopPSamplingInterface)
+        self.assertIsInstance(interface, TopPSampler)
         self.assertEqual(interface.p, 0.8)
         self.assertEqual(interface.temperature, 0.9)
     
     def test_create_nucleus_interface(self):
         """Test creating nucleus sampling interface (alias for top_p)."""
-        interface = create_sampling_interface("nucleus", p=0.7)
+        interface = create_sampler("nucleus", p=0.7)
         
-        self.assertIsInstance(interface, TopPSamplingInterface)
+        self.assertIsInstance(interface, TopPSampler)
         self.assertEqual(interface.p, 0.7)
     
     def test_create_random_interface(self):
@@ -323,8 +321,8 @@ class TestSamplingFactory(unittest.TestCase):
         interface1 = create_sampling_interface("GREEDY")
         interface2 = create_sampling_interface("Top_P", p=0.9)
         
-        self.assertIsInstance(interface1, GreedySamplingInterface)
-        self.assertIsInstance(interface2, TopPSamplingInterface)
+        self.assertIsInstance(interface1, GreedySampler)
+        self.assertIsInstance(interface2, TopPSampler)
     
     def test_get_available_methods(self):
         """Test getting available sampling methods."""
