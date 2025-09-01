@@ -190,6 +190,40 @@ class HuggingFaceModel(ModelInterface):
             logits = outputs.logits[:, -1, :]
         return logits
 
+    def forward_with_inputs(self, inputs: Dict[str, Any], past=None):
+        """Forward pass returning next-token logits and past KV cache.
+
+        Args:
+            inputs: Tokenized batch dict
+            past: Optional past_key_values from previous step
+        Returns:
+            (logits_last, past_kv)
+        """
+        import torch
+        with torch.no_grad():
+            outputs = self.model(**inputs, past_key_values=past, use_cache=True)
+            logits = outputs.logits[:, -1, :]
+            past_kv = getattr(outputs, "past_key_values", None)
+        return logits, past_kv
+
+    def step_with_tokens(self, token_ids: List[int], past=None):
+        """Single-step forward using only new token ids and past KV cache.
+
+        Args:
+            token_ids: List of next token ids per batch row
+            past: past_key_values from previous step
+        Returns:
+            (logits_last, past_kv)
+        """
+        import torch
+        device = self.model.device
+        step_ids = torch.tensor(token_ids, dtype=torch.long, device=device).unsqueeze(1)
+        with torch.no_grad():
+            outputs = self.model(input_ids=step_ids, past_key_values=past, use_cache=True)
+            logits = outputs.logits[:, -1, :]
+            past_kv = getattr(outputs, "past_key_values", None)
+        return logits, past_kv
+
     def append_tokens(self, inputs: Dict[str, Any], new_token_ids: List[int]) -> Dict[str, Any]:
         """Append generated tokens to batch input ids and attention mask.
 

@@ -76,8 +76,10 @@ class DCBSSampler(CoreDCBSSampler):
         max_new_tokens: int,
         return_logprobs: bool = False,
     ):
-        """Iterative DCBS decoding via sample_batch over steps (deterministic)."""
+        """Iterative DCBS decoding with KV cache reuse and EOS stopping (deterministic)."""
+        import torch
         batch_size = inputs["input_ids"].shape[0]
+
         # Build sampling context from model
         embedding_layer = model.get_embedding_layer()
         device = (
@@ -91,24 +93,48 @@ class DCBSSampler(CoreDCBSSampler):
             device=device,
         )
 
+        eos_id = getattr(getattr(model, "tokenizer", None), "eos_token_id", None)
+        finished = [False] * batch_size
+
         generated_ids: list[list[int]] = [[] for _ in range(batch_size)]
         logprob_seqs: list[list[float]] = [[] for _ in range(batch_size)] if return_logprobs else []
 
-        for _ in range(max_new_tokens):
-            logits_batch = model.next_token_logits(inputs)
-            next_ids = self.sample_batch(logits_batch, context=context)
+        # Initial forward to prime KV cache
+        logits_batch, past = model.forward_with_inputs(inputs, past=None)
 
+        for _ in range(max_new_tokens):
+            # Force EOS for rows already finished
+            filter_tokens_batch = None
+            if eos_id is not None and any(finished):
+                filter_tokens_batch = [{eos_id} if f else None for f in finished]
+
+            # DCBS selection
+            next_ids = self.sample_batch(logits_batch, filter_tokens_batch=filter_tokens_batch, context=context)
+
+            # Logprobs
             if return_logprobs:
                 with torch.no_grad():
                     lp = torch.log_softmax(logits_batch, dim=-1)
-                    batch_indices = torch.arange(logits_batch.size(0), device=lp.device)
-                    gathered = lp[batch_indices, torch.tensor(next_ids, device=lp.device)]
+                    idx = torch.arange(logits_batch.size(0), device=lp.device)
+                    gathered = lp[idx, torch.tensor(next_ids, device=lp.device)]
                     for i in range(batch_size):
-                        logprob_seqs[i].append(float(gathered[i].item()))
+                        if not finished[i]:
+                            logprob_seqs[i].append(float(gathered[i].item()))
 
-            for i in range(batch_size):
-                generated_ids[i].append(int(next_ids[i]))
-            inputs = model.append_tokens(inputs, next_ids)
+            # Append and update finished
+            for i, tid in enumerate(next_ids):
+                if not finished[i]:
+                    t = int(tid)
+                    generated_ids[i].append(t)
+                    if eos_id is not None and t == eos_id:
+                        finished[i] = True
+
+            # Early stop
+            if all(finished):
+                break
+
+            # Next step using only new tokens + past KV
+            logits_batch, past = model.step_with_tokens(next_ids, past=past)
 
         return generated_ids, (logprob_seqs if return_logprobs else None)
 
