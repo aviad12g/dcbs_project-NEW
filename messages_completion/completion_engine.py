@@ -100,16 +100,19 @@ class CompletionEngine:
             custom_template=self.config.custom_template
         )
         
-        # Initialize sampling interface
-        self.sampling_interface = create_sampling_interface(
+        # Initialize sampler only for DCBS; standard methods use model.generate directly
+        self.sampler = create_sampler(
             self.config.sampling_method,
-            **self.config.sampling_params
+            self.config.sampling_params
+        )
+        self._method_name = (
+            self.sampler.method_name if self.sampler else self.config.sampling_method
         )
         
         # Setup stop tokens
         self._setup_stop_tokens()
         
-        logger.info(f"CompletionEngine initialized with {self.sampling_interface.method_name} sampling")
+        logger.info(f"CompletionEngine initialized with {self._method_name} sampling")
     
     def _setup_stop_tokens(self):
         """Setup stop tokens from configuration."""
@@ -154,8 +157,8 @@ class CompletionEngine:
         self.message_processor.validate_messages(messages)
         formatted_prompt = self.message_processor.format_messages(messages)
         
-        # Generate completion
-        text, token_ids, logprobs = self._generate_completion(formatted_prompt)
+        # Generate completion (standard methods via model.generate; DCBS via sampler)
+        text, token_ids, logprobs = self._generate_completion_via_model(formatted_prompt)
         
         # Calculate generation time
         generation_time = time.time() - start_time
@@ -172,13 +175,13 @@ class CompletionEngine:
             token_info=token_info,
             logprobs=logprobs if self.config.include_logprobs else None,
             model_name=self.model_interface.model_name,
-            sampling_method=self.sampling_interface.method_name,
+            sampling_method=self._method_name,
             generation_time=generation_time,
             input_messages=messages if self.config.include_input_context else None,
             formatted_prompt=formatted_prompt if self.config.include_input_context else None,
             metadata={
                 "config": self.config.__dict__,
-                "sampling_params": self.sampling_interface.get_parameters()
+                "sampling_params": (self.sampler.get_parameters() if self.sampler else (self.config.sampling_params or {}))
             }
         )
         
@@ -200,16 +203,47 @@ class CompletionEngine:
         if isinstance(message_batch, list):
             message_batch = MessageBatch.from_multiple_messages(message_batch)
         
-        # Determine batch processing strategy
+        # Format prompts and use model.generate or DCBS sampler in batch
         batch_size = len(message_batch)
-        effective_batch_size = self.config.batch_size or batch_size
-        
-        if batch_size <= effective_batch_size and hasattr(self.model_interface, 'generate_logits_batch'):
-            # Use true batch processing
-            completions = self._generate_batch_completions(message_batch)
+        formatted_prompts = self.message_processor.format_batch(message_batch)
+        inputs = self.model_interface.tokenize(formatted_prompts)
+
+        if self.sampler:
+            token_ids_list, logprobs_list = self.sampler.generate(
+                self.model_interface,
+                inputs,
+                max_new_tokens=self.config.max_new_tokens,
+                return_logprobs=self.config.include_logprobs or self.config.include_token_info,
+            )
         else:
-            # Use sequential processing with chunking
-            completions = self._generate_sequential_completions(message_batch, effective_batch_size)
+            do_sample = self.config.sampling_method.lower() in ("top_p", "nucleus")
+            params = self.config.sampling_params or {}
+            temperature = params.get("temperature", 1.0)
+            top_p = params.get("p", 1.0)
+            token_ids_list, logprobs_list = self.model_interface.generate(
+                inputs,
+                max_new_tokens=self.config.max_new_tokens,
+                do_sample=do_sample,
+                temperature=temperature,
+                top_p=top_p,
+                return_logprobs=self.config.include_logprobs or self.config.include_token_info,
+            )
+
+        completions: List[CompletionResult] = []
+        for i, token_ids in enumerate(token_ids_list):
+            text = self.model_interface.detokenize(token_ids)
+            lp = (logprobs_list[i] if (logprobs_list and i < len(logprobs_list)) else None)
+            completion = CompletionResult(
+                text=text,
+                token_ids=token_ids if self.config.include_token_info else None,
+                token_info=None,
+                logprobs=lp if self.config.include_logprobs else None,
+                model_name=self.model_interface.model_name,
+                sampling_method=self._method_name,
+                input_messages=message_batch[i] if self.config.include_input_context else None,
+                formatted_prompt=formatted_prompts[i] if self.config.include_input_context else None,
+            )
+            completions.append(completion)
         
         # Calculate total generation time
         total_generation_time = time.time() - start_time
@@ -220,177 +254,54 @@ class CompletionEngine:
             batch_size=batch_size,
             total_generation_time=total_generation_time,
             model_name=self.model_interface.model_name,
-            sampling_method=self.sampling_interface.method_name,
+            sampling_method=self._method_name,
             metadata={
                 "config": self.config.__dict__,
-                "sampling_params": self.sampling_interface.get_parameters(),
-                "effective_batch_size": effective_batch_size
+                "sampling_params": (self.sampler.get_parameters() if self.sampler else (self.config.sampling_params or {})),
+                "effective_batch_size": self.config.batch_size or batch_size,
             }
         )
         
         return result
     
-    def _generate_completion(self, formatted_prompt: str) -> tuple[str, List[int], List[float]]:
-        """Generate completion for a single prompt."""
-        generated_ids = []
-        logprobs = []
-        current_prompt = formatted_prompt
-        
-        # Get sampling context for DCBS
-        context = None
-        if hasattr(self.model_interface, 'get_embedding_layer'):
-            try:
-                # Try to import DCBS from parent project if available
-                from src.dcbs import SamplingContext
-                context = SamplingContext(
-                    embedding_layer=self.model_interface.get_embedding_layer(),
-                    tokenizer=getattr(self.model_interface, 'tokenizer', None),
-                    device=self.model_interface.device
-                )
-            except ImportError:
-                logger.warning("DCBS not available, using sampling without context")
-        
-        # Generate tokens one by one
-        for _ in range(self.config.max_new_tokens):
-            # Get logits for current prompt
-            logits = self.model_interface.generate_logits(current_prompt)
-            
-            # Sample next token
-            next_token_id = self.sampling_interface.sample_token(
-                logits, 
-                context=context
+    def _generate_completion_via_model(self, formatted_prompt: str) -> tuple[str, List[int], List[float]]:
+        """Generate completion for a single prompt via model.generate or DCBS sampler."""
+        inputs = self.model_interface.tokenize([formatted_prompt])
+        if self.sampler:
+            token_ids_list, logprobs_list = self.sampler.generate(
+                self.model_interface,
+                inputs,
+                max_new_tokens=self.config.max_new_tokens,
+                return_logprobs=self.config.include_logprobs or self.config.include_token_info,
             )
-            
-            # Calculate log probability if requested
-            logprob = None
-            if self.config.include_logprobs or self.config.include_token_info:
-                import torch
-                probs = torch.softmax(logits, dim=-1)
-                logprob = torch.log(probs[next_token_id]).item()
-            
-            generated_ids.append(next_token_id)
-            if logprob is not None:
-                logprobs.append(logprob)
-            
-            # Check for stop tokens
-            if next_token_id in self.stop_tokens:
-                break
-            
-            # Update current prompt
-            next_token_text = self.model_interface.decode_tokens([next_token_id])
-            current_prompt += next_token_text
-        
-        # Decode generated text
-        generated_text = self.model_interface.decode_tokens(generated_ids)
-        
-        return generated_text, generated_ids, logprobs
+        else:
+            do_sample = self.config.sampling_method.lower() in ("top_p", "nucleus")
+            params = self.config.sampling_params or {}
+            temperature = params.get("temperature", 1.0)
+            top_p = params.get("p", 1.0)
+            token_ids_list, logprobs_list = self.model_interface.generate(
+                inputs,
+                max_new_tokens=self.config.max_new_tokens,
+                do_sample=do_sample,
+                temperature=temperature,
+                top_p=top_p,
+                return_logprobs=self.config.include_logprobs or self.config.include_token_info,
+            )
+
+        token_ids = token_ids_list[0] if token_ids_list else []
+        text = self.model_interface.detokenize(token_ids)
+        logprobs = logprobs_list[0] if logprobs_list else []
+        return text, token_ids, logprobs
     
     def _generate_batch_completions(self, message_batch: MessageBatch) -> List[CompletionResult]:
-        """Generate completions using true batch processing."""
-        # Format all prompts
-        formatted_prompts = self.message_processor.format_batch(message_batch)
-        
-        completions = []
-        
-        # Initialize batch state
-        batch_size = len(message_batch)
-        current_prompts = formatted_prompts.copy()
-        batch_generated_ids = [[] for _ in range(batch_size)]
-        batch_logprobs = [[] for _ in range(batch_size)]
-        active_indices = list(range(batch_size))
-        
-        # Get sampling context for DCBS
-        context = None
-        if hasattr(self.model_interface, 'get_embedding_layer'):
-            try:
-                # Try to import DCBS from parent project if available
-                from src.dcbs import SamplingContext
-                context = SamplingContext(
-                    embedding_layer=self.model_interface.get_embedding_layer(),
-                    tokenizer=getattr(self.model_interface, 'tokenizer', None),
-                    device=self.model_interface.device
-                )
-            except ImportError:
-                pass
-        
-        # Generate tokens
-        for step in range(self.config.max_new_tokens):
-            if not active_indices:
-                break
-            
-            # Get logits for active prompts
-            active_prompts = [current_prompts[i] for i in active_indices]
-            logits_batch = self.model_interface.generate_logits_batch(active_prompts)
-            
-            # Sample next tokens
-            next_token_ids = self.sampling_interface.sample_batch(
-                logits_batch,
-                context=context
-            )
-            
-            # Process each active sequence
-            new_active_indices = []
-            for local_idx, global_idx in enumerate(active_indices):
-                next_token_id = next_token_ids[local_idx]
-                
-                # Calculate log probability if requested
-                if self.config.include_logprobs or self.config.include_token_info:
-                    import torch
-                    logits = logits_batch[local_idx]
-                    probs = torch.softmax(logits, dim=-1)
-                    logprob = torch.log(probs[next_token_id]).item()
-                    batch_logprobs[global_idx].append(logprob)
-                
-                batch_generated_ids[global_idx].append(next_token_id)
-                
-                # Check for stop tokens
-                if next_token_id not in self.stop_tokens:
-                    # Update prompt and keep active
-                    next_token_text = self.model_interface.decode_tokens([next_token_id])
-                    current_prompts[global_idx] += next_token_text
-                    new_active_indices.append(global_idx)
-            
-            active_indices = new_active_indices
-        
-        # Create completion results
-        for i in range(batch_size):
-            generated_text = self.model_interface.decode_tokens(batch_generated_ids[i])
-            
-            # Create token info if requested
-            token_info = None
-            if self.config.include_token_info:
-                token_info = self._create_token_info(batch_generated_ids[i], batch_logprobs[i])
-            
-            completion = CompletionResult(
-                text=generated_text,
-                token_ids=batch_generated_ids[i],
-                token_info=token_info,
-                logprobs=batch_logprobs[i] if self.config.include_logprobs else None,
-                model_name=self.model_interface.model_name,
-                sampling_method=self.sampling_interface.method_name,
-                input_messages=message_batch[i] if self.config.include_input_context else None,
-                formatted_prompt=formatted_prompts[i] if self.config.include_input_context else None
-            )
-            
-            completions.append(completion)
-        
-        return completions
+        """Legacy helper not used anymore (kept for backward compatibility)."""
+        # Re-route through complete_batch to ensure a single code path
+        result = self.complete_batch(message_batch)
+        return list(result)
     
     def _generate_sequential_completions(self, message_batch: MessageBatch, chunk_size: int) -> List[CompletionResult]:
-        """Generate completions using sequential processing with chunking."""
-        completions = []
-        
-        # Process in chunks
-        for i in range(0, len(message_batch), chunk_size):
-            chunk_end = min(i + chunk_size, len(message_batch))
-            chunk_messages = message_batch.message_sequences[i:chunk_end]
-            
-            # Process each message in the chunk
-            for messages in chunk_messages:
-                completion = self.complete_messages(messages)
-                completions.append(completion)
-        
-        return completions
+        """Legacy helper not used anymore; use complete_batch instead."""
+        return list(self.complete_batch(message_batch))
     
     def _create_token_info(self, token_ids: List[int], logprobs: List[float]) -> List[TokenInfo]:
         """Create detailed token information."""
@@ -420,8 +331,9 @@ class CompletionEngine:
         """Update the sampling method and parameters."""
         self.config.sampling_method = method
         self.config.sampling_params = params
-        self.sampling_interface = create_sampling_interface(method, **params)
-        logger.info(f"Updated sampling method to {self.sampling_interface.method_name}")
+        self.sampler = create_sampler(method, params)
+        self._method_name = self.sampler.method_name if self.sampler else method
+        logger.info(f"Updated sampling method to {self._method_name}")
     
     def get_model_info(self) -> Dict[str, Any]:
         """Get information about the loaded model."""
@@ -429,22 +341,22 @@ class CompletionEngine:
             "model_name": self.model_interface.model_name,
             "vocab_size": self.model_interface.vocab_size,
             "device": str(self.model_interface.device),
-            "sampling_method": self.sampling_interface.method_name,
-            "sampling_params": self.sampling_interface.get_parameters()
+            "sampling_method": self._method_name,
+            "sampling_params": (self.sampler.get_parameters() if self.sampler else (self.config.sampling_params or {}))
         }
     
     def get_cache_stats(self) -> Dict[str, Any]:
         """Get caching statistics if available."""
-        if hasattr(self.sampling_interface, 'get_cache_stats'):
-            return self.sampling_interface.get_cache_stats()
+        if self.sampler and hasattr(self.sampler, 'get_cache_stats'):
+            return self.sampler.get_cache_stats()
         return {}
     
     def clear_caches(self):
         """Clear any caches."""
-        if hasattr(self.sampling_interface, 'clear_cache'):
-            self.sampling_interface.clear_cache()
+        if self.sampler and hasattr(self.sampler, 'clear_cache'):
+            self.sampler.clear_cache()
     
     def __repr__(self) -> str:
         """String representation of the completion engine."""
         return (f"CompletionEngine(model='{self.model_interface.model_name}', "
-                f"sampling='{self.sampling_interface.method_name}')")
+                f"sampling='{self._method_name}')")

@@ -46,7 +46,7 @@ def _dcbs_parallel_cluster_job(payload: Tuple[np.ndarray, Dict[str, Any], Option
     else:
         embeddings_np, spec, weights_np = payload
     # Reconstruct clusterer locally to avoid cross-process state
-    from src.dcbs.clustering import (
+    from ..clustering import (
         KMeansClusterer,
         DBSCANClusterer,
         HierarchicalClusterer,

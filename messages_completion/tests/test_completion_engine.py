@@ -1,79 +1,49 @@
-"""
-Tests for the completion engine.
-"""
+"""Tests for the completion engine (simplified for direct model.generate path)."""
 
 import unittest
-from unittest.mock import Mock, patch, MagicMock
-import torch
-from pathlib import Path
-import sys
 
-# Add parent directories to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from messages_completion import (
-    CompletionEngine, 
-    CompletionConfig, 
+from messages_completion.completion_engine import (
+    CompletionEngine,
+    CompletionConfig,
     CompletionResult,
     BatchCompletionResult,
-    MessageBatch
+    MessageBatch,
 )
-from messages_completion.samplers.base import Sampler
 
 
-class MockModelInterface(ModelInterface):
-    """Mock model interface for testing."""
-    
+class MockModel:
+    """Minimal mock model implementing tokenize/generate/detokenize."""
+
     def __init__(self):
-        self._vocab_size = 1000
         self._model_name = "test-model"
-        self._device = torch.device("cpu")
-        
-    def generate_logits(self, input_text: str) -> torch.Tensor:
-        # Return mock logits
-        return torch.randn(self._vocab_size)
-    
-    def generate_logits_batch(self, input_texts: list) -> torch.Tensor:
-        batch_size = len(input_texts)
-        return torch.randn(batch_size, self._vocab_size)
-    
-    def decode_tokens(self, token_ids: list) -> str:
-        return " ".join([f"token_{id}" for id in token_ids])
-    
-    def encode_text(self, text: str) -> list:
-        return [1, 2, 3]  # Mock token IDs
-    
+        self._device = "cpu"
+        self._vocab_size = 1000
+
+    def tokenize(self, texts):
+        # Simulate HF batch inputs
+        return {"input_ids": texts}
+
+    def generate(self, inputs, max_new_tokens, do_sample, temperature=1.0, top_p=1.0, return_logprobs=False):
+        batch = inputs["input_ids"]
+        # Return deterministic 2-token output per prompt
+        token_ids_list = [[1, 2] for _ in batch]
+        logprobs = [[-0.1, -0.2] for _ in batch] if return_logprobs else None
+        return token_ids_list, logprobs
+
+    def detokenize(self, token_ids):
+        return " ".join(f"tok{t}" for t in token_ids)
+
     @property
-    def vocab_size(self) -> int:
-        return self._vocab_size
-    
-    @property
-    def model_name(self) -> str:
+    def model_name(self):
         return self._model_name
-    
+
     @property
-    def device(self) -> torch.device:
+    def vocab_size(self):
+        return self._vocab_size
+
+    @property
+    def device(self):
         return self._device
-
-
-class MockSamplingInterface(SamplingInterface):
-    """Mock sampling interface for testing."""
-    
-    def __init__(self, method_name="mock"):
-        self._method_name = method_name
-    
-    def sample_token(self, logits, context=None, filter_tokens=None):
-        # Always return token ID 42 for predictable testing
-        return 42
-    
-    def sample_batch(self, logits_batch, context=None, filter_tokens_batch=None):
-        batch_size = logits_batch.shape[0]
-        return [42] * batch_size
-    
-    @property
-    def method_name(self) -> str:
-        return self._method_name
 
 
 class TestCompletionConfig(unittest.TestCase):
@@ -117,7 +87,7 @@ class TestCompletionEngine(unittest.TestCase):
     
     def setUp(self):
         """Set up test fixtures."""
-        self.mock_model = MockModelInterface()
+        self.mock_model = MockModel()
         self.config = CompletionConfig(
             max_new_tokens=10,
             sampling_method="greedy",
@@ -134,7 +104,8 @@ class TestCompletionEngine(unittest.TestCase):
         
         self.assertEqual(engine.model_interface, self.mock_model)
         self.assertEqual(engine.config, self.config)
-        self.assertIsNotNone(engine.sampling_interface)
+        # For greedy defaults, no explicit sampler is used
+        self.assertIsNone(engine.sampler)
         self.assertIsNotNone(engine.message_processor)
     
     def test_engine_initialization_with_model_name(self):
@@ -156,8 +127,6 @@ class TestCompletionEngine(unittest.TestCase):
         )
         
         # Mock the sampling interface to return predictable tokens
-        engine.sampling_interface = MockSamplingInterface()
-        
         messages = [
             {"role": "user", "content": "Hello!"}
         ]
@@ -201,8 +170,6 @@ class TestCompletionEngine(unittest.TestCase):
             config=self.config
         )
         
-        engine.sampling_interface = MockSamplingInterface()
-        
         message_sequences = [
             [{"role": "user", "content": "Question 1"}],
             [{"role": "user", "content": "Question 2"}],
@@ -228,8 +195,6 @@ class TestCompletionEngine(unittest.TestCase):
             config=self.config
         )
         
-        engine.sampling_interface = MockSamplingInterface()
-        
         message_sequences = [
             [{"role": "user", "content": "Question 1"}],
             [{"role": "user", "content": "Question 2"}]
@@ -247,11 +212,8 @@ class TestCompletionEngine(unittest.TestCase):
             config=self.config
         )
         
-        original_method = engine.sampling_interface.method_name
-        
         engine.update_sampling_method("top_p", p=0.9)
-        
-        self.assertNotEqual(engine.sampling_interface.method_name, original_method)
+        self.assertEqual(engine._method_name, "top_p")
         self.assertEqual(engine.config.sampling_method, "top_p")
     
     def test_get_model_info(self):
@@ -295,8 +257,6 @@ class TestCompletionEngine(unittest.TestCase):
             model_interface=self.mock_model,
             config=self.config
         )
-        
-        engine.sampling_interface = MockSamplingInterface()
         
         messages = [{"role": "user", "content": "Test"}]
         result = engine.complete_messages(messages)

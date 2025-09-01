@@ -1,7 +1,9 @@
 """
 Message processing utilities for the completion module.
 
-Handles message formatting, chat templates, and batch processing.
+This module formats already-prepared message sequences into a prompt string.
+It does not depend on external chat template managers and does not add
+messages on its own; callers must prepare the desired messages beforehand.
 """
 
 from dataclasses import dataclass
@@ -9,19 +11,13 @@ from typing import List, Dict, Optional, Union, Any
 import logging
 
 from .types import MessageBatch
-try:
-    # Try to import chat templates from parent project if available
-    from src.chat_templates import ChatTemplateManager
-except ImportError:
-    # Fallback if chat templates not available
-    ChatTemplateManager = None
 
 logger = logging.getLogger(__name__)
 
 
 
 class MessageProcessor:
-    """Processes messages and applies chat templates."""
+    """Processes messages using simple, self-contained formatting."""
     
     def __init__(self, model_name: Optional[str] = None, custom_template: Optional[str] = None):
         """
@@ -34,17 +30,9 @@ class MessageProcessor:
         self.model_name = model_name
         self.custom_template = custom_template
         
-        # Initialize chat template manager if available
-        if ChatTemplateManager is not None:
-            try:
-                self.template_manager = ChatTemplateManager()
-                logger.info("Chat template manager initialized successfully")
-            except Exception as e:
-                logger.warning(f"Failed to initialize chat template manager: {e}")
-                self.template_manager = None
-        else:
-            self.template_manager = None
-            logger.warning("Chat template manager not available, using fallback formatting")
+        # No external chat template integration inside messages_completion.
+        # Formatting is intentionally lightweight and self-contained.
+        self.template_manager = None
     
     def format_messages(self, messages: List[Dict[str, str]]) -> str:
         """
@@ -70,14 +58,7 @@ class MessageProcessor:
         if self.custom_template:
             return self._apply_custom_template(messages)
         
-        # Use chat template manager if available
-        if self.template_manager and self.model_name:
-            try:
-                return self.template_manager.apply_template(self.model_name, messages)
-            except Exception as e:
-                logger.warning(f"Failed to apply chat template: {e}, falling back to simple formatting")
-        
-        # Fallback to simple formatting
+        # Simple formatting (no external template manager usage)
         return self._simple_format(messages)
     
     def format_batch(self, message_batch: MessageBatch) -> List[str]:
@@ -137,10 +118,6 @@ class MessageProcessor:
                 formatted_parts.append(f"Assistant: {content}\n")
             else:
                 formatted_parts.append(f"{role.title()}: {content}\n")
-        
-        # Add assistant prompt for completion
-        if messages[-1]["role"] != "assistant":
-            formatted_parts.append("Assistant:")
         
         return "".join(formatted_parts)
     

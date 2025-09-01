@@ -108,17 +108,21 @@ class MessageCompleter:
             )
         
         # Check context length for each conversation
-        model_ctx_length = getattr(self.model, 'context_length', 8192)  # Default fallback
-        
+        model_ctx_length = getattr(self.model, 'context_length', 8192)
         for i, conversation in enumerate(conversations):
             formatted_prompt = self.processor.format_messages(conversation)
-            input_tokens = len(self.model.tokenize([formatted_prompt])[0])
-            
-            total_tokens = input_tokens + self.config.max_new_tokens
+            toks = self.model.tokenize([formatted_prompt])
+            # Expect HF-style batch dict with 'input_ids'
+            if isinstance(toks, dict) and 'input_ids' in toks:
+                input_len = int(toks['input_ids'].shape[1])
+            else:
+                # Fallback conservative estimate
+                input_len = max(1, len(str(formatted_prompt)) // 4)
+            total_tokens = input_len + self.config.max_new_tokens
             if total_tokens > model_ctx_length:
                 raise ValueError(
                     f"Conversation {i}: total tokens ({total_tokens}) exceeds model context length ({model_ctx_length}). "
-                    f"Input: {input_tokens}, max_new_tokens: {self.config.max_new_tokens}"
+                    f"Input: {input_len}, max_new_tokens: {self.config.max_new_tokens}"
                 )
     
     def _complete_batch(
@@ -175,8 +179,8 @@ class MessageCompleter:
                 return_logprobs=self.config.return_logprobs
             )
         elif self.config.sampling_method == SamplingMethod.DCBS:
-            # Use DCBS sampling
-            token_sequences, logprob_sequences = self.sampler.sample(
+            # Use DCBS-driven generation (deterministic decoding path)
+            token_sequences, logprob_sequences = self.sampler.generate(
                 self.model,
                 inputs,
                 max_new_tokens=self.config.max_new_tokens,

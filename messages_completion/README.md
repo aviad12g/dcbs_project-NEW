@@ -5,14 +5,10 @@ A self-contained module for converting messages to completions with deterministi
 ## Quick Start (GPU, Greedy Mode)
 
 ```python
-from messages_completion import MessageCompleter, HuggingFaceModelInterface
+from messages_completion import MessageCompleter, CompletionConfig
 
 # Initialize model (requires GPU)
-model = HuggingFaceModelInterface("meta-llama/Meta-Llama-3-8B-Instruct")
-model.set_seed(42)  # For deterministic results
-
-# Create completer
-comp = MessageCompleter(model, max_new_tokens=32)
+comp = MessageCompleter(CompletionConfig(model_name="meta-llama/Meta-Llama-3-8B-Instruct", max_new_tokens=32))
 
 # Single conversation
 convos = [[{"role":"system","content":"You are a helpful assistant."},
@@ -63,19 +59,12 @@ for completion in result.completions:
     print(completion.text)
 ```
 
-### HuggingFaceModelInterface
+### MessageCompleter
 
 GPU-optimized model interface with determinism:
 
 ```python
-model = HuggingFaceModelInterface("meta-llama/Meta-Llama-3-8B-Instruct")
-model.set_seed(42)  # Deterministic generation
-
-# GPU determinism settings are automatically applied:
-# - attn_implementation="eager" (no flash attention)
-# - torch.backends.cudnn.deterministic = True
-# - torch.use_deterministic_algorithms(True)
-# - Disabled TF32 for exact reproducibility
+comp = MessageCompleter(CompletionConfig(model_name="meta-llama/Meta-Llama-3-8B-Instruct"))
 ```
 
 ## Key Features
@@ -83,7 +72,8 @@ model.set_seed(42)  # Deterministic generation
 - **Deterministic**: Same input always produces same output
 - **Batch Invariant**: Sequential and batch processing produce identical results  
 - **GPU Optimized**: Efficient CUDA operations with determinism guarantees
-- **Greedy Sampling**: Uses `do_sample=False` for deterministic generation
+- **Standard Decoding via model.generate**: Greedy (`do_sample=False`) and Top‑p (`do_sample=True`, `top_p`, `temperature`) use the model’s generate API directly.
+- **No Template Injection**: This module does not add messages or prompts; callers must supply the exact messages to complete (e.g., system/instructions).
 - **Self-contained**: No external dependencies on parent project
 
 ## Testing

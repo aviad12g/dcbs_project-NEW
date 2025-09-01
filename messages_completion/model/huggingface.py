@@ -171,6 +171,42 @@ class HuggingFaceModel(ModelInterface):
         self.model.eval()
         
         logger.info(f"Model loaded successfully on {self.model.device}")
+
+    # ---- Additional helpers for custom decoding paths (e.g., DCBS) ----
+    def get_embedding_layer(self):
+        """Return the model's token embedding layer."""
+        return self.model.get_input_embeddings()
+
+    @property
+    def context_length(self) -> int:
+        """Model's maximum context length if known."""
+        return getattr(self.model.config, "max_position_embeddings", 8192)
+
+    def next_token_logits(self, inputs: Dict[str, Any]):
+        """Compute next-token logits for a batch of inputs."""
+        import torch
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+            logits = outputs.logits[:, -1, :]
+        return logits
+
+    def append_tokens(self, inputs: Dict[str, Any], new_token_ids: List[int]) -> Dict[str, Any]:
+        """Append generated tokens to batch input ids and attention mask.
+
+        Args:
+            inputs: Tokenized batch dict (expects 'input_ids' and optionally 'attention_mask')
+            new_token_ids: List of length batch_size with next token ids
+        Returns:
+            Updated inputs dict with appended tokens
+        """
+        import torch
+        device = self.model.device
+        append = torch.tensor(new_token_ids, dtype=torch.long, device=device).unsqueeze(1)
+        inputs["input_ids"] = torch.cat([inputs["input_ids"], append], dim=1)
+        if "attention_mask" in inputs:
+            ones = torch.ones_like(append)
+            inputs["attention_mask"] = torch.cat([inputs["attention_mask"], ones], dim=1)
+        return inputs
     
     def _setup_device(self, device: Optional[Union[str, torch.device]]) -> torch.device:
         """Setup and validate device."""
@@ -289,5 +325,5 @@ class HuggingFaceModel(ModelInterface):
 
     
     def __repr__(self) -> str:
-        """String representation of the model interface."""
-        return f"HuggingFaceModelInterface(model_name='{self.model_name}', device='{self.device}')"
+        """String representation of the model wrapper."""
+        return f"HuggingFaceModel(model_name='{self.model_name}', device='{self.device}')"
